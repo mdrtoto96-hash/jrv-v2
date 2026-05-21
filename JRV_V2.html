@@ -186,6 +186,9 @@
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: #2a2a2a; border-radius: 2px; }
 
+    /* STAT GRID 5 COL */
+    .stat-grid5 { display: grid; grid-template-columns: repeat(5,1fr); gap: 8px; margin-bottom: 18px; }
+
     /* MOBILE */
     @media (max-width: 768px) {
       #sidebar { position: fixed; left: 0; top: 0; bottom: 0; z-index: 100; transform: translateX(-100%); transition: transform 0.25s ease; box-shadow: 4px 0 24px rgba(0,0,0,0.6); }
@@ -195,18 +198,38 @@
       #hamburger { display: inline-block; }
       .crm-detail-grid { grid-template-columns: 1fr 1fr; }
       .crm-stats { grid-template-columns: repeat(3, 1fr); }
+      .stat-grid5 { grid-template-columns: repeat(3, 1fr); }
       .grid3 { grid-template-columns: 1fr 1fr; }
       #content { padding: 14px 14px; }
-      #topbar { padding: 8px 14px; }
+      #topbar { padding: 8px 14px; gap: 8px; }
+      #note-title-input { max-width: 140px; }
+      .ec-btn { padding: 4px 8px; font-size: 11px; }
+      .crm-filter-btn { padding: 5px 10px; font-size: 11px; }
+      .crm-filters { gap: 4px; }
+      .suivi-tbl { font-size: 11px; }
+      .block { padding: 12px 14px; }
+      .scratchpad { min-height: 50px; }
+      .custom-note-area { min-height: calc(100vh - 220px); }
+      .crm-row-header { padding: 8px 10px; gap: 6px; }
     }
     @media (max-width: 480px) {
-      .crm-detail-grid { grid-template-columns: 1fr 1fr; }
+      .crm-detail-grid { grid-template-columns: 1fr; }
       .grid2 { grid-template-columns: 1fr; }
-      .crm-stats { grid-template-columns: repeat(3, 1fr); }
+      .grid3 { grid-template-columns: 1fr; }
+      .crm-stats { grid-template-columns: repeat(2, 1fr); }
+      .stat-grid5 { grid-template-columns: repeat(2, 1fr); }
       .tarif-grid { grid-template-columns: 1fr; }
       .crm-contact-display { display: none; }
-      #content { padding: 11px 11px; }
-      #note-title-input { font-size: 14px; }
+      #content { padding: 10px 10px; }
+      #note-title-input { font-size: 13px; max-width: 110px; }
+      .dash-card { padding: 10px 11px; }
+      .stat-card .big { font-size: 20px; }
+      .stat-card { padding: 10px 8px; }
+      .crm-badge { font-size: 9px; padding: 2px 6px; }
+      .crm-name { font-size: 12px; }
+      .block h3 { font-size: 9px; }
+      .crm-filter-btn { padding: 4px 8px; font-size: 11px; }
+      #topbar { gap: 6px; }
     }
   </style>
 </head>
@@ -296,6 +319,7 @@
   let currentId = 'dashboard';
   let saveTimer = null;
   let crmFilter = 'all';
+  let crmTypeFilter = 'all';
   let crmSearch = '';
   let expandedIds = new Set();
   let searchDebounce = null;
@@ -436,6 +460,51 @@
     const de = document.getElementById('alertes-done');
     if (de) { de.innerHTML = done.length===0?'':done.map(a=>`<div style="display:flex;align-items:center;gap:10px;padding:7px 13px;opacity:0.4;border-radius:7px"><input type="checkbox" checked onchange="toggleAlerteDone(${a.id})" style="width:14px;height:14px;cursor:pointer;flex-shrink:0"><div style="font-size:13px;text-decoration:line-through;flex:1">${escHtml(a.titre)}</div><button onclick="deleteAlerte(${a.id})" style="background:none;border:none;color:var(--danger);cursor:pointer;font-size:16px">×</button></div>`).join('');
       const block = document.getElementById('alertes-done-block'); if (block) block.style.display = done.length>0?'':'none'; }
+  }
+
+  // ---- PRIORITIES ----
+  function getPriorities() { return JSON.parse(localStorage.getItem('jrv_priorities') || 'null'); }
+  function savePriorities(arr) { localStorage.setItem('jrv_priorities', JSON.stringify(arr)); }
+  function initPriorities() {
+    if (!localStorage.getItem('jrv_priorities')) {
+      savePriorities([
+        {id:1, text:"Demander au patron du wake surf pour le documentaire", done:false},
+        {id:2, text:"Poster le showreel jeudi ou vendredi 18h-20h", done:false},
+        {id:3, text:"Finir le profil LinkedIn (photo, a propos, competences)", done:false},
+        {id:4, text:"Certification drone A1/A3", done:false},
+        {id:5, text:"Envoyer 5 messages LinkedIn aux boites de prod cibles", done:false},
+        {id:6, text:"Tester 1 video UGC sur un produit que t'as chez toi", done:false},
+      ]);
+    }
+  }
+  function addPriority() {
+    const inp = document.getElementById('prio-input');
+    if (!inp || !inp.value.trim()) return;
+    const arr = getPriorities() || [];
+    arr.push({ id: Date.now(), text: inp.value.trim(), done: false });
+    savePriorities(arr); inp.value = '';
+    renderPrioritiesBlock();
+  }
+  function togglePriority(id) {
+    const arr = getPriorities() || [];
+    const p = arr.find(x => x.id === id);
+    if (p) { p.done = !p.done; savePriorities(arr); }
+    renderPrioritiesBlock();
+  }
+  function deletePriority(id) {
+    savePriorities((getPriorities() || []).filter(p => p.id !== id));
+    renderPrioritiesBlock();
+  }
+  function renderPrioritiesBlock() {
+    const arr = getPriorities() || [];
+    const container = document.getElementById('priorities-list');
+    if (!container) return;
+    container.innerHTML = arr.map(p => `
+      <div style="display:flex;align-items:center;gap:9px;padding:5px 6px;border-radius:6px;transition:background 0.1s" onmouseover="this.style.background='var(--card2)';this.querySelector('.prio-del').style.opacity='1'" onmouseout="this.style.background='transparent';this.querySelector('.prio-del').style.opacity='0'">
+        <input type="checkbox" ${p.done?'checked':''} onchange="togglePriority(${p.id})" style="width:14px;height:14px;accent-color:var(--accent2);cursor:pointer;flex-shrink:0">
+        <span style="flex:1;font-size:14px;line-height:1.5;${p.done?'text-decoration:line-through;color:var(--muted)':''}">${escHtml(p.text)}</span>
+        <button class="prio-del" onclick="deletePriority(${p.id})" style="background:none;border:none;color:var(--danger);cursor:pointer;font-size:16px;opacity:0;padding:0 3px;line-height:1">×</button>
+      </div>`).join('') || '<div style="color:var(--muted);font-size:13px;padding:8px 6px">Aucune priorite. Ajoutes-en ci-dessous.</div>';
   }
 
   // ---- UTILS ----
@@ -579,6 +648,42 @@
     {id:74,name:'France 3 Pays de Loire', site:'france.tv/france-3/pays-de-la-loire', zone:'Medias', p:0, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'TV regionale publique. Pigistes video/cameramen pour reportages locaux. Contacter la redaction.', relance:''},
     {id:75,name:'Ouest-France Video',   site:'ouest-france.fr',            zone:'Medias', p:0, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'Premier journal de France. Service video web. Pigistes freelances occasionnels.', relance:''},
     {id:76,name:'Tele Nantes',          site:'televisionantes.fr',         zone:'Medias', p:0, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'Television locale Nantes. Besoin de techniciens/cameramen ponctuels.', relance:''},
+    // === AGENCES COMM — NANTES SUPPLEMENTAIRES ===
+    {id:77,name:'Agence Nostromo',       site:'nostromo.fr',                zone:'Agences Comm — Nantes', p:1, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'Agence de communication corporate Nantes. Produisent videos institutionnelles et teasers pour grands groupes. Priorite.', relance:''},
+    {id:78,name:'Agence Atipy',          site:'atipy.fr',                   zone:'Agences Comm — Nantes', p:0, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'Communication digitale et design. Besoin de contenu video pour les reseaux sociaux de leurs clients.', relance:''},
+    {id:79,name:'Agence Idix',           site:'idix.fr',                    zone:'Agences Comm — Nantes', p:0, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'Agence web et digitale Nantes. Films de presentation entreprise, tutos produits.', relance:''},
+    {id:80,name:'Agence iD Interactive', site:'id-interactive.fr',          zone:'Agences Comm — Nantes', p:0, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'Agence digitale Nantes. Brand content video pour marques locales.', relance:''},
+    {id:81,name:'Agence Clap Clap',      site:'clapclap.fr',                zone:'Agences Comm — Nantes', p:1, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'Specialiste contenu video / motion design Nantes. Cherchent des cameramen freelances reguliers. Priorite.', relance:''},
+    {id:82,name:'Agence Mozaik RH',      site:'mozaikrh.com',               zone:'Agences Comm — Nantes', p:0, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'Communication marque employeur. Tournages portraits salaries, films recrutement. Bon filon.', relance:''},
+    {id:83,name:'Agence Ekno',           site:'ekno.fr',                    zone:'Agences Comm — Nantes', p:0, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'Agence de brand content Nantes. Social media + video pour PME.', relance:''},
+    {id:84,name:'Agence Angie',          site:'agence-angie.fr',            zone:'Agences Comm — Nantes', p:0, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'Communication digitale. Clientele grands groupes nationaux. Besoin video ponctuel.', relance:''},
+    {id:85,name:'Agence Muxu',           site:'muxu.fr',                    zone:'Agences Comm — Nantes', p:0, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'Studio branding + motion design Nantes. Sous-traitent parfois la captation terrain.', relance:''},
+    {id:86,name:'Agence Creatif Studio', site:'creatif-studio.fr',          zone:'Agences Comm — Nantes', p:0, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'Production de contenus digitaux. Video corporate, reels, interviews dirigeants.', relance:''},
+    // === AGENCES COMM — RENNES ===
+    {id:87,name:'Agence Wellcom Rennes', site:'wellcom.fr',                 zone:'Agences Comm — Rennes', p:0, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'Agence RP et communication. Bureau Rennes. Films de presse et reportages corporate.', relance:''},
+    {id:88,name:'Agence Sevigne',        site:'agence-sevigne.fr',          zone:'Agences Comm — Rennes', p:0, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'Communication corporate et institutionnelle Rennes. Besoin regular de captation.', relance:''},
+    {id:89,name:'Agence Hopscotch Rennes',site:'hopscotch.fr',              zone:'Agences Comm — Rennes', p:0, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'Grand evenementiel B2B, bureau Rennes. Aftermovies et captations live.', relance:''},
+    {id:90,name:'Agence Creads',         site:'creads.org',                 zone:'Agences Comm — Rennes', p:0, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'Plateforme createurs independants. Inscrire son profil video pour missions Bretagne.', relance:''},
+    {id:91,name:'Agence Inoxia',         site:'inoxia.fr',                  zone:'Agences Comm — Rennes', p:1, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'Communication et brand content Rennes. Clientele ETI / grands groupes. Priorite.', relance:''},
+    // === AGENCES COMM — ANGERS ===
+    {id:92,name:'Agence Vecteur Plus',   site:'vecteurplus.fr',             zone:'Agences Comm — Angers', p:0, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'Agence de communication globale Angers. Production video ponctuelle.', relance:''},
+    {id:93,name:'Agence Pix\'elles',     site:'pixelles-communication.fr',  zone:'Agences Comm — Angers', p:0, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'Communication visuelle et video Angers. PME locales.', relance:''},
+    {id:94,name:'Agence Carbure',        site:'carbure.net',                zone:'Agences Comm — Angers', p:0, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'Agence digitale Angers. Films institutionnels et interviews pour leurs clients.', relance:''},
+    // === AGENCES COMM — LE MANS ===
+    {id:95,name:'Agence Clap',           site:'agenceclap.fr',              zone:'Agences Comm — Le Mans', p:0, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'Communication et events Le Mans. Besoin de captation pour leurs evenements clients.', relance:''},
+    {id:96,name:'Agence Oxygen',         site:'oxygen-communication.fr',    zone:'Agences Comm — Le Mans', p:0, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'Communication globale Le Mans. Films dentreprise et teasers commerciaux.', relance:''},
+    // === AGENCES COMM — GRAND OUEST ===
+    {id:97,name:'Agence Noir Ivory',     site:'noir-ivory.fr',              zone:'Agences Comm — Grand Ouest', p:1, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'Agence de communication narrative Nantes/Paris. Specialiste brand content et storytelling video. Profil ideal pour eux. Priorite.', relance:''},
+    {id:98,name:'Agence Advisa',         site:'advisa.fr',                  zone:'Agences Comm — Grand Ouest', p:0, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'Communication B2B grands groupes. Besoin de cameramen pour evenements nationaux.', relance:''},
+    {id:99,name:'Agence Otta',           site:'otta.fr',                    zone:'Agences Comm — Grand Ouest', p:0, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'Agence de com digitale et social media. Contenu video court pour reseaux sociaux.', relance:''},
+    {id:100,name:'Agence Trois Fois Plus',site:'troisfoisplus.com',         zone:'Agences Comm — Grand Ouest', p:0, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'Production de contenu digital. Video pour PME et startups Grand Ouest.', relance:''},
+    {id:101,name:'Agence Babel Grand Ouest',site:'agence-babel.fr',         zone:'Agences Comm — Grand Ouest', p:0, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'Reseau national dagences de communication. Bureaux dans tout le Grand Ouest.', relance:''},
+    // === AGENCES EVENEMENTIELLES SUPPLEMENTAIRES ===
+    {id:102,name:'Agence Novelty',       site:'novelty.fr',                 zone:'Agences Evenementielles', p:1, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'Leader technique evenementiel en France. Gros besoins de captation video sur leurs events. Bureau Nantes. Priorite absolue.', relance:''},
+    {id:103,name:'Agence Live & Sens',   site:'liveetsens.fr',              zone:'Agences Evenementielles', p:0, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'Evenementiel experience et brand activation. Aftermovies et teasing pre-event.', relance:''},
+    {id:104,name:'Agence Havas Events',  site:'havasevents.fr',             zone:'Agences Evenementielles', p:0, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'Grand groupe international. Bureau Nantes. Evenements corporates et congres. Gros volumes.', relance:''},
+    {id:105,name:'Agence Make It',       site:'make-it.fr',                 zone:'Agences Evenementielles', p:0, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'Evenementiel PME Grand Ouest. Films de soirees, seminaires, lancements de produits.', relance:''},
+    {id:106,name:'Agence Les Producteurs',site:'lesproducteurs.fr',         zone:'Agences Evenementielles', p:0, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'Production evenementielle Nantes. Besoin regulier de video pour leurs clients.', relance:''},
   ];
 
   function getCRMCompanies() {
@@ -586,7 +691,7 @@
     if (!stored) { localStorage.setItem('jrv_crm_v2', JSON.stringify(COMPANIES_DEFAULT)); return COMPANIES_DEFAULT; }
     const arr = JSON.parse(stored);
     const maxId = Math.max(...arr.map(c => c.id));
-    if (maxId < 76) {
+    if (maxId < 106) {
       const newOnes = COMPANIES_DEFAULT.filter(c => c.id > maxId);
       const merged = [...arr, ...newOnes];
       localStorage.setItem('jrv_crm_v2', JSON.stringify(merged));
@@ -657,6 +762,15 @@
     document.querySelectorAll('.crm-filter-btn').forEach(b => b.classList.toggle('active', b.dataset.filter === f));
     refreshCRMList();
   }
+  function setCRMTypeFilter(f) {
+    crmTypeFilter = f;
+    document.querySelectorAll('.crm-type-btn').forEach(b => b.classList.toggle('active', b.dataset.type === f));
+    refreshCRMList();
+  }
+  function getCompanyType(c) {
+    const prodZones = ['Nantes','Vendee','Angers','Rennes','Le Mans','Niort','Saint-Nazaire'];
+    return prodZones.includes(c.zone) ? 'prod' : 'com';
+  }
 
   function setCRMSearch(q) {
     crmSearch = q;
@@ -691,7 +805,8 @@
         (crmFilter === 'a-contacter' && c.statut === 'a-contacter') ||
         (crmFilter === 'en-cours' && ['message-envoye','pas-de-reponse'].includes(c.statut)) ||
         (crmFilter === 'positif' && ['interesse','rdv-pris','converti'].includes(c.statut));
-      return ms && mf;
+      const mt = crmTypeFilter === 'all' || getCompanyType(c) === crmTypeFilter;
+      return ms && mf && mt;
     });
     if (filtered.length === 0) return '<div style="padding:20px;color:var(--muted);text-align:center;font-size:13px;">Aucune boite trouvee</div>';
     const zones = [...new Set(filtered.map(c => c.zone))];
@@ -800,7 +915,7 @@
 
     if (!noScratch) document.getElementById('sp-'+id)?.addEventListener('input', function() { localStorage.setItem('scratch_'+id, this.value); showSaved(); });
     if (EDITABLE_NOTES.includes(id)) { if(ec) ec.style.display='flex'; if(savedEdit) { const rb=document.getElementById('reset-edit-btn'); if(rb) rb.style.display=''; } }
-    if (id === 'dashboard') { renderSuiviTable(); renderHiddenBlock(); }
+    if (id === 'dashboard') { renderSuiviTable(); renderHiddenBlock(); renderPrioritiesBlock(); }
     if (id === 'crm') updateCRMStatsBar();
     if (id === 'alertes') renderAlertesLists();
     restoreChecks(id);
@@ -873,7 +988,7 @@
         <div class="stat-card"><div class="big g">1 700€</div><div class="small">Objectif mensuel</div></div>
       </div>
 
-      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:18px;">
+      <div class="stat-grid5">
         <div class="stat-card"><div class="big">${arr.length}</div><div class="small">Boites cibles</div></div>
         <div class="stat-card"><div class="big" style="color:var(--blue)">${contacted}</div><div class="small">Contactees</div></div>
         <div class="stat-card"><div class="big" style="color:var(--accent)">${arr.length - contacted}</div><div class="small">Restantes</div></div>
@@ -895,12 +1010,11 @@
 
       <div class="block" style="margin-bottom:13px;">
         <h3>Priorites du moment</h3>
-        ${chk("Demander au patron du wake surf pour le documentaire")}
-        ${chk("Poster le showreel jeudi ou vendredi 18h-20h")}
-        ${chk("Finir le profil LinkedIn (photo, a propos, competences)")}
-        ${chk("Certification drone A1/A3")}
-        ${chk("Envoyer 5 messages LinkedIn aux boites de prod cibles")}
-        ${chk("Tester 1 video UGC sur un produit que t'as chez toi")}
+        <div id="priorities-list"></div>
+        <div style="display:flex;gap:7px;margin-top:10px">
+          <input id="prio-input" class="crm-input" placeholder="Ajouter une priorite..." style="font-size:13px;flex:1" onkeydown="if(event.key==='Enter')addPriority()">
+          <button onclick="addPriority()" style="padding:5px 16px;background:var(--accent);color:#111;border:none;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;flex-shrink:0">+</button>
+        </div>
       </div>
 
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:18px;">
@@ -994,6 +1108,12 @@
         <div class="crm-stat"><div class="n" id="cst-restantes" style="color:var(--accent)">${arr.length - contacted}</div><div class="l">Restantes</div></div>
         <div class="crm-stat"><div class="n" id="cst-reponses" style="color:var(--accent2)">${reponses}</div><div class="l">Reponses+</div></div>
         <div class="crm-stat"><div class="n" id="cst-convertis" style="color:var(--purple)">${convertis}</div><div class="l">Convertis</div></div>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;align-items:center">
+        <span style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-right:2px">Type :</span>
+        <button class="crm-type-btn crm-filter-btn ${crmTypeFilter==='all'?'active':''}" data-type="all" onclick="setCRMTypeFilter('all')">Toutes</button>
+        <button class="crm-type-btn crm-filter-btn ${crmTypeFilter==='prod'?'active':''}" data-type="prod" onclick="setCRMTypeFilter('prod')" style="${crmTypeFilter==='prod'?'':'border-color:var(--blue);color:var(--blue)'}">Prod Video (${arr.filter(c=>getCompanyType(c)==='prod').length})</button>
+        <button class="crm-type-btn crm-filter-btn ${crmTypeFilter==='com'?'active':''}" data-type="com" onclick="setCRMTypeFilter('com')" style="${crmTypeFilter==='com'?'':'border-color:var(--purple);color:var(--purple)'}">Agences Comm (${arr.filter(c=>getCompanyType(c)==='com').length})</button>
       </div>
       <div class="crm-filters">
         <button class="crm-filter-btn ${crmFilter==='all'?'active':''}" data-filter="all" onclick="setCRMFilter('all')">Toutes (${arr.length})</button>
@@ -1438,6 +1558,7 @@ https://www.rondeaujeremy.fr/
   }
 
   // ---- INIT ----
+  initPriorities();
   renderSidebarCustom();
   updateAllNotesSub();
   updateAlertesBadge();
