@@ -1,0 +1,1449 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JRV V2</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0f0f0f; --sidebar: #161616; --card: #1c1c1c; --card2: #222;
+      --border: #282828; --border2: #333;
+      --accent: #f0a500; --accent2: #4caf50; --blue: #4a9eff;
+      --purple: #9b59b6; --danger: #e53935; --green2: #00c853;
+      --text: #e8e8e8; --text2: #bbb; --muted: #666;
+    }
+    body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); color: var(--text); display: flex; height: 100vh; overflow: hidden; font-size: 15px; }
+
+    /* SIDEBAR */
+    #sidebar { width: 252px; min-width: 252px; background: var(--sidebar); border-right: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden; }
+    #sidebar-header { padding: 15px 14px 11px; border-bottom: 1px solid var(--border); }
+    #sidebar-header h1 { font-size: 15px; font-weight: 800; color: var(--accent); letter-spacing: 1px; }
+    #sidebar-header p { font-size: 11px; color: var(--muted); margin-top: 2px; }
+    .section-label { font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--muted); padding: 12px 14px 4px; }
+    #note-list { flex: 1; overflow-y: auto; padding-bottom: 8px; }
+    .note-item { padding: 7px 12px; cursor: pointer; border-left: 3px solid transparent; display: flex; align-items: center; justify-content: space-between; gap: 8px; transition: background 0.1s; border-radius: 0 6px 6px 0; margin-right: 6px; }
+    .note-item:hover { background: #1e1e1e; }
+    .note-item.active { background: #1f1a0f; border-left-color: var(--accent); }
+    .note-item .nt { font-size: 13px; font-weight: 600; color: var(--text2); line-height: 1.3; }
+    .note-item .ns { font-size: 11px; color: var(--muted); margin-top: 1px; }
+    .note-item.active .nt { color: var(--accent); }
+    .note-item .del-btn { opacity: 0; background: none; border: none; color: var(--danger); font-size: 15px; cursor: pointer; padding: 1px 4px; border-radius: 4px; flex-shrink: 0; }
+    .note-item:hover .del-btn { opacity: 0.6; }
+    .note-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+    #add-note-btn { margin: 8px 12px; padding: 8px; background: transparent; border: 1px dashed var(--border2); border-radius: 8px; color: var(--muted); font-size: 12px; cursor: pointer; width: calc(100% - 24px); text-align: center; transition: all 0.15s; }
+    #add-note-btn:hover { border-color: var(--accent); color: var(--accent); background: rgba(240,165,0,0.05); }
+
+    /* MAIN */
+    #main { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
+    #topbar { padding: 10px 22px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; background: var(--card); gap: 12px; flex-shrink: 0; }
+    #note-title-input { font-size: 16px; font-weight: 700; color: var(--text); background: transparent; border: none; outline: none; flex: 1; min-width: 0; }
+    #note-title-input[readonly] { cursor: default; }
+    #saved-badge { font-size: 11px; color: var(--accent2); display: none; white-space: nowrap; background: rgba(76,175,80,0.1); padding: 3px 9px; border-radius: 20px; }
+    #content { flex: 1; overflow-y: auto; padding: 20px 24px; }
+
+    /* SCRATCHPAD */
+    .scratchpad-wrap { background: rgba(76,175,80,0.04); border: 1px solid rgba(76,175,80,0.14); border-radius: 10px; padding: 11px 15px; margin-bottom: 16px; }
+    .scratchpad-label { font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--accent2); margin-bottom: 6px; opacity: 0.8; }
+    .scratchpad { width: 100%; min-height: 75px; background: transparent; border: none; outline: none; color: var(--text); font-family: 'Segoe UI', Arial, sans-serif; font-size: 14px; line-height: 1.7; resize: vertical; }
+    .scratchpad::placeholder { color: #2a2a2a; }
+    .custom-note-area { width: 100%; min-height: calc(100vh - 180px); background: transparent; border: none; outline: none; color: var(--text); font-family: 'Segoe UI', Arial, sans-serif; font-size: 15px; line-height: 1.8; resize: none; }
+    .custom-note-area::placeholder { color: #2a2a2a; }
+
+    /* BLOCKS */
+    .block { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 15px 20px; margin-bottom: 13px; }
+    .block h3 { font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--accent); margin-bottom: 11px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+    .block h4 { font-size: 11px; font-weight: 700; color: var(--muted); margin: 11px 0 6px; text-transform: uppercase; letter-spacing: 1px; }
+    .block ul { padding-left: 18px; } .block li { margin-bottom: 6px; line-height: 1.6; font-size: 14px; }
+    .block p { line-height: 1.7; margin-bottom: 8px; color: var(--text); font-size: 14px; }
+    .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+    .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 9px; }
+    .ibox { background: var(--card2); border-radius: 8px; padding: 10px 13px; border: 1px solid var(--border); }
+    .ibox .lbl { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 3px; }
+    .ibox .val { font-size: 14px; font-weight: 600; }
+    .tag { display: inline-block; background: var(--card2); border: 1px solid var(--border); border-radius: 4px; padding: 2px 8px; font-size: 12px; color: var(--muted); margin: 2px 2px 2px 0; }
+    .chk-item { display: flex; align-items: flex-start; gap: 9px; margin-bottom: 5px; cursor: pointer; padding: 4px 6px; border-radius: 5px; transition: background 0.1s; }
+    .chk-item:hover { background: var(--card2); }
+    .chk-item input[type="checkbox"] { margin-top: 3px; width: 14px; height: 14px; accent-color: var(--accent2); cursor: pointer; flex-shrink: 0; }
+    .chk-item span { font-size: 14px; line-height: 1.5; }
+    .chk-item.done span { text-decoration: line-through; color: var(--muted); }
+    .script-box { background: #141414; border: 1px solid var(--border); border-radius: 8px; padding: 13px 15px; font-size: 14px; line-height: 1.8; color: #ccc; white-space: pre-wrap; font-family: 'Segoe UI', Arial, sans-serif; }
+    .tarif-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+    .tarif-box { background: var(--card2); border-radius: 8px; padding: 10px 13px; border: 1px solid var(--border); }
+    .tarif-box .type { font-size: 12px; color: var(--muted); margin-bottom: 3px; }
+    .tarif-box .prix { font-size: 19px; font-weight: 700; color: var(--accent); }
+    .month-block { border-left: 2px solid var(--accent); padding-left: 13px; margin-bottom: 16px; }
+    .month-title { font-size: 13px; font-weight: 700; color: var(--accent); margin-bottom: 5px; }
+    .obj-badge { display: inline-block; background: var(--card2); border-radius: 5px; padding: 2px 8px; font-size: 12px; color: var(--muted); margin-bottom: 6px; border: 1px solid var(--border); }
+    .q-block { background: var(--card2); border-radius: 8px; padding: 11px 13px; margin-bottom: 8px; border: 1px solid var(--border); }
+    .q-num { font-size: 11px; color: var(--accent); font-weight: 700; margin-bottom: 3px; }
+    .q-text { font-size: 14px; line-height: 1.5; }
+    .q-why { font-size: 12px; color: var(--muted); margin-top: 4px; font-style: italic; }
+    .phase-block { border-left: 3px solid var(--blue); padding-left: 13px; margin-bottom: 18px; }
+    .phase-block.green { border-left-color: var(--accent2); }
+    .phase-block.orange { border-left-color: var(--accent); }
+    .phase-block.purple { border-left-color: var(--purple); }
+    .phase-title { font-size: 14px; font-weight: 700; margin-bottom: 8px; }
+    .story-step { display: flex; gap: 11px; margin-bottom: 11px; align-items: flex-start; }
+    .story-num { width: 27px; height: 27px; border-radius: 50%; background: var(--accent); color: #111; font-weight: 800; font-size: 13px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .story-content .title { font-weight: 700; font-size: 14px; margin-bottom: 3px; }
+    .story-content .desc { font-size: 12px; color: var(--muted); line-height: 1.5; }
+    .story-content .example { font-size: 12px; color: var(--accent); margin-top: 4px; font-style: italic; }
+
+    /* DASHBOARD */
+    .stat-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 13px 16px; text-align: center; }
+    .stat-card .big { font-size: 24px; font-weight: 800; }
+    .stat-card .small { font-size: 11px; color: var(--muted); margin-top: 2px; }
+    .dash-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 13px 15px; cursor: pointer; transition: border-color 0.15s, background 0.15s; }
+    .dash-card:hover { border-color: var(--accent); background: rgba(240,165,0,0.03); }
+    .dash-card .dc-icon { font-size: 17px; margin-bottom: 6px; }
+    .dash-card .dc-title { font-size: 13px; font-weight: 700; margin-bottom: 3px; }
+    .dash-card .dc-sub { font-size: 11px; color: var(--muted); }
+    .progress-bar { background: var(--card2); border-radius: 3px; height: 3px; margin-top: 7px; }
+    .progress-fill { height: 100%; border-radius: 3px; background: var(--accent); }
+
+    /* CRM */
+    .crm-stats { display: grid; grid-template-columns: repeat(5,1fr); gap: 8px; margin-bottom: 14px; }
+    .crm-stat { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 10px 8px; text-align: center; }
+    .crm-stat .n { font-size: 22px; font-weight: 800; }
+    .crm-stat .l { font-size: 10px; color: var(--muted); margin-top: 2px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .crm-filters { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 10px; }
+    .crm-filter-btn { padding: 5px 13px; border-radius: 20px; border: 1px solid var(--border); background: transparent; color: var(--muted); font-size: 12px; cursor: pointer; transition: all 0.15s; font-family: inherit; }
+    .crm-filter-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .crm-filter-btn.active { background: var(--accent); color: #111; border-color: var(--accent); font-weight: 700; }
+    .crm-search { width: 100%; padding: 8px 13px; background: var(--card); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-size: 13px; outline: none; font-family: inherit; margin-bottom: 12px; transition: border-color 0.15s; }
+    .crm-search:focus { border-color: var(--accent); }
+    .crm-search::placeholder { color: var(--muted); }
+    .crm-zone-label { font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--muted); padding: 10px 0 5px; border-bottom: 1px solid var(--border); margin-bottom: 5px; display: flex; justify-content: space-between; }
+    .crm-row { background: var(--card); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 3px; overflow: hidden; transition: border-color 0.15s; }
+    .crm-row.open { border-color: var(--accent); }
+    .crm-row-header { display: flex; align-items: center; gap: 8px; padding: 8px 13px; cursor: pointer; user-select: none; }
+    .crm-row-header:hover { background: rgba(255,255,255,0.02); }
+    .crm-priority { color: var(--accent); font-size: 11px; flex-shrink: 0; width: 12px; }
+    .crm-name { font-size: 13px; font-weight: 600; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .crm-contact-display { font-size: 11px; color: var(--accent2); flex-shrink: 0; max-width: 110px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .crm-zone-tag { font-size: 10px; color: var(--muted); background: var(--card2); padding: 2px 6px; border-radius: 3px; flex-shrink: 0; }
+    .crm-badge { font-size: 10px; font-weight: 700; padding: 2px 9px; border-radius: 20px; flex-shrink: 0; white-space: nowrap; }
+    .crm-has-notes { font-size: 8px; flex-shrink: 0; color: var(--accent2); }
+    .crm-chevron { font-size: 9px; color: var(--muted); flex-shrink: 0; transition: transform 0.2s; }
+    .crm-row.open .crm-chevron { transform: rotate(180deg); }
+    .crm-detail { display: none; padding: 13px 15px; border-top: 1px solid var(--border); background: rgba(0,0,0,0.25); }
+    .crm-row.open .crm-detail { display: block; }
+    .crm-detail-grid { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 9px; margin-bottom: 10px; }
+    .crm-field { display: flex; flex-direction: column; gap: 3px; }
+    .crm-field label { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); }
+    .crm-input { background: var(--card2); border: 1px solid var(--border); border-radius: 5px; padding: 5px 9px; color: var(--text); font-size: 13px; outline: none; font-family: inherit; transition: border-color 0.15s; width: 100%; }
+    .crm-input:focus { border-color: var(--accent); }
+    .crm-select { background: var(--card2); border: 1px solid var(--border); border-radius: 5px; padding: 5px 9px; color: var(--text); font-size: 13px; outline: none; font-family: inherit; cursor: pointer; width: 100%; }
+    .crm-notes-field { width: 100%; background: var(--card2); border: 1px solid var(--border); border-radius: 5px; padding: 7px 9px; color: var(--text); font-size: 13px; font-family: inherit; resize: vertical; min-height: 55px; outline: none; margin-bottom: 9px; transition: border-color 0.15s; }
+    .crm-notes-field:focus { border-color: var(--accent); }
+    .crm-actions { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+    .crm-action-btn { padding: 4px 12px; border-radius: 5px; border: 1px solid var(--border); background: transparent; color: var(--text2); font-size: 11px; cursor: pointer; transition: all 0.15s; font-family: inherit; }
+    .crm-action-btn:hover { border-color: var(--accent); color: var(--accent); background: rgba(240,165,0,0.05); }
+    .crm-action-btn.rdv { border-color: var(--green2); color: var(--green2); }
+    .crm-action-btn.rdv:hover { background: rgba(0,200,83,0.08); }
+
+    /* SUIVI TABLE */
+    .suivi-tbl { width: 100%; border-collapse: collapse; font-size: 12px; }
+    .suivi-tbl th { text-align: left; padding: 6px 10px; color: var(--muted); font-weight: 600; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid var(--border); }
+    .suivi-tbl td { padding: 6px 10px; border-bottom: 1px solid var(--border); }
+    .suivi-tbl tbody tr:last-child td { border-bottom: none; }
+    .suivi-inp { background: transparent; border: none; outline: none; color: var(--text); font-size: 12px; width: 100%; font-family: inherit; }
+    .suivi-sel { background: var(--card2); border: 1px solid var(--border); border-radius: 4px; color: var(--text); font-size: 11px; padding: 2px 5px; font-family: inherit; }
+
+    /* SECTION ROWS */
+    .section-row { display: flex; align-items: center; padding: 10px 14px 3px; }
+    .section-row .section-label { flex: 1; }
+    .section-add-btn { background: none; border: 1px solid transparent; color: var(--muted); font-size: 16px; cursor: pointer; padding: 0 5px; border-radius: 3px; line-height: 1; transition: all 0.15s; }
+    .section-add-btn:hover { color: var(--accent); border-color: var(--accent); background: rgba(240,165,0,0.08); }
+
+    /* HAMBURGER + OVERLAY */
+    #hamburger { display: none; background: none; border: none; color: var(--text2); font-size: 20px; cursor: pointer; padding: 2px 8px; border-radius: 5px; flex-shrink: 0; }
+    #hamburger:hover { background: var(--card2); }
+    #overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 99; }
+
+    /* EDIT CONTROLS */
+    #edit-controls { display: none; align-items: center; gap: 5px; flex-shrink: 0; }
+    .ec-btn { padding: 4px 11px; border-radius: 5px; border: 1px solid var(--border); background: transparent; color: var(--text2); font-size: 12px; cursor: pointer; transition: all 0.15s; font-family: inherit; white-space: nowrap; }
+    .ec-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .ec-btn.save { border-color: var(--accent2); color: var(--accent2); }
+    .ec-btn.save:hover { background: rgba(76,175,80,0.1); }
+    .ec-btn.danger { border-color: var(--danger); color: var(--danger); }
+    .ec-btn.danger:hover { background: rgba(229,57,53,0.1); }
+    #note-editable[contenteditable="true"] { outline: 2px solid var(--accent); border-radius: 10px; padding: 10px; cursor: text; }
+
+    /* ADD MENU */
+    .add-menu { position: fixed; background: var(--card); border: 1px solid var(--border2); border-radius: 8px; padding: 5px; z-index: 1000; min-width: 140px; box-shadow: 0 6px 24px rgba(0,0,0,0.7); }
+    .add-menu-item { padding: 8px 13px; border-radius: 5px; cursor: pointer; font-size: 13px; color: var(--text2); user-select: none; }
+    .add-menu-item:hover { background: rgba(240,165,0,0.1); color: var(--accent); }
+
+    /* ALERTES */
+    .alerte-badge { display: inline-block; background: var(--danger); color: #fff; font-size: 10px; font-weight: 800; padding: 1px 6px; border-radius: 8px; margin-left: 5px; vertical-align: middle; line-height: 1.5; }
+
+    /* UTILS */
+    .r { color: var(--danger); } .g { color: var(--accent2); } .y { color: var(--accent); } .b { color: var(--blue); }
+    ::-webkit-scrollbar { width: 4px; height: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #2a2a2a; border-radius: 2px; }
+
+    /* MOBILE */
+    @media (max-width: 768px) {
+      #sidebar { position: fixed; left: 0; top: 0; bottom: 0; z-index: 100; transform: translateX(-100%); transition: transform 0.25s ease; box-shadow: 4px 0 24px rgba(0,0,0,0.6); }
+      #sidebar.open { transform: translateX(0); }
+      #overlay { display: block; opacity: 0; pointer-events: none; transition: opacity 0.25s; }
+      #overlay.show { opacity: 1; pointer-events: auto; }
+      #hamburger { display: inline-block; }
+      .crm-detail-grid { grid-template-columns: 1fr 1fr; }
+      .crm-stats { grid-template-columns: repeat(3, 1fr); }
+      .grid3 { grid-template-columns: 1fr 1fr; }
+      #content { padding: 14px 14px; }
+      #topbar { padding: 8px 14px; }
+    }
+    @media (max-width: 480px) {
+      .crm-detail-grid { grid-template-columns: 1fr 1fr; }
+      .grid2 { grid-template-columns: 1fr; }
+      .crm-stats { grid-template-columns: repeat(3, 1fr); }
+      .tarif-grid { grid-template-columns: 1fr; }
+      .crm-contact-display { display: none; }
+      #content { padding: 11px 11px; }
+      #note-title-input { font-size: 14px; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="overlay" onclick="toggleSidebar()"></div>
+
+<div id="sidebar">
+  <div id="sidebar-header">
+    <h1>JRV V2</h1>
+    <p>Jeremy Rondeau — Videaste</p>
+  </div>
+  <div id="note-list">
+    <div class="section-row"><div class="section-label">General</div></div>
+    <div class="note-item active" data-fixed="dashboard" onclick="showNote('dashboard',this)">
+      <div><div class="nt">Dashboard</div><div class="ns">Vue d'ensemble</div></div>
+      <div class="note-dot" style="background:var(--accent)"></div>
+    </div>
+    <div class="note-item" data-fixed="allNotes" onclick="showNote('allNotes',this)">
+      <div><div class="nt">Toutes mes notes</div><div class="ns" id="all-notes-sub">0 notes</div></div>
+    </div>
+    <div class="note-item" data-fixed="alertes" onclick="showNote('alertes',this)">
+      <div><div class="nt">Alertes<span class="alerte-badge" id="alertes-badge" style="display:none"></span></div><div class="ns" id="alertes-sub">Aucune alerte</div></div>
+      <div class="note-dot" id="alertes-dot" style="background:var(--muted)"></div>
+    </div>
+
+    <div class="section-row"><div class="section-label">Prospection</div><button class="section-add-btn" onclick="showAddMenu(event,'prospection')" title="Ajouter une note">+</button></div>
+    <div class="note-item" data-fixed="crm" onclick="showNote('crm',this)">
+      <div><div class="nt">CRM Boites de prod</div><div class="ns" id="sb-crm-sub">suivi complet</div></div>
+      <div class="note-dot" style="background:var(--blue)"></div>
+    </div>
+    <div class="note-item" data-fixed="scripts" onclick="showNote('scripts',this)">
+      <div><div class="nt">LinkedIn &amp; Prospection</div><div class="ns">Scripts · Templates · Strategie</div></div>
+    </div>
+    <div id="section-prospection-custom"></div>
+
+    <div class="section-row"><div class="section-label">Projets</div><button class="section-add-btn" onclick="showAddMenu(event,'projets')" title="Ajouter une note">+</button></div>
+    <div class="note-item" data-fixed="wakeSurf" onclick="showNote('wakeSurf',this)">
+      <div><div class="nt">Doc Wake Surf</div><div class="ns">Organisation complete</div></div>
+      <div class="note-dot" style="background:var(--blue)"></div>
+    </div>
+    <div class="note-item" data-fixed="mathis" onclick="showNote('mathis',this)">
+      <div><div class="nt">Call Mathis Faudrit</div><div class="ns">NTU Medias</div></div>
+      <div class="note-dot" style="background:var(--accent2)"></div>
+    </div>
+    <div id="section-projets-custom"></div>
+
+    <div class="section-row"><div class="section-label">Strategie</div><button class="section-add-btn" onclick="showAddMenu(event,'strategie')" title="Ajouter une note">+</button></div>
+    <div class="note-item" data-fixed="strategie" onclick="showNote('strategie',this)">
+      <div><div class="nt">Plan 8 Mois</div><div class="ns">Objectifs + actions</div></div>
+    </div>
+    <div class="note-item" data-fixed="showreel" onclick="showNote('showreel',this)">
+      <div><div class="nt">Post Showreel</div><div class="ns">Texte pret a poster</div></div>
+    </div>
+    <div id="section-strategie-custom"></div>
+
+    <div class="section-row"><div class="section-label">Craft</div><button class="section-add-btn" onclick="showAddMenu(event,'craft')" title="Ajouter une note">+</button></div>
+    <div class="note-item" data-fixed="docTech" onclick="showNote('docTech',this)">
+      <div><div class="nt">Faire un Doc Impactant</div><div class="ns">Techniques + formats</div></div>
+      <div class="note-dot" style="background:var(--purple)"></div>
+    </div>
+    <div id="section-craft-custom"></div>
+
+    <div class="section-row" id="section-perso-row" style="display:none"><div class="section-label">Mes notes</div><button class="section-add-btn" onclick="showAddMenu(event,'perso')" title="Ajouter une note">+</button></div>
+    <div id="section-perso-custom"></div>
+  </div>
+  <button id="add-note-btn" onclick="showAddMenu(event,'perso')">+ Nouvelle note</button>
+</div>
+
+<div id="main">
+  <div id="topbar">
+    <button id="hamburger" onclick="toggleSidebar()">☰</button>
+    <input id="note-title-input" readonly value="Dashboard">
+    <div id="edit-controls">
+      <button id="edit-btn" class="ec-btn" onclick="enterEditMode()">Modifier</button>
+      <button id="save-edit-btn" class="ec-btn save" onclick="saveEditMode()" style="display:none">Sauvegarder</button>
+      <button id="cancel-edit-btn" class="ec-btn" onclick="cancelEditMode()" style="display:none">Annuler</button>
+      <button id="reset-edit-btn" class="ec-btn danger" onclick="resetEditMode()" style="display:none">Reset</button>
+    </div>
+    <span id="saved-badge">Sauvegarde ✓</span>
+  </div>
+  <div id="content"></div>
+</div>
+
+<script>
+  // ---- STATE ----
+  let currentId = 'dashboard';
+  let saveTimer = null;
+  let crmFilter = 'all';
+  let crmSearch = '';
+  let expandedIds = new Set();
+  let searchDebounce = null;
+  let isEditMode = false;
+  let addMenuOpen = false;
+
+  // ---- CONSTANTS ----
+  const EDITABLE_NOTES = ['wakeSurf','mathis','strategie','showreel','scripts','docTech'];
+  const TYPE_LABELS = { projet:'Projet', call:'Call', post:'Post LinkedIn', libre:'Note libre' };
+  const NOTE_TEMPLATES = {
+    projet: `Projet : [Titre]\n\nClient : \nDate : \nBudget : \n\n---\n\nObjectif :\n\nScenes cles :\n- \n\nMateriel necessaire :\n- \n\nNotes :`,
+    call: `Call : [Nom / Societe]\n\nDate : \nContact : \nSociete : \n\n---\n\nPoints a aborder :\n- \n\nQuestions a poser :\n- \n\nNotes :\n\nSuite a donner :`,
+    post: `Post LinkedIn : [Titre]\n\nDate cible : \n\n---\n\nTexte du post :\n\n\n\nHashtags : \n\nRappels apres publication :\n- Repondre aux commentaires dans les 2h\n- Tagger 2-3 personnes`,
+    libre: ``
+  };
+  const TITLE_MAP = { dashboard:'Dashboard', crm:'CRM Boites de prod', scripts:'LinkedIn & Prospection', wakeSurf:'Doc Wake Surf', mathis:'Call Mathis Faudrit', strategie:'Plan 8 Mois', showreel:'Post Showreel', docTech:'Faire un Doc Impactant', allNotes:'Toutes mes notes', alertes:'Alertes' };
+
+  // ---- MOBILE ----
+  function toggleSidebar() {
+    document.getElementById('sidebar').classList.toggle('open');
+    document.getElementById('overlay').classList.toggle('show');
+  }
+
+  // ---- EDIT MODE ----
+  function enterEditMode() {
+    isEditMode = true;
+    const ne = document.getElementById('note-editable');
+    if (ne) { ne.contentEditable = 'true'; ne.focus(); }
+    document.getElementById('edit-btn').style.display = 'none';
+    document.getElementById('save-edit-btn').style.display = '';
+    document.getElementById('cancel-edit-btn').style.display = '';
+    document.getElementById('reset-edit-btn').style.display = 'none';
+  }
+  function saveEditMode() {
+    const ne = document.getElementById('note-editable');
+    if (!ne) return;
+    localStorage.setItem('edited_' + currentId, ne.innerHTML);
+    ne.contentEditable = 'false';
+    isEditMode = false;
+    document.getElementById('edit-btn').style.display = '';
+    document.getElementById('save-edit-btn').style.display = 'none';
+    document.getElementById('cancel-edit-btn').style.display = 'none';
+    document.getElementById('reset-edit-btn').style.display = '';
+    showSaved();
+  }
+  function cancelEditMode() {
+    const ne = document.getElementById('note-editable');
+    if (!ne) return;
+    ne.contentEditable = 'false';
+    isEditMode = false;
+    const saved = localStorage.getItem('edited_' + currentId);
+    const RMAP = { scripts:renderLinkedinScripts, wakeSurf:renderWakeSurf, mathis:renderMathis, strategie:renderStrategie, showreel:renderShowreel, docTech:renderDocTech };
+    ne.innerHTML = saved || (RMAP[currentId] ? RMAP[currentId]() : '');
+    document.getElementById('edit-btn').style.display = '';
+    document.getElementById('save-edit-btn').style.display = 'none';
+    document.getElementById('cancel-edit-btn').style.display = 'none';
+    document.getElementById('reset-edit-btn').style.display = saved ? '' : 'none';
+    restoreChecks(currentId);
+  }
+  function resetEditMode() {
+    if (!confirm('Reinitialiser ? Tes modifications seront perdues.')) return;
+    localStorage.removeItem('edited_' + currentId);
+    showNote(currentId, document.querySelector(`.note-item[data-fixed="${currentId}"]`));
+  }
+
+  // ---- ADD MENU ----
+  function showAddMenu(e, section) {
+    e.stopPropagation();
+    closeAddMenu();
+    const rect = e.currentTarget.getBoundingClientRect();
+    const menu = document.createElement('div');
+    menu.id = 'add-menu'; menu.className = 'add-menu';
+    menu.style.cssText = `left:${Math.min(rect.left, window.innerWidth - 150)}px;top:${rect.bottom + 4}px`;
+    const types = [{t:'projet',l:'Projet'},{t:'call',l:'Call'},{t:'post',l:'Post LinkedIn'},{t:'libre',l:'Note libre'}];
+    menu.innerHTML = types.map(x => `<div class="add-menu-item" onclick="addNoteWithType('${x.t}','${section}')">${x.l}</div>`).join('');
+    document.body.appendChild(menu);
+    addMenuOpen = true;
+  }
+  function closeAddMenu() { const m = document.getElementById('add-menu'); if (m) m.remove(); addMenuOpen = false; }
+  document.addEventListener('click', () => { if (addMenuOpen) closeAddMenu(); });
+  function addNoteWithType(type, section) {
+    closeAddMenu();
+    const title = prompt('Titre de la note :');
+    if (!title || !title.trim()) return;
+    const id = 'custom_' + Date.now();
+    const notes = getCustomNotes();
+    notes[id] = { title: title.trim(), content: NOTE_TEMPLATES[type] || '', section: section || 'perso', type };
+    saveCustomNotes(notes);
+    renderSidebarCustom();
+    updateAllNotesSub();
+    setTimeout(() => { const el = document.querySelector(`[data-id="${id}"]`); if (el) el.click(); }, 30);
+  }
+
+  // ---- ALERTES ----
+  function getAlertes() { return JSON.parse(localStorage.getItem('jrv_alertes') || '[]'); }
+  function saveAlertes(a) { localStorage.setItem('jrv_alertes', JSON.stringify(a)); }
+  function addAlerte() {
+    const titre = document.getElementById('al-titre').value.trim();
+    const date = document.getElementById('al-date').value;
+    const priorite = document.getElementById('al-priorite').value;
+    if (!titre) { document.getElementById('al-titre').focus(); return; }
+    const alertes = getAlertes();
+    alertes.push({ id: Date.now(), titre, date, priorite, done: false });
+    saveAlertes(alertes);
+    document.getElementById('al-titre').value = '';
+    updateAlertesBadge(); renderAlertesLists();
+  }
+  function toggleAlerteDone(id) {
+    const alertes = getAlertes(); const a = alertes.find(x => x.id === id);
+    if (a) { a.done = !a.done; saveAlertes(alertes); }
+    updateAlertesBadge(); renderAlertesLists();
+  }
+  function deleteAlerte(id) { saveAlertes(getAlertes().filter(a => a.id !== id)); updateAlertesBadge(); renderAlertesLists(); }
+  function updateAlertesBadge() {
+    const pending = getAlertes().filter(a => !a.done).length;
+    const badge = document.getElementById('alertes-badge'); const dot = document.getElementById('alertes-dot'); const sub = document.getElementById('alertes-sub');
+    if (badge) { badge.textContent = pending || ''; badge.style.display = pending ? 'inline-block' : 'none'; }
+    if (dot) dot.style.background = pending > 0 ? 'var(--danger)' : 'var(--muted)';
+    if (sub) sub.textContent = pending > 0 ? `${pending} en cours` : 'Aucune alerte';
+  }
+  function renderAlertesLists() {
+    const alertes = getAlertes(); const today = new Date().toISOString().split('T')[0];
+    const PRIO = { haute:{c:'var(--danger)',l:'HAUTE'}, normale:{c:'var(--accent)',l:'Normale'}, basse:{c:'var(--muted)',l:'Basse'} };
+    const pending = alertes.filter(a => !a.done).sort((a,b) => (a.date||'9999') > (b.date||'9999') ? 1 : -1);
+    const done = alertes.filter(a => a.done);
+    const pe = document.getElementById('alertes-pending');
+    if (pe) pe.innerHTML = pending.length === 0
+      ? '<div style="padding:18px;text-align:center;color:var(--muted);font-size:13px">Aucune alerte en cours</div>'
+      : pending.map(a => {
+          const overdue = a.date && a.date < today; const p = PRIO[a.priorite] || PRIO.normale;
+          return `<div style="display:flex;align-items:center;gap:10px;padding:10px 13px;background:${overdue?'rgba(229,57,53,0.07)':'var(--card2)'};border-radius:7px;margin-bottom:5px;border:1px solid ${overdue?'#3a2222':'var(--border)'}">
+            <input type="checkbox" onchange="toggleAlerteDone(${a.id})" style="width:16px;height:16px;accent-color:var(--accent2);cursor:pointer;flex-shrink:0">
+            <div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:600;margin-bottom:3px">${escHtml(a.titre)}</div>
+              <div style="display:flex;gap:9px;flex-wrap:wrap">${a.date?`<span style="font-size:11px;color:${overdue?'var(--danger)':'var(--muted)'}">${overdue?'En retard — ':''}${a.date}</span>`:''}
+                <span style="font-size:10px;font-weight:700;color:${p.c}">${p.l}</span></div></div>
+            <button onclick="deleteAlerte(${a.id})" style="background:none;border:none;color:var(--danger);cursor:pointer;font-size:18px;opacity:0.4" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.4">×</button>
+          </div>`;}).join('');
+    const de = document.getElementById('alertes-done');
+    if (de) { de.innerHTML = done.length===0?'':done.map(a=>`<div style="display:flex;align-items:center;gap:10px;padding:7px 13px;opacity:0.4;border-radius:7px"><input type="checkbox" checked onchange="toggleAlerteDone(${a.id})" style="width:14px;height:14px;cursor:pointer;flex-shrink:0"><div style="font-size:13px;text-decoration:line-through;flex:1">${escHtml(a.titre)}</div><button onclick="deleteAlerte(${a.id})" style="background:none;border:none;color:var(--danger);cursor:pointer;font-size:16px">×</button></div>`).join('');
+      const block = document.getElementById('alertes-done-block'); if (block) block.style.display = done.length>0?'':'none'; }
+  }
+
+  // ---- UTILS ----
+  function escHtml(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  function escAttr(s) { return (s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  function showSaved() { const b=document.getElementById('saved-badge'); b.style.display='inline'; clearTimeout(saveTimer); saveTimer=setTimeout(()=>{b.style.display='none';},1800); }
+  function chk(label) { return `<label class="chk-item"><input type="checkbox"><span>${label}</span></label>`; }
+  function restoreChecks(noteId) {
+    document.querySelectorAll('.chk-item input[type="checkbox"]').forEach((cb,idx) => {
+      const key=`chk_${noteId}_${idx}`;
+      if (localStorage.getItem(key)==='1') { cb.checked=true; cb.closest('.chk-item').classList.add('done'); }
+      cb.addEventListener('change', function() {
+        localStorage.setItem(key, this.checked?'1':'0');
+        this.closest('.chk-item').classList.toggle('done',this.checked);
+      });
+    });
+  }
+
+  // ---- CUSTOM NOTES ----
+  function getCustomNotes() { return JSON.parse(localStorage.getItem('jrv_notes') || '{}'); }
+  function saveCustomNotes(n) { localStorage.setItem('jrv_notes', JSON.stringify(n)); }
+  function deleteNote(id, e) {
+    e.stopPropagation();
+    if (!confirm('Supprimer cette note ?')) return;
+    const notes = getCustomNotes(); delete notes[id]; saveCustomNotes(notes);
+    renderSidebarCustom(); updateAllNotesSub();
+    if (currentId === id) showNote('dashboard', document.querySelector('[data-fixed="dashboard"]'));
+  }
+  function renderSidebarCustom() {
+    const notes = getCustomNotes();
+    ['prospection','projets','strategie','craft','perso'].forEach(section => {
+      const container = document.getElementById('section-' + section + '-custom');
+      if (!container) return;
+      const sNotes = Object.entries(notes).filter(([,n]) => (n.section || 'perso') === section);
+      container.innerHTML = sNotes.map(([id, n]) => `
+        <div class="note-item ${currentId===id?'active':''}" data-id="${id}" onclick="showNote('${id}',this)">
+          <div style="flex:1;min-width:0"><div class="nt">${escHtml(n.title)}</div><div class="ns">${TYPE_LABELS[n.type] || 'Note'}</div></div>
+          <button class="del-btn" onclick="deleteNote('${id}',event)">×</button>
+        </div>`).join('');
+    });
+    const persoCount = Object.entries(notes).filter(([,n]) => (n.section||'perso')==='perso').length;
+    const row = document.getElementById('section-perso-row'); if (row) row.style.display = persoCount > 0 ? '' : 'none';
+  }
+  function updateAllNotesSub() {
+    const count = Object.keys(getCustomNotes()).length;
+    const sub = document.getElementById('all-notes-sub'); if (sub) sub.textContent = count > 0 ? `${count} note${count>1?'s':''}` : '0 notes';
+  }
+
+  // ---- CRM DATA ----
+  const STATUS_CONFIG = {
+    'a-contacter':    { label:'A contacter',    bg:'#1a1a1a', color:'#666' },
+    'message-envoye': { label:'Message envoyé', bg:'#0a1a2e', color:'#4a9eff' },
+    'pas-de-reponse': { label:'Pas de réponse', bg:'#2a1500', color:'#f0a500' },
+    'interesse':      { label:'Intéressé',      bg:'#0a1f10', color:'#4caf50' },
+    'rdv-pris':       { label:'RDV pris',        bg:'#003318', color:'#00c853' },
+    'refuse':         { label:'Refus',           bg:'#2a0000', color:'#e53935' },
+    'converti':       { label:'Converti ✓',     bg:'#180a2e', color:'#9b59b6' },
+  };
+
+  const COMPANIES_DEFAULT = [
+    {id:1, name:'Animoz Films',         site:'animoz-films.com',           zone:'Nantes', p:1, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'Reseau de freelances confirmes. Priorite absolue.', relance:''},
+    {id:2, name:'Anaphora Productions', site:'anaphora-productions.com',   zone:'Nantes', p:1, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'Evenementiel + corporate. Priorite.', relance:''},
+    {id:3, name:'Mstream',              site:'mstream.fr',                 zone:'Nantes', p:0, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'Grand Ouest - Nantes/Rennes/Paris', relance:''},
+    {id:4, name:"L'Atelier Transmedia", site:'lateliertransmedia.com',     zone:'Nantes', p:0, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'Transmedia, corporate', relance:''},
+    {id:5, name:'Smartmedias',          site:'smartmedias.fr',             zone:'Nantes', p:0, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'Corporate Nantes', relance:''},
+    {id:6, name:'Manava Production',    site:'manava-production.fr',       zone:'Nantes', p:0, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'B2B, corporate Nantes', relance:''},
+    {id:7, name:"L'Oeil Electrique",    site:'loeilelectrique.com',        zone:'Nantes', p:0, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'Production audiovisuelle Nantes', relance:''},
+    {id:8, name:'Grenouilles Prod',     site:'grenouilles-productions.com',zone:'Nantes', p:0, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'Evenementiel + corporate', relance:''},
+    {id:9, name:'Scorpmedia',           site:'scorpmedia.fr',              zone:'Nantes', p:0, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'Captation evenementielle Nantes', relance:''},
+    {id:10,name:'Peuplades TV',         site:'peuplades.tv',               zone:'Nantes', p:0, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'Corporate + motion design Nantes', relance:''},
+    {id:11,name:'Yboo Agency',          site:'ybooagency.com',             zone:'Nantes', p:1, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'Reseau freelances. Priorite.', relance:''},
+    {id:12,name:'NTU Medias',           site:'ntumedias.com',              zone:'Nantes', p:1, contact:'Mathis Faudrit', poste:'Commercial Manager', canal:'LinkedIn', date:'2025-05-19', statut:'interesse', notes:'Call prevu 10H. A regarde le showreel. Collaboration dans 2 sens envisagee. Micro-entreprise freelance en parallele.', relance:''},
+    {id:13,name:'Great Plains Prod',    site:'greatplainspictures.com',    zone:'Nantes', p:0, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'Production audiovisuelle Nantes', relance:''},
+    {id:14,name:'WRP Production',       site:'wrpproduction.com',          zone:'Nantes', p:0, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'Captation, live streaming, evenementiel', relance:''},
+    {id:15,name:'Lensman',              site:'lensman.fr',                 zone:'Nantes', p:0, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'Video evenementielle, aftermovie', relance:''},
+    {id:16,name:'Tolmes',               site:'tolmes.fr',                  zone:'Nantes', p:0, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'Nantes / Saint-Nazaire / La Roche', relance:''},
+    {id:17,name:'Sinesis',              site:'sinesis.fr',                 zone:'Nantes', p:0, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'Corporate Grand Ouest', relance:''},
+    {id:18,name:'M45T',                 site:'m45t.com',                   zone:'Nantes', p:0, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'Agence evenementielle + technique', relance:''},
+    {id:19,name:'Mars Videos',          site:'mars-videos.fr',             zone:'Nantes', p:0, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'Corporate + drone + motion design, depuis 2010', relance:''},
+    {id:20,name:'Activ Video',          site:'activvideo.fr',              zone:'Saint-Nazaire', p:0, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'Captation evenementielle Saint-Nazaire', relance:''},
+    {id:21,name:'M Films',              site:'mfilms.fr',                  zone:'Vendee', p:1, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'Corporate + evenementiel, Les Herbiers. Priorite.', relance:''},
+    {id:22,name:'La Claque Production', site:'laclaque-production.fr',     zone:'Vendee', p:0, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'Pub video, drone, reseaux sociaux', relance:''},
+    {id:23,name:'Phonic Lips',          site:'phoniclips.tv',              zone:'Vendee', p:0, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'Drone + captation, La Roche / Les Herbiers', relance:''},
+    {id:24,name:'Luceo Films',          site:'luceo-films.fr',             zone:'Angers', p:1, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'Corporate, evenementiel, pub, de A a Z. Priorite.', relance:''},
+    {id:25,name:'CIFEM VIDEO',          site:'cifemvideo.com',             zone:'Angers', p:0, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'Films institutionnels, clips, evenements', relance:''},
+    {id:26,name:'Ma Video Corporate',   site:'mavideocorporate.com',       zone:'Angers', p:0, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:"Corporate, 12 ans d'experience a Angers", relance:''},
+    {id:27,name:'Hello Ekla',           site:'helloekla.fr',               zone:'Angers', p:0, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'Production audiovisuelle corporate Angers', relance:''},
+    {id:28,name:'HALO Le collectif',    site:'halo-halo.fr',               zone:'Saint-Nazaire', p:0, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'Comm La Baule / Saint-Nazaire, films pub/corporate', relance:''},
+    {id:29,name:'Yalp',                 site:'yalp-video.fr',              zone:'Rennes', p:1, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'B2B video, Rennes/Lyon, reseau freelances. Priorite.', relance:''},
+    {id:30,name:'Motion Studio',        site:'motion-studio.fr',           zone:'Rennes', p:0, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'Captation multicamera, live streaming, aftermovies, Bretagne', relance:''},
+    {id:31,name:'Jumpstart Studio',     site:'jumpstartstudio.fr',         zone:'Rennes', p:0, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'Brand content, pub, corporate, Rennes-Saint-Malo-Vannes', relance:''},
+    {id:32,name:'F. Lemercier Prod',    site:'flemercierproductions.fr',   zone:'Rennes', p:0, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:"Corporate, voix-off, 10+ ans d'experience", relance:''},
+    {id:33,name:'Avfactory',            site:'avfactory.fr',               zone:'Le Mans', p:1, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:"Corporate, evenementiel, drone, 20+ ans d'experience. Priorite.", relance:''},
+    {id:34,name:'Air2D3',               site:'air2d3.com',                 zone:'Le Mans', p:0, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'Corporate, timelapse, aerien Le Mans', relance:''},
+    {id:35,name:'Biux',                 site:'biux.fr',                    zone:'Le Mans', p:0, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'Corporate, communication entreprise Le Mans', relance:''},
+    {id:36,name:'Unite 5 Production',   site:'unite5-production.com',      zone:'Niort',  p:0, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'Corporate, intervient sur Nantes + La Rochelle', relance:''},
+    // === AGENCES DE COMMUNICATION / PUBLICITE ===
+    {id:37,name:'Agence Heaven',         site:'heaven.fr',                  zone:'Agences Comm — Nantes', p:1, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'Agence brand/digital. Produisent du contenu video pour leurs clients PME/ETI. Ideal pour sous-traitance video.', relance:''},
+    {id:38,name:'Agence FW7',            site:'fw7.fr',                     zone:'Agences Comm — Nantes', p:1, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'Agence creative/digital Nantes. Cherchent des freelances video pour campagnes clients.', relance:''},
+    {id:39,name:'Agence Intuiti',        site:'intuiti.fr',                 zone:'Agences Comm — Nantes', p:1, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'Marketing digital Nantes. Besoin de contenus video pour campagnes reseaux sociaux clients.', relance:''},
+    {id:40,name:'Agence Kaliop',         site:'kaliop.com',                 zone:'Agences Comm — Nantes', p:0, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'Digital/web Nantes. Projets de communication digitale avec video.', relance:''},
+    {id:41,name:'Lemon Interactive',     site:'lemon-interactive.fr',       zone:'Agences Comm — Nantes', p:0, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'Web/digital Nantes. Production de contenus pour clients locaux.', relance:''},
+    {id:42,name:'Agence Pixelis',        site:'pixelis.fr',                 zone:'Agences Comm — Nantes', p:0, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'Brand design/digital. Video pour identite de marque clients.', relance:''},
+    {id:43,name:'Agence Emakina',        site:'emakina.com',                zone:'Agences Comm — Nantes', p:0, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'Agence digitale internationale, bureau Grand Ouest. Sous-traitent souvent la video.', relance:''},
+    {id:44,name:'Agence Wellcom',        site:'wellcom.fr',                 zone:'Agences Comm — Nantes', p:0, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'Agence RP et communication, present dans plusieurs villes. A verifier si bureau Nantes.', relance:''},
+    {id:45,name:'Agence Mediaveille',    site:'mediaveille.fr',             zone:'Agences Comm — Nantes', p:0, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'Communication regionale. Achats media + contenu. A verifier.', relance:''},
+    {id:46,name:'Agence Communit-y',     site:'community-agency.fr',        zone:'Agences Comm — Nantes', p:0, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'Social media / community management Nantes. Besoin de video court pour reseaux.', relance:''},
+    {id:47,name:'Agence 14 Septembre',   site:'14septembre.fr',             zone:'Agences Comm — Nantes', p:0, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'Communication/evenementiel Nantes. Produisent des contenus video pour leurs clients.', relance:''},
+    {id:48,name:'Agence Babel',          site:'agence-babel.fr',            zone:'Agences Comm — Angers', p:0, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'Communication globale Grand Ouest. Verifier bureau Angers / Nantes.', relance:''},
+    {id:49,name:'Agence Alter Com',      site:'altercom.fr',                zone:'Agences Comm — Angers', p:0, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'Communication / PR region Angers. A verifier.', relance:''},
+    {id:50,name:'Agence Keyzz',          site:'keyzz.fr',                   zone:'Agences Comm — Nantes', p:0, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'Digital Nantes. A verifier si actifs video.', relance:''},
+    // === AGENCES EVENEMENTIELLES ===
+    {id:51,name:'GL Events',             site:'gl-events.com',              zone:'Agences Evenementielles', p:1, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'Leader national evenementiel, presente dans toute la France dont Nantes. ENORME besoin de captation video pro pour leurs events. Priorite.', relance:''},
+    {id:52,name:'Agence Hopscotch',      site:'hopscotch.fr',               zone:'Agences Evenementielles', p:0, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'Evenementiel B2B national. Besoin de captation + recap/aftermovie pour conferences clients.', relance:''},
+    {id:53,name:'Agence Wato',           site:'wato.fr',                    zone:'Agences Evenementielles', p:0, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'Evenementiel experiential haut de gamme. Recap aftermovie tres important pour eux.', relance:''},
+    {id:54,name:'Agence Prism',          site:'prismevents.fr',             zone:'Agences Evenementielles', p:0, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'Evenementiel Nantes/Paris. Aftermovies et captations.', relance:''},
+    {id:55,name:'Agence Must Events',    site:'must-events.com',            zone:'Agences Evenementielles', p:0, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'Agence evenementielle Loire-Atlantique. A verifier.', relance:''},
+    {id:56,name:'Agence Adeuza',         site:'adeuza.com',                 zone:'Agences Evenementielles', p:0, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'Evenementiel entreprise Nantes. Besoin de captation et recap.', relance:''},
+    // === WEB & DIGITAL ===
+    {id:57,name:'Agence Wanadev',        site:'wanadev.com',                zone:'Web & Digital', p:0, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'Studio web/tech Nantes. Contenus video de demo produit, tutos. A verifier.', relance:''},
+    {id:58,name:'Agence B2Net',          site:'b2net.fr',                   zone:'Web & Digital', p:0, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'Agence web Nantes/Rennes. Besoin de video pour sites et campagnes clients.', relance:''},
+    {id:59,name:'Agence Mediasystem',    site:'mediasystem.fr',             zone:'Web & Digital', p:0, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'Solutions media digitales. Besoin video regulier.', relance:''},
+    {id:60,name:'Agence Axone',          site:'axone-group.fr',             zone:'Web & Digital', p:0, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'Groupe digital Nantes. Contenu video pour les marques clientes.', relance:''},
+    // === INSTITUTIONNELS / GRANDS COMPTES ===
+    {id:61,name:'Nantes Metropole',      site:'nantesmetropole.fr',         zone:'Institutionnels', p:0, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'Communication institutionnelle. Appels offres + freelances pour reportages et docs. Demander le service comm.', relance:''},
+    {id:62,name:'Tourisme Vendee',       site:'vendee.fr',                  zone:'Institutionnels', p:0, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'Office tourisme departemental. Besoin videos de destination reguliers. Bon pour drone.', relance:''},
+    {id:63,name:'CCI Nantes',           site:'nantes.cci.fr',              zone:'Institutionnels', p:0, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'CCI Loire-Atlantique. Reportages evenements eco, portraits entreprises.', relance:''},
+    {id:64,name:'Atlanpole',            site:'atlanpole.fr',               zone:'Institutionnels', p:0, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'Technopole Nantes. Video corporate startups + events tech. Bon reseau.', relance:''},
+    {id:65,name:'Loire-Atlantique Tourisme', site:'loireatlantiquetourisme.com', zone:'Institutionnels', p:0, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'Promotion touristique departement. Besoin de video attractivite territoire.', relance:''},
+    // === IMMOBILIER ===
+    {id:66,name:'Bouygues Immobilier Nantes', site:'bouygues-immobilier.fr', zone:'Immobilier', p:0, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'Promoteur national. Videos de programmes immo, visites virtuelles, reportages chantiers.', relance:''},
+    {id:67,name:'Vinci Immobilier Nantes', site:'vinci-immobilier.fr',     zone:'Immobilier', p:0, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'Promoteur national. Meme besoin que Bouygues. Demander service marketing.', relance:''},
+    {id:68,name:'Kaufman & Broad',      site:'kb-home.fr',                 zone:'Immobilier', p:0, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'Promoteur. Videos de programmes et showrooms virtuels.', relance:''},
+    // === SPORT & CULTURE ===
+    {id:69,name:'FC Nantes',            site:'fcnantes.com',               zone:'Sport & Culture', p:1, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'Club pro Ligue 1. Besoin videaste pour contenus reseaux sociaux, portraits joueurs, coulisses. PRIORITE.', relance:''},
+    {id:70,name:'Vendee Globe',         site:'vendeeglobe.org',            zone:'Sport & Culture', p:1, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'Course au large mythique — edition 2028. Enorme besoin drone/video en periode de course. PRIORITE.', relance:''},
+    {id:71,name:'Vendee Volley',        site:'vendee-volley.fr',           zone:'Sport & Culture', p:0, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'Club sportif pro Vendee. Highlights, portraits joueurs, recrutement video.', relance:''},
+    {id:72,name:'Nantes Basket Hermine',site:'nantesbaskethermine.fr',     zone:'Sport & Culture', p:0, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'Club basket Nantes. Video reseaux sociaux et captation matchs.', relance:''},
+    // === MEDIAS ===
+    {id:73,name:'Presse Ocean',         site:'presseocean.fr',             zone:'Medias', p:0, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'Journal regional Nantes. Besoin freelances video pour web et reportages locaux.', relance:''},
+    {id:74,name:'France 3 Pays de Loire', site:'france.tv/france-3/pays-de-la-loire', zone:'Medias', p:0, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'TV regionale publique. Pigistes video/cameramen pour reportages locaux. Contacter la redaction.', relance:''},
+    {id:75,name:'Ouest-France Video',   site:'ouest-france.fr',            zone:'Medias', p:0, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'Premier journal de France. Service video web. Pigistes freelances occasionnels.', relance:''},
+    {id:76,name:'Tele Nantes',          site:'televisionantes.fr',         zone:'Medias', p:0, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'Television locale Nantes. Besoin de techniciens/cameramen ponctuels.', relance:''},
+  ];
+
+  function getCRMCompanies() {
+    const stored = localStorage.getItem('jrv_crm_v2');
+    if (!stored) { localStorage.setItem('jrv_crm_v2', JSON.stringify(COMPANIES_DEFAULT)); return COMPANIES_DEFAULT; }
+    const arr = JSON.parse(stored);
+    const maxId = Math.max(...arr.map(c => c.id));
+    if (maxId < 76) {
+      const newOnes = COMPANIES_DEFAULT.filter(c => c.id > maxId);
+      const merged = [...arr, ...newOnes];
+      localStorage.setItem('jrv_crm_v2', JSON.stringify(merged));
+      return merged;
+    }
+    return arr;
+  }
+  function saveCRMCompanies(arr) { localStorage.setItem('jrv_crm_v2', JSON.stringify(arr)); }
+
+  // ---- CRM HELPERS ----
+  function updateCompany(id, field, val) {
+    const arr = getCRMCompanies();
+    const c = arr.find(x => x.id === id); if (!c) return;
+    c[field] = val; saveCRMCompanies(arr); showSaved();
+    if (field === 'contact') {
+      const el = document.querySelector(`.crm-row[data-id="${id}"] .crm-contact-display`);
+      if (el) el.textContent = val;
+    }
+    if (field === 'notes') {
+      const el = document.querySelector(`.crm-row[data-id="${id}"] .crm-has-notes`);
+      if (el) el.style.opacity = val ? '1' : '0';
+    }
+    updateCRMStatsBar();
+  }
+
+  function updateCompanyStatus(id, status) {
+    const arr = getCRMCompanies();
+    const c = arr.find(x => x.id === id); if (!c) return;
+    c.statut = status; saveCRMCompanies(arr); showSaved();
+    const s = STATUS_CONFIG[status] || STATUS_CONFIG['a-contacter'];
+    const badge = document.querySelector(`.crm-row[data-id="${id}"] .crm-badge`);
+    if (badge) { badge.textContent = s.label; badge.style.background = s.bg; badge.style.color = s.color; }
+    updateCRMStatsBar();
+  }
+
+  function quickStatus(id, status) {
+    updateCompanyStatus(id, status);
+    const sel = document.querySelector(`.crm-row[data-id="${id}"] .crm-status-select`);
+    if (sel) sel.value = status;
+    if (status === 'message-envoye') {
+      const arr = getCRMCompanies(); const c = arr.find(x => x.id === id);
+      if (c && !c.date) {
+        const today = new Date().toISOString().split('T')[0];
+        c.date = today; saveCRMCompanies(arr);
+        const dateInp = document.querySelector(`.crm-row[data-id="${id}"] .crm-date-input`);
+        if (dateInp) dateInp.value = today;
+      }
+    }
+  }
+
+  function setRelanceIn(id, days) {
+    const d = new Date(); d.setDate(d.getDate() + days);
+    const dateStr = d.toISOString().split('T')[0];
+    updateCompany(id, 'relance', dateStr);
+    const relInp = document.querySelector(`.crm-row[data-id="${id}"] .crm-relance-input`);
+    if (relInp) relInp.value = dateStr;
+  }
+
+  function toggleExpand(id) {
+    const row = document.querySelector(`.crm-row[data-id="${id}"]`);
+    if (!row) return;
+    row.classList.toggle('open');
+    if (row.classList.contains('open')) expandedIds.add(id); else expandedIds.delete(id);
+  }
+
+  function setCRMFilter(f) {
+    crmFilter = f;
+    document.querySelectorAll('.crm-filter-btn').forEach(b => b.classList.toggle('active', b.dataset.filter === f));
+    refreshCRMList();
+  }
+
+  function setCRMSearch(q) {
+    crmSearch = q;
+    clearTimeout(searchDebounce);
+    searchDebounce = setTimeout(refreshCRMList, 180);
+  }
+
+  function updateCRMStatsBar() {
+    const arr = getCRMCompanies();
+    const upd = (id, v) => { const e = document.getElementById(id); if(e) e.textContent = v; };
+    upd('cst-total', arr.length);
+    upd('cst-contacted', arr.filter(c => c.statut !== 'a-contacter').length);
+    upd('cst-restantes', arr.filter(c => c.statut === 'a-contacter').length);
+    upd('cst-reponses', arr.filter(c => ['interesse','rdv-pris','converti'].includes(c.statut)).length);
+    upd('cst-convertis', arr.filter(c => c.statut === 'converti').length);
+    // Update sidebar subtitle
+    const sub = document.getElementById('sb-crm-sub');
+    if (sub) {
+      const contacted = arr.filter(c => c.statut !== 'a-contacter').length;
+      sub.textContent = `${arr.length} boites · ${contacted} contactees`;
+    }
+  }
+
+  function buildCRMListHTML() {
+    const arr = getCRMCompanies();
+    const search = crmSearch.toLowerCase().trim();
+    let filtered = arr.filter(c => {
+      const ms = !search || c.name.toLowerCase().includes(search) || c.zone.toLowerCase().includes(search) ||
+        c.contact.toLowerCase().includes(search) || c.notes.toLowerCase().includes(search) || c.site.toLowerCase().includes(search);
+      const mf = crmFilter === 'all' ||
+        (crmFilter === 'priorite' && c.p) ||
+        (crmFilter === 'a-contacter' && c.statut === 'a-contacter') ||
+        (crmFilter === 'en-cours' && ['message-envoye','pas-de-reponse'].includes(c.statut)) ||
+        (crmFilter === 'positif' && ['interesse','rdv-pris','converti'].includes(c.statut));
+      return ms && mf;
+    });
+    if (filtered.length === 0) return '<div style="padding:20px;color:var(--muted);text-align:center;font-size:13px;">Aucune boite trouvee</div>';
+    const zones = [...new Set(filtered.map(c => c.zone))];
+    return zones.map(zone => {
+      const zc = filtered.filter(c => c.zone === zone);
+      return `<div class="crm-zone-label"><span>${zone}</span><span>${zc.length} boite${zc.length>1?'s':''}</span></div>
+      ${zc.map(c => renderCompanyRow(c)).join('')}`;
+    }).join('');
+  }
+
+  function renderCompanyRow(c) {
+    const s = STATUS_CONFIG[c.statut] || STATUS_CONFIG['a-contacter'];
+    const hasNotes = c.notes && c.notes.trim();
+    const canaux = ['LinkedIn','Email','Telephone','Physique','Instagram'];
+    const canalOpts = canaux.map(x => `<option value="${x}"${c.canal===x?' selected':''}>${x}</option>`).join('');
+    const statutOpts = Object.entries(STATUS_CONFIG).map(([k,v]) => `<option value="${k}"${c.statut===k?' selected':''}>${v.label}</option>`).join('');
+    return `<div class="crm-row" data-id="${c.id}">
+      <div class="crm-row-header" onclick="toggleExpand(${c.id})">
+        <span class="crm-priority">${c.p ? '★' : ''}</span>
+        <span class="crm-name">${escHtml(c.name)}</span>
+        <span class="crm-contact-display" style="${c.contact?'':'opacity:0'}">${escHtml(c.contact)}</span>
+        <span class="crm-badge" style="background:${s.bg};color:${s.color}">${s.label}</span>
+        <span class="crm-has-notes" style="opacity:${hasNotes?1:0}">●</span>
+        <span class="crm-chevron">▼</span>
+      </div>
+      <div class="crm-detail">
+        <div class="crm-detail-grid">
+          <div class="crm-field"><label>Contact (prenom nom)</label>
+            <input class="crm-input" value="${escAttr(c.contact)}" placeholder="Ex: Jean Dupont" onblur="updateCompany(${c.id},'contact',this.value)"></div>
+          <div class="crm-field"><label>Poste</label>
+            <input class="crm-input" value="${escAttr(c.poste)}" placeholder="Ex: Directeur de prod" onblur="updateCompany(${c.id},'poste',this.value)"></div>
+          <div class="crm-field"><label>Canal</label>
+            <select class="crm-select" onchange="updateCompany(${c.id},'canal',this.value)">${canalOpts}</select></div>
+          <div class="crm-field"><label>Date contact</label>
+            <input class="crm-input crm-date-input" type="date" value="${escAttr(c.date)}" onchange="updateCompany(${c.id},'date',this.value)"></div>
+          <div class="crm-field"><label>Statut</label>
+            <select class="crm-select crm-status-select" onchange="updateCompanyStatus(${c.id},this.value)">${statutOpts}</select></div>
+          <div class="crm-field"><label>Relance le</label>
+            <input class="crm-input crm-relance-input" type="date" value="${escAttr(c.relance||'')}" onchange="updateCompany(${c.id},'relance',this.value)"></div>
+          <div class="crm-field" style="grid-column:span 2"><label>Site web</label>
+            <input class="crm-input" value="${escAttr(c.site)}" onblur="updateCompany(${c.id},'site',this.value)"></div>
+        </div>
+        <div class="crm-field" style="margin-bottom:9px"><label>Notes / Dernier echange</label>
+          <textarea class="crm-notes-field" placeholder="Notes, contexte, suite a donner..." onblur="updateCompany(${c.id},'notes',this.value)">${escHtml(c.notes||'')}</textarea></div>
+        <div class="crm-actions">
+          <button class="crm-action-btn" onclick="quickStatus(${c.id},'message-envoye')">Message envoyé</button>
+          <button class="crm-action-btn" onclick="quickStatus(${c.id},'pas-de-reponse')">Pas de réponse</button>
+          <button class="crm-action-btn" onclick="quickStatus(${c.id},'interesse')">Intéressé</button>
+          <button class="crm-action-btn rdv" onclick="quickStatus(${c.id},'rdv-pris')">RDV pris ✓</button>
+          <button class="crm-action-btn" onclick="quickStatus(${c.id},'refuse')">Refus</button>
+          <button class="crm-action-btn" onclick="quickStatus(${c.id},'converti')">Converti</button>
+          <span style="flex:1"></span>
+          <button class="crm-action-btn" onclick="setRelanceIn(${c.id},7)" title="Definir une relance dans 7 jours">Relance +7j</button>
+          <button class="crm-action-btn" onclick="setRelanceIn(${c.id},14)">+14j</button>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  function refreshCRMList() {
+    const el = document.getElementById('crm-list');
+    if (!el) return;
+    el.innerHTML = buildCRMListHTML();
+    expandedIds.forEach(id => {
+      const row = document.querySelector(`.crm-row[data-id="${id}"]`);
+      if (row) row.classList.add('open');
+    });
+    updateCRMStatsBar();
+  }
+
+  // ---- SHOW NOTE ----
+  function showNote(id, el) {
+    currentId = id; isEditMode = false;
+    // Close sidebar on mobile
+    if (window.innerWidth <= 768) { document.getElementById('sidebar').classList.remove('open'); document.getElementById('overlay').classList.remove('show'); }
+    // Active state
+    document.querySelectorAll('.note-item').forEach(n => n.classList.remove('active'));
+    if (el) { el.classList.add('active'); }
+    else { const fe=document.querySelector(`.note-item[data-fixed="${id}"]`); if(fe) fe.classList.add('active'); const ce=document.querySelector(`.note-item[data-id="${id}"]`); if(ce) ce.classList.add('active'); }
+
+    const titleInput = document.getElementById('note-title-input');
+    const content = document.getElementById('content');
+    const ec = document.getElementById('edit-controls');
+    // Reset edit controls
+    if (ec) ec.style.display = 'none';
+    ['edit-btn','save-edit-btn','cancel-edit-btn','reset-edit-btn'].forEach(bid => { const b=document.getElementById(bid); if(b) b.style.display = bid==='edit-btn'?'':'none'; });
+
+    if (id.startsWith('custom_')) {
+      const notes = getCustomNotes(); const note = notes[id]; if (!note) return;
+      titleInput.value = note.title; titleInput.removeAttribute('readonly');
+      titleInput.oninput = () => { const n=getCustomNotes(); if(n[id]){n[id].title=titleInput.value;saveCustomNotes(n);renderSidebarCustom();showSaved();} };
+      content.innerHTML = `<textarea class="custom-note-area" id="custom-content" placeholder="Ecris ta note ici...">${escHtml(note.content)}</textarea>`;
+      document.getElementById('custom-content').addEventListener('input', function() { const n=getCustomNotes(); if(n[id]){n[id].content=this.value;saveCustomNotes(n);showSaved();} });
+      return;
+    }
+
+    titleInput.value = TITLE_MAP[id] || id; titleInput.setAttribute('readonly', true); titleInput.oninput = null;
+
+    const RENDER_MAP = { dashboard:renderDashboard, crm:renderProspection, scripts:renderLinkedinScripts, wakeSurf:renderWakeSurf, mathis:renderMathis, strategie:renderStrategie, showreel:renderShowreel, docTech:renderDocTech, allNotes:renderAllNotes, alertes:renderAlertes };
+    const noScratch = ['allNotes','alertes'].includes(id);
+    const scratch = noScratch ? '' : (localStorage.getItem('scratch_' + id) || '');
+    const scratchHTML = noScratch ? '' : `<div class="scratchpad-wrap"><div class="scratchpad-label">Notes rapides</div><textarea class="scratchpad" id="sp-${id}" placeholder="Notes de session, idees, todo...">${escHtml(scratch)}</textarea></div>`;
+    const savedEdit = EDITABLE_NOTES.includes(id) ? localStorage.getItem('edited_' + id) : null;
+    const noteHTML = savedEdit || (RENDER_MAP[id] ? RENDER_MAP[id]() : '');
+    content.innerHTML = scratchHTML + `<div id="note-editable">${noteHTML}</div>`;
+
+    if (!noScratch) document.getElementById('sp-'+id)?.addEventListener('input', function() { localStorage.setItem('scratch_'+id, this.value); showSaved(); });
+    if (EDITABLE_NOTES.includes(id)) { if(ec) ec.style.display='flex'; if(savedEdit) { const rb=document.getElementById('reset-edit-btn'); if(rb) rb.style.display=''; } }
+    if (id === 'dashboard') { renderSuiviTable(); renderHiddenBlock(); }
+    if (id === 'crm') updateCRMStatsBar();
+    if (id === 'alertes') renderAlertesLists();
+    restoreChecks(id);
+  }
+
+  // ---- ALL NOTES ----
+  function renderAllNotes() {
+    const notes = getCustomNotes(); const entries = Object.entries(notes);
+    if (entries.length === 0) return `<div class="block" style="text-align:center;padding:50px 20px"><div style="font-size:36px;margin-bottom:14px">📝</div><div style="font-size:17px;font-weight:700;margin-bottom:8px">Aucune note pour l'instant</div><div style="font-size:13px;color:var(--muted)">Clique sur le + d'une section dans la sidebar pour créer ta première note.</div></div>`;
+    const SECTIONS = { prospection:'Prospection', projets:'Projets', strategie:'Strategie', craft:'Craft', perso:'Notes perso' };
+    return Object.entries(SECTIONS).map(([sKey, sLabel]) => {
+      const sNotes = entries.filter(([,n]) => (n.section||'perso') === sKey);
+      if (!sNotes.length) return '';
+      return `<div style="margin-bottom:22px">
+        <div style="font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);margin-bottom:9px;padding-bottom:7px;border-bottom:1px solid var(--border)">${sLabel} — ${sNotes.length} note${sNotes.length>1?'s':''}</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:9px">
+          ${sNotes.map(([id, n]) => `<div class="dash-card" onclick="showNote('${id}',null)">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:7px">
+              <div style="font-size:13px;font-weight:700;line-height:1.3">${escHtml(n.title)}</div>
+              <span style="font-size:10px;color:var(--muted);background:var(--card2);padding:1px 7px;border-radius:3px;flex-shrink:0;margin-left:7px">${TYPE_LABELS[n.type]||'Note'}</span>
+            </div>
+            <div style="font-size:12px;color:var(--muted);line-height:1.5;overflow:hidden;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical">${escHtml((n.content||'').substring(0,100)) || '(vide)'}</div>
+          </div>`).join('')}
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  // ---- ALERTES PAGE ----
+  function renderAlertes() {
+    const today = new Date().toISOString().split('T')[0];
+    return `
+      <div class="block" style="margin-bottom:13px">
+        <h3>Nouvelle alerte</h3>
+        <div style="display:grid;grid-template-columns:1fr 160px 135px;gap:8px;margin-bottom:10px">
+          <input id="al-titre" class="crm-input" placeholder="Titre de l'alerte..." style="font-size:14px" onkeydown="if(event.key==='Enter')addAlerte()">
+          <input id="al-date" type="date" class="crm-input" value="${today}">
+          <select id="al-priorite" class="crm-select">
+            <option value="haute">Priorite Haute</option>
+            <option value="normale" selected>Normale</option>
+            <option value="basse">Basse</option>
+          </select>
+        </div>
+        <button onclick="addAlerte()" style="padding:7px 20px;background:var(--accent);color:#111;border:none;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer">+ Ajouter</button>
+      </div>
+      <div class="block" style="margin-bottom:9px"><h3>En cours</h3><div id="alertes-pending"></div></div>
+      <div class="block" id="alertes-done-block" style="display:none"><h3 style="color:var(--muted)">Terminees</h3><div id="alertes-done"></div></div>`;
+  }
+
+  // ---- DASHBOARD ----
+  function renderDashboard() {
+    const now = new Date();
+    const mois = ['Janvier','Fevrier','Mars','Avril','Mai','Juin','Juillet','Aout','Septembre','Octobre','Novembre','Decembre'];
+    const arr = getCRMCompanies();
+    const contacted = arr.filter(c => c.statut !== 'a-contacter').length;
+    const reponses = arr.filter(c => ['interesse','rdv-pris','converti'].includes(c.statut)).length;
+    const convertis = arr.filter(c => c.statut === 'converti').length;
+    const relancesAujourdhui = arr.filter(c => {
+      if (!c.relance) return false;
+      const today = new Date().toISOString().split('T')[0];
+      return c.relance <= today;
+    });
+    return `
+      <div style="font-size:21px;font-weight:800;margin-bottom:4px;">Bonjour Jeremy</div>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:18px;">${now.getDate()} ${mois[now.getMonth()]} ${now.getFullYear()}</div>
+
+      <div class="grid3" style="margin-bottom:12px;">
+        <div class="stat-card"><div class="big r">8</div><div class="small">Mois chomage restants</div></div>
+        <div class="stat-card"><div class="big y">1 300€</div><div class="small">Chomage / mois</div></div>
+        <div class="stat-card"><div class="big g">1 700€</div><div class="small">Objectif mensuel</div></div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:18px;">
+        <div class="stat-card"><div class="big">${arr.length}</div><div class="small">Boites cibles</div></div>
+        <div class="stat-card"><div class="big" style="color:var(--blue)">${contacted}</div><div class="small">Contactees</div></div>
+        <div class="stat-card"><div class="big" style="color:var(--accent)">${arr.length - contacted}</div><div class="small">Restantes</div></div>
+        <div class="stat-card"><div class="big" style="color:var(--accent2)">${reponses}</div><div class="small">Reponses +</div></div>
+        <div class="stat-card"><div class="big" style="color:var(--purple)">${convertis}</div><div class="small">Convertis</div></div>
+      </div>
+
+      ${relancesAujourdhui.length > 0 ? `
+      <div class="block" style="border-color:var(--accent);margin-bottom:13px;">
+        <h3 style="color:var(--accent)">Relances du jour (${relancesAujourdhui.length})</h3>
+        ${relancesAujourdhui.map(c => `
+          <div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--border);">
+            <span style="font-size:13px;font-weight:600;flex:1">${escHtml(c.name)}</span>
+            <span style="font-size:11px;color:var(--muted)">${escHtml(c.contact||'')}</span>
+            <span style="font-size:11px;background:${STATUS_CONFIG[c.statut].bg};color:${STATUS_CONFIG[c.statut].color};padding:2px 8px;border-radius:20px;">${STATUS_CONFIG[c.statut].label}</span>
+            <button onclick="showNote('crm',document.querySelector('[data-fixed=crm]'))" style="font-size:11px;padding:3px 9px;border:1px solid var(--accent);background:transparent;color:var(--accent);border-radius:4px;cursor:pointer;">Voir</button>
+          </div>`).join('')}
+      </div>` : ''}
+
+      <div class="block" style="margin-bottom:13px;">
+        <h3>Priorites du moment</h3>
+        ${chk("Demander au patron du wake surf pour le documentaire")}
+        ${chk("Poster le showreel jeudi ou vendredi 18h-20h")}
+        ${chk("Finir le profil LinkedIn (photo, a propos, competences)")}
+        ${chk("Certification drone A1/A3")}
+        ${chk("Envoyer 5 messages LinkedIn aux boites de prod cibles")}
+        ${chk("Tester 1 video UGC sur un produit que t'as chez toi")}
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:18px;">
+        <div class="dash-card" onclick="showNote('crm',document.querySelector('[data-fixed=crm]'))">
+          <div class="dc-title">CRM Prospection</div>
+          <div class="dc-sub">${arr.length - contacted} boites a contacter</div>
+          <div class="progress-bar"><div class="progress-fill" style="width:${Math.round(contacted/arr.length*100)}%"></div></div>
+        </div>
+        <div class="dash-card" onclick="showNote('wakeSurf',document.querySelector('[data-fixed=wakeSurf]'))">
+          <div class="dc-title">Doc Wake Surf</div>
+          <div class="dc-sub">18 questions + organisation</div>
+          <div class="progress-bar"><div class="progress-fill" style="width:10%"></div></div>
+        </div>
+        <div class="dash-card" onclick="showNote('strategie',document.querySelector('[data-fixed=strategie]'))">
+          <div class="dc-title">Plan 8 Mois</div>
+          <div class="dc-sub">Mois 1 en cours — MAI</div>
+          <div class="progress-bar"><div class="progress-fill" style="width:12%"></div></div>
+        </div>
+      </div>
+
+      <div class="block" style="margin-bottom:13px;">
+        <h3>Tableau de suivi contacts</h3>
+        <div style="overflow-x:auto">
+          <table class="suivi-tbl">
+            <thead><tr>
+              <th>Boite</th><th>Contact</th><th>Date</th><th>Canal</th><th>Reponse</th><th>Relance</th><th></th>
+            </tr></thead>
+            <tbody id="suivi-body"></tbody>
+          </table>
+        </div>
+        <button onclick="addSuiviRow()" style="margin-top:10px;padding:6px 14px;background:transparent;border:1px dashed var(--border2);border-radius:5px;color:var(--muted);font-size:12px;cursor:pointer;transition:all 0.15s" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--muted)'">+ Ajouter un contact</button>
+      </div>
+
+      <div class="block" id="hidden-notes-block" style="display:none">
+        <h3>Notes masquees de la sidebar</h3>
+        <div id="hidden-notes-list" style="display:flex;flex-wrap:wrap;gap:7px"></div>
+      </div>
+
+      <div class="block">
+        <h3>Regles d'or</h3>
+        <div style="display:flex;flex-direction:column;gap:6px;">
+          ${['Ne jamais prospecter sans showreel a jour','Toujours personnaliser les messages — jamais de copier-coller pur','Relancer systematiquement apres 7 jours sans reponse','Ne pas baisser les prix sous pression — proposer moins de prestations','Ne JAMAIS descendre sous 250€ — ca devalue ton travail','Poster sur LinkedIn au minimum 2 fois par mois'].map((r,i) => `
+          <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--card2);border-radius:7px;">
+            <div style="width:20px;height:20px;border-radius:50%;background:var(--accent);color:#111;font-weight:800;font-size:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0">${i+1}</div>
+            <div style="font-size:13px">${r}</div>
+          </div>`).join('')}
+        </div>
+      </div>`;
+  }
+
+  // ---- SUIVI TABLE ----
+  function getSuivi() { return JSON.parse(localStorage.getItem('jrv_suivi') || '[]'); }
+  function saveSuivi(rows) { localStorage.setItem('jrv_suivi', JSON.stringify(rows)); }
+  function renderSuiviTable() {
+    const rows = getSuivi(); const body = document.getElementById('suivi-body'); if (!body) return;
+    const canaux = ['LinkedIn','Email','Telephone','Physique','Instagram'];
+    const reps = ['En attente','Pas de reponse','Interesse','RDV pris','Refus','Converti'];
+    const repC = {'En attente':'var(--muted)','Pas de reponse':'var(--danger)','Interesse':'var(--accent)','RDV pris':'var(--accent2)','Refus':'var(--danger)','Converti':'var(--accent2)'};
+    body.innerHTML = rows.map((r,i) => `
+      <tr style="border-bottom:1px solid var(--border)">
+        <td><input class="suivi-inp" value="${escAttr(r.boite||'')}" onchange="updateSuivi(${i},'boite',this.value)" placeholder="Boite..."></td>
+        <td><input class="suivi-inp" value="${escAttr(r.contact||'')}" onchange="updateSuivi(${i},'contact',this.value)" placeholder="Prenom..."></td>
+        <td><input type="date" class="suivi-inp" value="${escAttr(r.date||'')}" onchange="updateSuivi(${i},'date',this.value)"></td>
+        <td><select class="suivi-sel" onchange="updateSuivi(${i},'canal',this.value)">${canaux.map(c=>`<option${r.canal===c?' selected':''}>${c}</option>`).join('')}</select></td>
+        <td><select class="suivi-sel" onchange="updateSuivi(${i},'reponse',this.value)" style="color:${repC[r.reponse]||'var(--muted)'}">${reps.map(c=>`<option${r.reponse===c?' selected':''}>${c}</option>`).join('')}</select></td>
+        <td><input class="suivi-inp" value="${escAttr(r.relance||'')}" onchange="updateSuivi(${i},'relance',this.value)" placeholder="+7j..."></td>
+        <td><button onclick="deleteSuivi(${i})" style="background:none;border:none;color:var(--danger);cursor:pointer;font-size:14px;opacity:0.5" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.5">×</button></td>
+      </tr>`).join('');
+  }
+  function renderHiddenBlock() {
+    const hidden = getHidden(); const block = document.getElementById('hidden-notes-block'); const list = document.getElementById('hidden-notes-list');
+    if (!block || !list) return;
+    const NAMES = { scripts:'LinkedIn & Prospection', wakeSurf:'Doc Wake Surf', mathis:'Call Mathis Faudrit', strategie:'Plan 8 Mois', showreel:'Post Showreel', docTech:'Faire un Doc Impactant' };
+    block.style.display = hidden.length > 0 ? '' : 'none';
+    list.innerHTML = hidden.map(id => `<button onclick="restoreFixedNote('${id}');renderHiddenBlock();" style="padding:5px 12px;border:1px solid var(--border2);background:var(--card2);color:var(--text2);border-radius:5px;font-size:12px;cursor:pointer">+ Restaurer : ${NAMES[id]||id}</button>`).join('');
+  }
+  function addSuiviRow() { const r=getSuivi(); r.push({boite:'',contact:'',date:'',canal:'LinkedIn',reponse:'En attente',relance:''}); saveSuivi(r); renderSuiviTable(); }
+  function updateSuivi(i,k,v) { const r=getSuivi(); r[i][k]=v; saveSuivi(r); showSaved(); }
+  function deleteSuivi(i) { const r=getSuivi(); r.splice(i,1); saveSuivi(r); renderSuiviTable(); }
+
+  // ---- PROSPECTION CRM PAGE ----
+  function renderProspection() {
+    const arr = getCRMCompanies();
+    const contacted = arr.filter(c => c.statut !== 'a-contacter').length;
+    const reponses = arr.filter(c => ['interesse','rdv-pris','converti'].includes(c.statut)).length;
+    const convertis = arr.filter(c => c.statut === 'converti').length;
+    return `
+      <div class="crm-stats">
+        <div class="crm-stat"><div class="n" id="cst-total">${arr.length}</div><div class="l">Total</div></div>
+        <div class="crm-stat"><div class="n" id="cst-contacted" style="color:var(--blue)">${contacted}</div><div class="l">Contactees</div></div>
+        <div class="crm-stat"><div class="n" id="cst-restantes" style="color:var(--accent)">${arr.length - contacted}</div><div class="l">Restantes</div></div>
+        <div class="crm-stat"><div class="n" id="cst-reponses" style="color:var(--accent2)">${reponses}</div><div class="l">Reponses+</div></div>
+        <div class="crm-stat"><div class="n" id="cst-convertis" style="color:var(--purple)">${convertis}</div><div class="l">Convertis</div></div>
+      </div>
+      <div class="crm-filters">
+        <button class="crm-filter-btn ${crmFilter==='all'?'active':''}" data-filter="all" onclick="setCRMFilter('all')">Toutes (${arr.length})</button>
+        <button class="crm-filter-btn ${crmFilter==='priorite'?'active':''}" data-filter="priorite" onclick="setCRMFilter('priorite')">Priorites ★</button>
+        <button class="crm-filter-btn ${crmFilter==='a-contacter'?'active':''}" data-filter="a-contacter" onclick="setCRMFilter('a-contacter')">A contacter</button>
+        <button class="crm-filter-btn ${crmFilter==='en-cours'?'active':''}" data-filter="en-cours" onclick="setCRMFilter('en-cours')">En cours</button>
+        <button class="crm-filter-btn ${crmFilter==='positif'?'active':''}" data-filter="positif" onclick="setCRMFilter('positif')">Reponse positive</button>
+      </div>
+      <input class="crm-search" placeholder="Rechercher une boite, un contact, une zone..." id="crm-search-input" value="${escAttr(crmSearch)}" oninput="setCRMSearch(this.value)">
+      <div id="crm-list">${buildCRMListHTML()}</div>`;
+  }
+
+  // ---- SCRIPTS & MESSAGES ----
+  function renderLinkedinScripts() {
+    return `
+      <div class="block">
+        <h3>Section "A propos" LinkedIn</h3>
+        <div class="script-box">Videaste freelance base en Pays de la Loire, j'interviens sur Nantes, la Vendee et toute la region.
+
+Tournage, cadrage, montage — je gere l'ensemble de la chaine de production, de la captation jusqu'au rendu final sur DaVinci Resolve. Je travaille actuellement a me perfectionner en colorimetrie pour pousser encore plus loin la qualite visuelle de mes projets.
+
+J'ai eu l'occasion de collaborer avec des structures variees : restauration et livraison a domicile, coiffure, menuiserie, musique... Ce qui me plait c'est justement cette diversite — chaque secteur a son univers et sa facon de raconter une histoire.
+
+Aujourd'hui je cherche a developper mon activite sur des projets corporate, evenementiels, sportifs et de captation live. Si vous avez un projet video, parlons-en.</div>
+      </div>
+      <div class="block">
+        <h3>Description experience — JRV Production</h3>
+        <div class="script-box">Creation et realisation de contenus video pour les entreprises et les artistes. Cadrage, captation et montage sur DaVinci Resolve.
+
+Interventions en corporate, evenementiel et clip musical aupres de clients varies : restauration, coiffure, menuiserie, musique.
+
+Disponible sur Nantes, la Vendee et les Pays de la Loire.</div>
+      </div>
+      <div class="block">
+        <h3>Checklist profil LinkedIn</h3>
+        ${chk("Photo de profil (priorite absolue)")}
+        ${chk("Localisation sur Nantes")}
+        ${chk("Opportunites : Loire-Atlantique / Pays de la Loire")}
+        ${chk("Section A propos : coller le texte ci-dessus")}
+        ${chk("Description JRV Production : coller le texte")}
+        ${chk("Competences : Tournage video, Montage video, DaVinci Resolve")}
+        ${chk("Se connecter a 50+ contacts minimum")}
+      </div>
+      <div class="block">
+        <h3>Message LinkedIn — Template 1 (court)</h3>
+        <div class="script-box">Bonjour [Prenom],
+
+Je suis videaste freelance base en Pays de la Loire, specialise en corporate, evenementiel et FPV. J'interviens sur Nantes et la region.
+
+J'ai vu le travail de [nom de la boite] et ca correspond vraiment a ce que je fais.
+
+Est-ce que vous travaillez avec des freelances sur vos tournages ? Je serais dispo pour echanger si vous avez un moment.
+
+Showreel : https://www.rondeaujeremy.fr
+
+Jeremy Rondeau — JRV Production</div>
+      </div>
+      <div class="block">
+        <h3>Message LinkedIn — Template 2 (personnalise)</h3>
+        <div class="script-box">Bonjour [Prenom], ca va bien ?
+
+Je me permets de vous contacter, je suis videaste passionné et je cherche a travailler sur des projets ambitieux — pubs, films corporate, evenements.
+
+J'aime particulierement travailler en equipe et collaborer avec des gens qui partagent cette passion.
+
+Vous auriez des contacts ou des opportunites dans ce milieu ?
+
+Mon showreel : https://www.rondeaujeremy.fr
+
+Merci, Jeremy</div>
+      </div>
+      <div class="block">
+        <h3>Strategie de prospection — Ordre des actions</h3>
+        ${chk("Finir le profil LinkedIn (cette semaine)")}
+        ${chk("Poster le showreel jeudi/vendredi")}
+        ${chk("Commenter les posts des boites cibles (semaine 2)")}
+        ${chk("Envoyer demandes de connexion aux directeurs de prod (semaine 2-3)")}
+        ${chk("Message LinkedIn court + lien showreel (semaine 3)")}
+        ${chk("Si pas de reponse apres 1 semaine → appel telephonique")}
+        <div style="margin-top:12px;padding:10px 14px;background:var(--card2);border-radius:7px;font-size:13px;line-height:1.8;border:1px solid var(--border)">
+          <strong style="color:var(--accent)">Le bon message LinkedIn :</strong><br>
+          4-5 lignes max · Personnalise pour chaque boite · Dire ce qu'on peut apporter POUR EUX · Terminer par une question precise
+        </div>
+        <div style="margin-top:8px;padding:10px 14px;background:#2a1a1a;border-radius:7px;font-size:13px;line-height:1.8;border:1px solid #3a2a2a">
+          <strong style="color:var(--danger)">Ce qu'il ne faut PAS faire :</strong><br>
+          Mail en masse · Poster "je cherche du travail" · Prospecter avec un profil vide · Dire qu'on cherche un CDD
+        </div>
+      </div>`;
+  }
+
+  // ---- WAKE SURF ----
+  function renderWakeSurf() {
+    return `
+      <div class="block">
+        <h3>Le projet</h3>
+        <div class="grid2">
+          <div class="ibox"><div class="lbl">Sujet</div><div class="val">Patron d'un wake surf</div></div>
+          <div class="ibox"><div class="lbl">Statut</div><div class="val y">A confirmer avec lui</div></div>
+          <div class="ibox"><div class="lbl">Budget</div><div class="val g">Gratuit / Test</div></div>
+          <div class="ibox"><div class="lbl">Format cible</div><div class="val">3-8 min YouTube + Reels</div></div>
+        </div>
+      </div>
+      <div class="block">
+        <h3>Questions a lui poser — Pre-interview</h3>
+        <p style="font-size:13px;color:var(--muted);margin-bottom:14px;">Fais une pre-interview de 20-30 min avant le tournage. Ca te donne ton fil conducteur. Laisse les silences — c'est la que les vraies reponses sortent.</p>
+        <h4>Son histoire personnelle</h4>
+        <div class="q-block"><div class="q-num">Q1</div><div class="q-text">C'est quoi le moment exact ou tu t'es dit "je vais tout laisser tomber pour faire ca" ?</div><div class="q-why">→ Cherche le moment de bascule. C'est souvent la scene d'ouverture du doc.</div></div>
+        <div class="q-block"><div class="q-num">Q2</div><div class="q-text">T'avais quoi avant ? Tu faisais quoi dans ta vie ?</div><div class="q-why">→ Le contraste avec "avant" donne de la profondeur au personnage.</div></div>
+        <div class="q-block"><div class="q-num">Q3</div><div class="q-text">Quand t'as dit a ta famille ou tes proches que tu lancais ca, ils ont dit quoi ?</div><div class="q-why">→ Les doutes des autres = tension narrative forte.</div></div>
+        <div class="q-block"><div class="q-num">Q4</div><div class="q-text">C'etait quoi le pire moment depuis que t'as lance ? Le truc ou tu t'es dit "j'aurais peut-etre pas du" ?</div><div class="q-why">→ L'obstacle est le coeur de toute histoire. Sans ca c'est plat.</div></div>
+        <div class="q-block"><div class="q-num">Q5</div><div class="q-text">Et le moment ou t'as compris que ca allait marcher ? Ca s'est passe comment ?</div><div class="q-why">→ La resolution apres l'obstacle. Arc narratif complet.</div></div>
+        <h4>Sa passion pour le wake surf</h4>
+        <div class="q-block"><div class="q-num">Q6</div><div class="q-text">C'est quoi pour toi le wake surf ? Si tu devais expliquer a quelqu'un qui a jamais vu ca, t'expliquerais comment ?</div><div class="q-why">→ Sa definition perso revele sa vision. Souvent tres bon pour la voix off.</div></div>
+        <div class="q-block"><div class="q-num">Q7</div><div class="q-text">C'est quoi la sensation que tu cherches quand tu surfes ? Qu'est-ce qui se passe dans ta tete sur l'eau ?</div><div class="q-why">→ Les emotions = connexion avec le spectateur.</div></div>
+        <div class="q-block"><div class="q-num">Q8</div><div class="q-text">T'as un souvenir precis sur l'eau, une session qui t'a marque plus que les autres ?</div><div class="q-why">→ Les anecdotes concretes valent mieux que les generalites.</div></div>
+        <div class="q-block"><div class="q-num">Q9</div><div class="q-text">C'est quoi la difference entre le wake surf et les autres sports nautiques selon toi ?</div><div class="q-why">→ Educatif pour le spectateur qui ne connait pas.</div></div>
+        <h4>Son rapport aux gens / sa clientele</h4>
+        <div class="q-block"><div class="q-num">Q10</div><div class="q-text">C'est qui les gens qui viennent chez toi ? T'as un profil type ou c'est vraiment melange ?</div><div class="q-why">→ Humanise l'activite, montre la communaute autour.</div></div>
+        <div class="q-block"><div class="q-num">Q11</div><div class="q-text">T'as un client dont tu te souviens particulierement ? Quelqu'un que ca a vraiment change quelque chose pour lui ?</div><div class="q-why">→ L'impact humain de son travail. Tres fort emotionnellement.</div></div>
+        <div class="q-block"><div class="q-num">Q12</div><div class="q-text">Quand tu vois quelqu'un tenir sur la planche pour la premiere fois, ca te fait quoi ?</div><div class="q-why">→ Sa vraie motivation.</div></div>
+        <h4>Sa vision / le futur</h4>
+        <div class="q-block"><div class="q-num">Q13</div><div class="q-text">Dans 5 ans c'est quoi l'endroit ideal dans ta tete ?</div><div class="q-why">→ Le reve. Tout le monde s'identifie a quelqu'un qui a un reve.</div></div>
+        <div class="q-block"><div class="q-num">Q14</div><div class="q-text">C'est quoi le truc qui t'empeche de dormir par rapport a ton business en ce moment ?</div><div class="q-why">→ La vraie tension actuelle. Authenticite maximale.</div></div>
+        <div class="q-block"><div class="q-num">Q15</div><div class="q-text">Si tu devais donner un seul conseil a quelqu'un qui veut se lancer, ce serait quoi ?</div><div class="q-why">→ La phrase de fin parfaite.</div></div>
+        <h4>Questions bonus — pour trouver des scenes</h4>
+        <div class="q-block"><div class="q-num">Q16</div><div class="q-text">C'est quoi ta routine le matin avant d'ouvrir ? T'arrives a quelle heure, tu fais quoi en premier ?</div><div class="q-why">→ Trouve les moments de vie quotidienne a filmer.</div></div>
+        <div class="q-block"><div class="q-num">Q17</div><div class="q-text">Ya un endroit sur ton site que t'aimes particulierement, ou tu te poses et tu regardes l'eau ?</div><div class="q-why">→ Trouve tes decors naturels les plus forts.</div></div>
+        <div class="q-block"><div class="q-num">Q18</div><div class="q-text">C'est quoi le son que t'entends le matin en arrivant qui te fait te sentir chez toi ?</div><div class="q-why">→ Detail sensoriel = image et son specifique a capturer.</div></div>
+      </div>
+      <div class="block">
+        <h3>Structure narrative — Le fil du documentaire</h3>
+        <div class="story-step"><div class="story-num">1</div><div class="story-content"><div class="title">L'accroche — 0 a 20 secondes</div><div class="desc">Une image forte + une phrase qui cree une question. Pas de presentation.</div><div class="example">"A 6h du matin, il est deja sur l'eau. Ca fait 8 ans qu'il a tout quitte pour ca."</div></div></div>
+        <div class="story-step"><div class="story-num">2</div><div class="story-content"><div class="title">Le personnage — 20 sec a 1 min</div><div class="desc">On le voit dans son environnement. Quelques mots. Le spectateur commence a s'attacher.</div></div></div>
+        <div class="story-step"><div class="story-num">3</div><div class="story-content"><div class="title">L'obstacle / la tension — 1 a 3 min</div><div class="desc">C'est quoi sa vraie difficulte ? Ce qu'il a sacrifie ? Sans ca le doc est ennuyeux.</div></div></div>
+        <div class="story-step"><div class="story-num">4</div><div class="story-content"><div class="title">La passion profonde — 3 a 5 min</div><div class="desc">Pourquoi il continue malgre tout. Les moments de bonheur concrets.</div></div></div>
+        <div class="story-step"><div class="story-num">5</div><div class="story-content"><div class="title">La fin qui reste — derniere minute</div><div class="desc">Une image forte + sa phrase la plus puissante.</div><div class="example">Lui sur l'eau, seul, au coucher du soleil. "Je sais pas ce que ca va donner dans 10 ans. Mais chaque matin je me leve en voulant venir ici."</div></div></div>
+      </div>
+      <div class="block">
+        <h3>Pre-production</h3>
+        <div class="phase-block"><div class="phase-title">Semaine avant</div>
+          ${chk("Faire la pre-interview de 20-30 min")}
+          ${chk("Identifier les 5-6 scenes cles absolument")}
+          ${chk("Reperer les lieux : lac, bateaux, coulisses")}
+          ${chk("Preparer questions interview camera")}
+          ${chk("Faire signer autorisation tournage + diffusion")}
+          ${chk("Choisir musique potentielle (libre de droits)")}
+        </div>
+        <div class="phase-block green"><div class="phase-title">La veille</div>
+          ${chk("Charger toutes les batteries (camera + drones + micro)")}
+          ${chk("Formater et verifier les cartes memoire")}
+          ${chk("Verifier micro cravate + perche")}
+          ${chk("Confirmer l'heure de debut avec lui")}
+        </div>
+      </div>
+      <div class="block">
+        <h3>Jour de tournage</h3>
+        <div class="phase-block orange"><div class="phase-title">Le matin — Arrivee et ambiance (1h)</div>
+          ${chk("Filmer son arrivee / routine matinale")}
+          ${chk("Plans du lieu : lac, bateaux, equipements — sans personne")}
+          ${chk("Plans de detail : mains, materiels, eau, reflets")}
+        </div>
+        <div class="phase-block"><div class="phase-title">En journee — L'activite (2-3h)</div>
+          ${chk("Filmer une session complete avec des clients")}
+          ${chk("Lui qui coache, explique, encourage")}
+          ${chk("Reactions des clients — premieres fois, reussites")}
+          ${chk("Plans action : surf sur l'eau, virages, chutes")}
+        </div>
+        <div class="phase-block green"><div class="phase-title">L'interview — Le moment cle (45 min)</div>
+          ${chk("Endroit calme avec un beau fond naturel")}
+          ${chk("Micro cravate sur lui, verifier le son avant")}
+          ${chk("Commencer par questions simples pour le mettre a l'aise")}
+          ${chk("Utiliser les silences — ne pas couper quand il reflechit")}
+          ${chk("Filmer aussi ses mains, ses yeux, l'eau derriere")}
+        </div>
+        <div class="phase-block purple"><div class="phase-title">Fin de journee — Les plans or (30 min)</div>
+          ${chk("Heure doree : lumiere chaude avant coucher de soleil")}
+          ${chk("Lui seul sur l'eau ou au bord — plans contemplatifs")}
+          ${chk("Plans larges du lieu avec lui en petit dans le cadre")}
+        </div>
+      </div>
+      <div class="block">
+        <h3>Post-production</h3>
+        <div class="phase-block"><div class="phase-title">Etape 1 — Depouillement</div>
+          ${chk("Visionner TOUT le rush sans noter — juste regarder")}
+          ${chk("Identifier les 3-4 meilleures repliques de l'interview")}
+          ${chk("Marquer les plans image les plus forts")}
+        </div>
+        <div class="phase-block green"><div class="phase-title">Etape 2 — Premiere coupe</div>
+          ${chk("Monter d'abord uniquement l'audio de l'interview")}
+          ${chk("Construire le fil narratif avec ses mots")}
+          ${chk("Ajouter les images par dessus — elles illustrent ses mots")}
+        </div>
+        <div class="phase-block orange"><div class="phase-title">Etape 3 — Affinage</div>
+          ${chk("Musique libre de droits (Artlist, Epidemic Sound)")}
+          ${chk("Etalonnage couleur — ambiance chaude, naturelle")}
+          ${chk("Verifier le rythme : rapide au debut, ralentit a la fin")}
+        </div>
+        <div class="phase-block purple"><div class="phase-title">Etape 4 — Export et formats</div>
+          ${chk("Version YouTube : 16/9, 1080p, 8-12 min")}
+          ${chk("Version Reels/TikTok : 9/16, 60-90 secondes")}
+          ${chk("Version teaser : 30 secondes pour Instagram story")}
+        </div>
+      </div>`;
+  }
+
+  // ---- MATHIS ----
+  function renderMathis() {
+    return `
+      <div class="block">
+        <h3>Call prevu</h3>
+        <div style="font-size:30px;font-weight:700;color:var(--danger);">10H00</div>
+        <div style="font-size:13px;color:var(--muted);margin-top:4px;">Visio avec Mathis Faudrit — NTU Medias</div>
+      </div>
+      <div class="block">
+        <h3>Mathis Faudrit</h3>
+        <div class="grid2">
+          <div class="ibox"><div class="lbl">Poste</div><div class="val">Commercial Manager</div></div>
+          <div class="ibox"><div class="lbl">Boite</div><div class="val">Studio NTU Medias</div></div>
+          <div class="ibox"><div class="lbl">Formation</div><div class="val">Master Dir. Artistique</div></div>
+          <div class="ibox"><div class="lbl">En plus</div><div class="val y">Micro-entreprise freelance</div></div>
+        </div>
+      </div>
+      <div class="block">
+        <h3>NTU Medias</h3>
+        <div class="grid2" style="margin-bottom:10px;">
+          <div class="ibox"><div class="lbl">Fondee</div><div class="val">2013 — N. Tuffereau</div></div>
+          <div class="ibox"><div class="lbl">Taille</div><div class="val">~5-10 personnes</div></div>
+          <div class="ibox"><div class="lbl">Zones</div><div class="val">Cholet / Angers / Nantes</div></div>
+          <div class="ibox"><div class="lbl">Email</div><div class="val" style="font-size:12px">contact@ntumedias.com</div></div>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:5px">
+          <span class="tag">Films entreprise</span><span class="tag">Photo corporate</span><span class="tag">Motion design</span><span class="tag">Drone</span><span class="tag">Visites 360</span><span class="tag">Live streaming</span>
+        </div>
+      </div>
+      <div class="block">
+        <h3>Checklist preparation</h3>
+        ${chk("Ma specialite principale (cadrage ? montage ? les deux ?)")}
+        ${chk("Mon matos : Sony A6700, micro, drones FPV, DaVinci Resolve")}
+        ${chk("Ma dispo et situation (auto-entrepreneur, base Vendee)")}
+        ${chk("2-3 projets du showreel a pitcher")}
+        ${chk("Quel type de projets il cherche ? (films, events, RS ?)")}
+        ${chk("Comment il remunere ? (journee ? projet ?)")}
+        ${chk("Sa micro-entreprise c'est quel type de contenus ?")}
+      </div>`;
+  }
+
+  // ---- STRATEGIE ----
+  function renderStrategie() {
+    return `
+      <div class="block">
+        <h3>Situation de depart</h3>
+        <div class="grid2">
+          <div class="ibox"><div class="lbl">Chomage</div><div class="val r">1 300€/mois — 8 mois</div></div>
+          <div class="ibox"><div class="lbl">Objectif</div><div class="val g">1 700€/mois min</div></div>
+          <div class="ibox"><div class="lbl">Tarif actuel</div><div class="val">400€/j → obj 600€/j</div></div>
+          <div class="ibox"><div class="lbl">Base</div><div class="val">Apremont (85220)</div></div>
+        </div>
+        <div style="margin-top:10px;padding:9px 13px;background:var(--card2);border-radius:7px;font-size:13px;border:1px solid var(--border)">Sony A6700 — trepied — micro — objectifs — lumiere — 2 drones FPV — DaVinci Resolve</div>
+      </div>
+      <div class="block">
+        <h3>Les 3 axes 2026</h3>
+        <div class="grid3">
+          <div class="ibox"><div class="lbl">Axe 1</div><div class="val y">UGC Premium</div><div style="font-size:12px;color:var(--muted);margin-top:4px">Cash rapide. Lancer maintenant.</div></div>
+          <div class="ibox"><div class="lbl">Axe 2</div><div class="val g">Content PME</div><div style="font-size:12px;color:var(--muted);margin-top:4px">Abonnement mensuel. Revenus stables.</div></div>
+          <div class="ibox"><div class="lbl">Axe 3</div><div class="val b">Mini-docs / Media</div><div style="font-size:12px;color:var(--muted);margin-top:4px">Long terme. Ton vrai actif.</div></div>
+        </div>
+      </div>
+      <div class="block">
+        <h3>Plan mois par mois</h3>
+        <div class="month-block"><div class="month-title">Mois 1 — MAI</div><div class="obj-badge">0-400€</div>
+          ${chk("Poster le showreel jeudi/vendredi 18h-20h")}${chk("Connecter 20+ personnes sur LinkedIn")}${chk("5 candidatures spontanees boites de prod")}${chk("5 messages LinkedIn directeurs de prod")}${chk("Trouver 1 artiste rap pour clip portfolio")}${chk("Certification drone A1/A3")}
+        </div>
+        <div class="month-block"><div class="month-title">Mois 2 — JUIN</div><div class="obj-badge">400-800€</div>
+          ${chk("5 candidatures/semaine")}${chk("5 nouvelles boites/semaine LinkedIn")}${chk("Aller en physique a Nantes 3-4 boites")}${chk("Poster clip rap sur les reseaux")}
+        </div>
+        <div class="month-block"><div class="month-title">Mois 3 — JUILLET</div><div class="obj-badge">800-1200€ ou poste trouve</div>
+          ${chk("Si poste trouve : demenager sur Nantes")}${chk("Relancer tous les contacts mois 1-2")}${chk("Augmenter tarif a 500€/j nouveaux clients")}
+        </div>
+        <div class="month-block"><div class="month-title">Mois 4-8 — AOUT → DEC</div><div class="obj-badge">1200-2000€/mois</div>
+          ${chk("2 boites de prod regulieres")}${chk("Tarif 600€/j")}${chk("Ne plus avoir besoin du chomage")}
+        </div>
+      </div>
+      <div class="block">
+        <h3>Tarifs cibles</h3>
+        <div class="tarif-grid">
+          <div class="tarif-box"><div class="type">Journee boite de prod</div><div class="prix">500–700€</div></div>
+          <div class="tarif-box"><div class="type">Video corpo client direct</div><div class="prix">400–600€</div></div>
+          <div class="tarif-box"><div class="type">Clip musical</div><div class="prix">300–500€</div></div>
+          <div class="tarif-box"><div class="type">Pack petit commerce</div><div class="prix">250–350€</div></div>
+        </div>
+        <div style="margin-top:10px;padding:9px 13px;background:#2a1a1a;border-radius:7px;font-size:13px;color:var(--danger);border:1px solid #3a2222">Ne JAMAIS descendre sous 250€</div>
+      </div>`;
+  }
+
+  // ---- SHOWREEL ----
+  function renderShowreel() {
+    return `
+      <div class="block">
+        <h3>Timing</h3>
+        <div style="font-size:21px;font-weight:700;color:var(--accent)">Jeudi ou Vendredi — 18h00 a 20h00</div>
+      </div>
+      <div class="block">
+        <h3>Texte du post LinkedIn</h3>
+        <div class="script-box">Ca fait un moment que je construis en silence.
+
+Videaste freelance depuis un an, j'ai eu la chance de travailler sur des projets varies : captation evenementielle, films corporate, clip musical... Chaque projet m'a appris quelque chose de nouveau.
+
+Aujourd'hui je franchis une etape : voici mon showreel.
+
+Tournage, cadrage, montage sur DaVinci Resolve — je m'occupe de tout, de la captation jusqu'au rendu final.
+
+Je suis disponible pour des prestations en corporate, evenementiel, sport et captation live, sur Nantes, la Vendee et les Pays de la Loire.
+
+Si vous avez un projet ou si vous cherchez un videaste freelance pour renforcer votre equipe, je suis preneur.
+
+https://www.rondeaujeremy.fr/
+
+#Videaste #Freelance #Corporate #Evenementiel #PaysDeLaLoire #Nantes #Vendee #JRVProduction</div>
+      </div>
+      <div class="block">
+        <h3>Rappels apres avoir poste</h3>
+        ${chk("Repondre a TOUS les commentaires dans les 2 premieres heures")}
+        ${chk("Tagger 2-3 personnes qui te connaissent")}
+        ${chk("Liker et commenter les posts des boites cibles dans la foulee")}
+      </div>`;
+  }
+
+  // ---- DOC TECH ----
+  function renderDocTech() {
+    return `
+      <div class="block">
+        <h3>Formats video — Strategie multi-plateforme</h3>
+        <p style="font-size:13px;color:var(--muted);margin-bottom:14px">Tu tournes UNE FOIS en 16:9. Au montage tu exportes plusieurs formats. Meme contenu, toutes les plateformes couvertes.</p>
+        <div style="display:flex;flex-direction:column;gap:7px;margin-bottom:14px">
+          ${[
+            ['16:9','1920x1080','var(--accent)','YouTube long format, LinkedIn','Standard — doc complet 5-15 min'],
+            ['1:1','1080x1080','var(--blue)','Instagram feed, YouTube (bandes noires)','Format artistique — identite visuelle forte'],
+            ['4:5','1080x1350','var(--accent2)','Instagram feed — occupe plus d\'espace','Meilleur format feed mobile en 2026'],
+            ['9:16','1080x1920','var(--purple)','Reels, TikTok, YouTube Shorts','Teaser 30-60 sec — accroche rapide'],
+            ['2.39:1','Cinemascope','var(--muted)','YouTube — effet cinema','Bandes noires haut/bas — tres pro'],
+          ].map(([f,r,c,p,d]) => `
+          <div style="display:grid;grid-template-columns:75px 85px 1fr 1fr;gap:10px;padding:9px 13px;background:var(--card2);border-radius:7px;align-items:center;border:1px solid var(--border)">
+            <div style="font-size:16px;font-weight:800;color:${c}">${f}</div>
+            <div style="font-size:11px;color:var(--muted)">${r}</div>
+            <div style="font-size:13px">${p}</div>
+            <div style="font-size:11px;color:var(--muted)">${d}</div>
+          </div>`).join('')}
+        </div>
+        <div style="padding:11px 13px;background:#1a1f1a;border:1px solid #2a3d2a;border-radius:7px;font-size:13px;line-height:1.8">
+          <span style="color:var(--accent2);font-weight:700">Workflow DaVinci Resolve :</span><br>
+          Timeline principale en 16:9 → Duplicate timeline → Changer resolution → Recadrer → Exporter<br>
+          <span style="color:var(--muted)">1 tournage = 4 exports = YouTube + Instagram feed + Reels + Teaser</span>
+        </div>
+      </div>
+      <div class="block">
+        <h3>Ce qui fait qu'un documentaire marque les gens</h3>
+        <p style="font-size:13px;color:var(--muted);margin-bottom:14px">Recherches compilees depuis les meilleurs documentaristes mondiaux, Sundance, Oscar docs, et etudes sur la psychologie du spectateur.</p>
+        ${[
+          ['var(--danger)','1. Les 3 premieres secondes — tout se joue la','Le spectateur decide en moins de 3 secondes s\'il reste ou pas.',
+            [['Ne JAMAIS commencer par "Bonjour je m\'appelle..."','Commence in medias res — au coeur de l\'action'],
+             ['Une image forte + une question dans la tete du spectateur','Ex : il est 4h du mat, le four brule. Pourquoi il est la ?'],
+             ['Le premier son est aussi important que la premiere image','Un bruit d\'ambiance fort, une phrase mysterieuse, du silence total'],
+             ['Les meilleurs docs openent avec leur scene la plus impactante','Puis ils reviennent en arriere pour expliquer comment on en est arrive la']]],
+          ['var(--accent)','2. Le personnage — pourquoi les gens s\'attachent','Les gens ne regardent pas un sujet. Ils suivent une personne.',
+            [['Montrer la vulnerabilite','Un homme fort qui doute = connexion immediate. La perfection n\'accroche pas.'],
+             ['Trouver LA contradiction du personnage','Le boulanger qui hait le matin. Le sportif qui a peur. C\'est ca qui fascine.'],
+             ['Laisser les silences exister','Les moments ou il cherche ses mots sont souvent les plus puissants.'],
+             ['Filmer ses mains, ses yeux, pas juste son visage','Les details physiques creent l\'intimite.'],
+             ['La transformation doit etre visible','Debut et fin du doc : le personnage a change.']]],
+          ['var(--blue)','3. L\'image — ce qui separe un doc amateur d\'un doc pro','',
+            [['La regle des tiers + espace de regard','Sujet sur 1/3 de l\'image, regard vers le vide. Tension visuelle naturelle.'],
+             ['Varier les focales','Tres large (contexte) → moyen (action) → tres serre (emotion).'],
+             ['L\'heure doree est obligatoire','Lumiere chaude 30-60 min avant coucher de soleil.'],
+             ['Plans de detail = respiration emotionnelle','Mains, objets, textures, eau.'],
+             ['Le plan fixe long = confiance','Les meilleurs docs laissent la camera immobile longtemps.'],
+             ['Profondeur de champ reduite pour l\'emotion','Ouverture f/1.4-f/2.8, sujet net, fond flou.']]],
+          ['var(--purple)','4. Le son et la musique — l\'arme invisible','70% de l\'emotion dans un film vient du son. Les spectateurs pensent que c\'est l\'image.',
+            [['Le silence est plus fort que la musique','Apres un moment intense : coupe tout. 3-4 secondes de silence total.'],
+             ['Enregistrer les sons d\'ambiance sur place','L\'eau, le vent, les machines. Ca rend l\'image vivante.'],
+             ['Musique instrumentale uniquement','Paroles = competition avec la voix du sujet.'],
+             ['La reverb raconte l\'espace','Son sec = intimite. Son reverberant = grandeur, solitude.'],
+             ['Ne jamais mettre de musique forte pendant qu\'il parle','La musique EN DESSOUS de la voix, jamais au meme niveau.']]],
+          ['var(--accent2)','5. L\'etalonnage couleur — l\'identite visuelle','',
+            [['Choisir UNE palette et s\'y tenir','Tons chauds = nostalgie. Tons froids = tension. Desature = brut.'],
+             ['Les docs qui marquent ont un look reconnaissable','So La Lune : rose/violet. Louis Theroux : brut. Ken Burns : sepia.'],
+             ['Skin tones d\'abord','La peau doit etre belle. Si la peau est bizarre, tout est rate.'],
+             ['Moins c\'est plus','Un leger grade discret vaut mieux qu\'un over-processed agressif.']]],
+          ['var(--muted)','6. Le montage — le rythme qui hypnotise','',
+            [['Monter l\'audio en premier','Construis l\'histoire avec ses paroles. Ajoute les images ensuite.'],
+             ['La coupe sur le mot fort','Quand il dit quelque chose d\'important : coupe sur ce mot.'],
+             ['Alterner vite / lent consciemment','Scene intense = coupes rapides. Emotion = plan long fixe.'],
+             ['Enlever tout ce qui n\'est pas necessaire','Si une phrase peut etre coupee sans perdre le sens : coupe-la.'],
+             ['Finir avant qu\'ils veulent que ca finisse','Un doc court qu\'on aurait voulu voir plus long est meilleur.']]],
+        ].map(([color,title,intro,items]) => `
+        <div class="phase-block" style="border-left-color:${color};margin-bottom:18px">
+          <div class="phase-title" style="color:${color}">${title}</div>
+          ${intro ? `<p style="font-size:13px;color:var(--muted);margin-bottom:9px">${intro}</p>` : ''}
+          <div style="display:flex;flex-direction:column;gap:5px">
+            ${items.map(([t,d]) => `<div style="padding:9px 12px;background:var(--card2);border-radius:7px;border:1px solid var(--border)"><div style="font-size:13px;font-weight:600;margin-bottom:2px">${t}</div><div style="font-size:12px;color:var(--muted)">${d}</div></div>`).join('')}
+          </div>
+        </div>`).join('')}
+        <div style="padding:14px 16px;background:#1a1a2a;border:1px solid #2a2a4a;border-radius:9px">
+          <div style="font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--blue);margin-bottom:9px">Les docs de reference a regarder</div>
+          ${[
+            ['Jiro Dreams of Sushi (2011)','Portrait artisan parfait. Structure simple, image magnifique, emotion pure.'],
+            ['So La Lune — OFFSHORE','Format carre, couleurs artistiques, storytelling rap francais. Proche de ce que tu veux faire.'],
+            ["Chef's Table (Netflix)",'Portraits de chefs. Chaque episode = un perso, une passion. Modele parfait.'],
+            ['Free Solo (2018)','Tension narrative supreme. Comment rendre le spectateur physiquement stresse.'],
+            ['Seaspiracy / 13th','Comment un doc peut changer le regard des gens sur le monde.'],
+          ].map(([t,d]) => `<div style="display:flex;gap:10px;padding:7px 0;border-bottom:1px solid #252535"><div style="font-size:13px;font-weight:700;min-width:180px">${t}</div><div style="font-size:12px;color:var(--muted)">${d}</div></div>`).join('')}
+        </div>
+      </div>`;
+  }
+
+  // ---- HIDE FIXED NOTES ----
+  function getHidden() { return JSON.parse(localStorage.getItem('jrv_hidden') || '[]'); }
+  function hideFixedNote(id, e) {
+    e.stopPropagation();
+    const hidden = getHidden(); if (!hidden.includes(id)) hidden.push(id);
+    localStorage.setItem('jrv_hidden', JSON.stringify(hidden));
+    const el = document.querySelector(`.note-item[data-fixed="${id}"]`); if (el) el.style.display = 'none';
+    if (currentId === id) showNote('dashboard', document.querySelector('[data-fixed="dashboard"]'));
+  }
+  function restoreFixedNote(id) {
+    const hidden = getHidden().filter(x => x !== id);
+    localStorage.setItem('jrv_hidden', JSON.stringify(hidden));
+    const el = document.querySelector(`.note-item[data-fixed="${id}"]`); if (el) el.style.display = '';
+  }
+  function applyHidden() {
+    getHidden().forEach(id => { const el = document.querySelector(`.note-item[data-fixed="${id}"]`); if (el) el.style.display = 'none'; });
+  }
+  function addHideButtons() {
+    document.querySelectorAll('.note-item[data-fixed]').forEach(el => {
+      const id = el.dataset.fixed;
+      if (['dashboard','crm','allNotes','alertes'].includes(id)) return;
+      if (el.querySelector('.del-btn')) return;
+      const btn = document.createElement('button');
+      btn.className = 'del-btn'; btn.textContent = '×'; btn.title = 'Masquer de la sidebar';
+      btn.onclick = (e) => hideFixedNote(id, e);
+      el.appendChild(btn);
+    });
+  }
+
+  // ---- INIT ----
+  renderSidebarCustom();
+  updateAllNotesSub();
+  updateAlertesBadge();
+  addHideButtons();
+  applyHidden();
+  showNote('dashboard', document.querySelector('[data-fixed="dashboard"]'));
+</script>
+</body>
+</html>
