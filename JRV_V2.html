@@ -4,201 +4,246 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>JRV V2</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   <style>
+    @keyframes fadeInUp { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+    @keyframes expandDown { from { opacity:0; transform:translateY(-4px); } to { opacity:1; transform:translateY(0); } }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
-      --bg: #0f0f0f; --sidebar: #161616; --card: #1c1c1c; --card2: #222;
-      --border: #282828; --border2: #333;
-      --accent: #f0a500; --accent2: #4caf50; --blue: #4a9eff;
-      --purple: #9b59b6; --danger: #e53935; --green2: #00c853;
-      --text: #e8e8e8; --text2: #bbb; --muted: #666;
+      --bg: #030303; --sidebar: #080808; --card: #0e0e0e; --card2: #141414;
+      --border: rgba(255,255,255,0.06); --border2: rgba(255,255,255,0.1);
+      --accent: #f0a500; --accent2: #10b981; --blue: #3b82f6;
+      --purple: #8b5cf6; --danger: #ef4444; --green2: #00c853;
+      --text: #f0f0f0; --text2: #a0a0a0; --muted: #444;
     }
-    body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); color: var(--text); display: flex; height: 100vh; overflow: hidden; font-size: 15px; }
+    body { font-family: 'Inter', 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); display: flex; height: 100vh; overflow: hidden; font-size: 14px; letter-spacing: -0.01em; }
 
     /* SIDEBAR */
-    #sidebar { width: 252px; min-width: 252px; background: var(--sidebar); border-right: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden; }
-    #sidebar-header { padding: 15px 14px 11px; border-bottom: 1px solid var(--border); }
-    #sidebar-header h1 { font-size: 15px; font-weight: 800; color: var(--accent); letter-spacing: 1px; }
-    #sidebar-header p { font-size: 11px; color: var(--muted); margin-top: 2px; }
-    .section-label { font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--muted); padding: 12px 14px 4px; }
+    #sidebar { width: 240px; min-width: 240px; background: var(--sidebar); border-right: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden; }
+    #sidebar-header { padding: 16px 14px 14px; border-bottom: 1px solid var(--border); }
+    .logo-wrap { display: flex; align-items: center; gap: 10px; }
+    .logo-icon { flex-shrink: 0; filter: drop-shadow(0 0 8px rgba(240,165,0,0.3)); }
+    #sidebar-header h1 { font-size: 13px; font-weight: 800; color: var(--accent); letter-spacing: 2.5px; text-transform: uppercase; }
+    #sidebar-header p { font-size: 10px; color: var(--muted); margin-top: 2px; }
+    .section-label { font-size: 9px; text-transform: uppercase; letter-spacing: 2px; color: var(--muted); padding: 14px 16px 4px; font-weight: 600; }
     #note-list { flex: 1; overflow-y: auto; padding-bottom: 8px; }
-    .note-item { padding: 7px 12px; cursor: pointer; border-left: 3px solid transparent; display: flex; align-items: center; justify-content: space-between; gap: 8px; transition: background 0.1s; border-radius: 0 6px 6px 0; margin-right: 6px; }
-    .note-item:hover { background: #1e1e1e; }
-    .note-item.active { background: #1f1a0f; border-left-color: var(--accent); }
-    .note-item .nt { font-size: 13px; font-weight: 600; color: var(--text2); line-height: 1.3; }
-    .note-item .ns { font-size: 11px; color: var(--muted); margin-top: 1px; }
+    .note-item { padding: 8px 14px; cursor: pointer; border-left: 2px solid transparent; display: flex; align-items: center; justify-content: space-between; gap: 8px; transition: all 0.15s; border-radius: 0 8px 8px 0; margin-right: 8px; }
+    .note-item:hover { background: rgba(255,255,255,0.03); }
+    .note-item.active { background: rgba(240,165,0,0.06); border-left-color: var(--accent); }
+    .note-item .nt { font-size: 12px; font-weight: 600; color: var(--text2); line-height: 1.3; }
+    .note-item .ns { font-size: 10px; color: var(--muted); margin-top: 1px; }
     .note-item.active .nt { color: var(--accent); }
-    .note-item .del-btn { opacity: 0; background: none; border: none; color: var(--danger); font-size: 15px; cursor: pointer; padding: 1px 4px; border-radius: 4px; flex-shrink: 0; }
-    .note-item:hover .del-btn { opacity: 0.6; }
-    .note-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
-    #add-note-btn { margin: 8px 12px; padding: 8px; background: transparent; border: 1px dashed var(--border2); border-radius: 8px; color: var(--muted); font-size: 12px; cursor: pointer; width: calc(100% - 24px); text-align: center; transition: all 0.15s; }
-    #add-note-btn:hover { border-color: var(--accent); color: var(--accent); background: rgba(240,165,0,0.05); }
+    .note-item .del-btn { opacity: 0; background: none; border: none; color: var(--danger); font-size: 14px; cursor: pointer; padding: 1px 4px; border-radius: 4px; flex-shrink: 0; transition: opacity 0.15s; }
+    .note-item:hover .del-btn { opacity: 0.5; }
+    .note-dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
+    #add-note-btn { margin: 8px 12px; padding: 8px; background: transparent; border: 1px dashed rgba(255,255,255,0.08); border-radius: 8px; color: var(--muted); font-size: 11px; cursor: pointer; width: calc(100% - 24px); text-align: center; transition: all 0.2s; font-family: 'Inter', inherit; }
+    #add-note-btn:hover { border-color: var(--accent); color: var(--accent); background: rgba(240,165,0,0.04); }
 
     /* MAIN */
     #main { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
-    #topbar { padding: 10px 22px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; background: var(--card); gap: 12px; flex-shrink: 0; }
-    #note-title-input { font-size: 16px; font-weight: 700; color: var(--text); background: transparent; border: none; outline: none; flex: 1; min-width: 0; }
+    #topbar { padding: 12px 24px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; background: var(--sidebar); gap: 12px; flex-shrink: 0; }
+    #note-title-input { font-size: 14px; font-weight: 700; color: var(--text); background: transparent; border: none; outline: none; flex: 1; min-width: 0; font-family: 'Inter', sans-serif; letter-spacing: -0.02em; }
     #note-title-input[readonly] { cursor: default; }
-    #saved-badge { font-size: 11px; color: var(--accent2); display: none; white-space: nowrap; background: rgba(76,175,80,0.1); padding: 3px 9px; border-radius: 20px; }
-    #content { flex: 1; overflow-y: auto; padding: 20px 24px; }
+    #saved-badge { font-size: 10px; color: var(--accent2); display: none; white-space: nowrap; background: rgba(16,185,129,0.08); padding: 3px 10px; border-radius: 20px; border: 1px solid rgba(16,185,129,0.15); }
+    #content { flex: 1; overflow-y: auto; padding: 22px 26px; }
 
     /* SCRATCHPAD */
-    .scratchpad-wrap { background: rgba(76,175,80,0.04); border: 1px solid rgba(76,175,80,0.14); border-radius: 10px; padding: 11px 15px; margin-bottom: 16px; }
-    .scratchpad-label { font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--accent2); margin-bottom: 6px; opacity: 0.8; }
-    .scratchpad { width: 100%; min-height: 75px; background: transparent; border: none; outline: none; color: var(--text); font-family: 'Segoe UI', Arial, sans-serif; font-size: 14px; line-height: 1.7; resize: vertical; }
-    .scratchpad::placeholder { color: #2a2a2a; }
-    .custom-note-area { width: 100%; min-height: calc(100vh - 180px); background: transparent; border: none; outline: none; color: var(--text); font-family: 'Segoe UI', Arial, sans-serif; font-size: 15px; line-height: 1.8; resize: none; }
-    .custom-note-area::placeholder { color: #2a2a2a; }
+    .scratchpad-wrap { background: rgba(16,185,129,0.03); border: 1px solid rgba(16,185,129,0.1); border-radius: 10px; padding: 12px 16px; margin-bottom: 16px; }
+    .scratchpad-label { font-size: 9px; text-transform: uppercase; letter-spacing: 2px; color: var(--accent2); margin-bottom: 6px; opacity: 0.7; }
+    .scratchpad { width: 100%; min-height: 70px; background: transparent; border: none; outline: none; color: var(--text); font-family: 'Inter', sans-serif; font-size: 13px; line-height: 1.7; resize: vertical; }
+    .scratchpad::placeholder { color: #1a1a1a; }
+    .custom-note-area { width: 100%; min-height: calc(100vh - 180px); background: transparent; border: none; outline: none; color: var(--text); font-family: 'Inter', sans-serif; font-size: 14px; line-height: 1.8; resize: none; }
+    .custom-note-area::placeholder { color: #1a1a1a; }
 
     /* BLOCKS */
-    .block { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 15px 20px; margin-bottom: 13px; }
-    .block h3 { font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--accent); margin-bottom: 11px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
-    .block h4 { font-size: 11px; font-weight: 700; color: var(--muted); margin: 11px 0 6px; text-transform: uppercase; letter-spacing: 1px; }
-    .block ul { padding-left: 18px; } .block li { margin-bottom: 6px; line-height: 1.6; font-size: 14px; }
-    .block p { line-height: 1.7; margin-bottom: 8px; color: var(--text); font-size: 14px; }
-    .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
-    .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 9px; }
-    .ibox { background: var(--card2); border-radius: 8px; padding: 10px 13px; border: 1px solid var(--border); }
-    .ibox .lbl { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 3px; }
-    .ibox .val { font-size: 14px; font-weight: 600; }
-    .tag { display: inline-block; background: var(--card2); border: 1px solid var(--border); border-radius: 4px; padding: 2px 8px; font-size: 12px; color: var(--muted); margin: 2px 2px 2px 0; }
-    .chk-item { display: flex; align-items: flex-start; gap: 9px; margin-bottom: 5px; cursor: pointer; padding: 4px 6px; border-radius: 5px; transition: background 0.1s; }
-    .chk-item:hover { background: var(--card2); }
-    .chk-item input[type="checkbox"] { margin-top: 3px; width: 14px; height: 14px; accent-color: var(--accent2); cursor: pointer; flex-shrink: 0; }
-    .chk-item span { font-size: 14px; line-height: 1.5; }
+    .block { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px 20px; margin-bottom: 12px; transition: border-color 0.2s; animation: fadeInUp 0.3s ease both; }
+    .block:hover { border-color: rgba(255,255,255,0.1); }
+    .block h3 { font-size: 9px; text-transform: uppercase; letter-spacing: 2px; color: var(--accent); margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--border); font-weight: 700; }
+    .block h4 { font-size: 10px; font-weight: 700; color: var(--muted); margin: 12px 0 6px; text-transform: uppercase; letter-spacing: 1.5px; }
+    .block ul { padding-left: 18px; } .block li { margin-bottom: 6px; line-height: 1.6; font-size: 13px; }
+    .block p { line-height: 1.7; margin-bottom: 8px; color: var(--text); font-size: 13px; }
+    .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+    .ibox { background: var(--card2); border-radius: 10px; padding: 11px 14px; border: 1px solid var(--border); transition: all 0.2s; }
+    .ibox:hover { border-color: rgba(255,255,255,0.1); transform: translateY(-1px); }
+    .ibox .lbl { font-size: 9px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--muted); margin-bottom: 4px; }
+    .ibox .val { font-size: 14px; font-weight: 700; }
+    .tag { display: inline-block; background: var(--card2); border: 1px solid var(--border); border-radius: 4px; padding: 2px 8px; font-size: 11px; color: var(--muted); margin: 2px 2px 2px 0; }
+    .chk-item { display: flex; align-items: flex-start; gap: 9px; margin-bottom: 5px; cursor: pointer; padding: 5px 7px; border-radius: 6px; transition: background 0.15s; }
+    .chk-item:hover { background: rgba(255,255,255,0.03); }
+    .chk-item input[type="checkbox"] { margin-top: 3px; width: 13px; height: 13px; accent-color: var(--accent2); cursor: pointer; flex-shrink: 0; }
+    .chk-item span { font-size: 13px; line-height: 1.5; }
     .chk-item.done span { text-decoration: line-through; color: var(--muted); }
-    .script-box { background: #141414; border: 1px solid var(--border); border-radius: 8px; padding: 13px 15px; font-size: 14px; line-height: 1.8; color: #ccc; white-space: pre-wrap; font-family: 'Segoe UI', Arial, sans-serif; }
-    .tarif-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
-    .tarif-box { background: var(--card2); border-radius: 8px; padding: 10px 13px; border: 1px solid var(--border); }
-    .tarif-box .type { font-size: 12px; color: var(--muted); margin-bottom: 3px; }
-    .tarif-box .prix { font-size: 19px; font-weight: 700; color: var(--accent); }
-    .month-block { border-left: 2px solid var(--accent); padding-left: 13px; margin-bottom: 16px; }
+    .script-box { background: #080808; border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; font-size: 13px; line-height: 1.8; color: #b0b0b0; white-space: pre-wrap; font-family: 'Inter', sans-serif; }
+    .tarif-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .tarif-box { background: var(--card2); border-radius: 10px; padding: 11px 14px; border: 1px solid var(--border); transition: all 0.2s; }
+    .tarif-box:hover { border-color: rgba(240,165,0,0.2); }
+    .tarif-box .type { font-size: 11px; color: var(--muted); margin-bottom: 4px; }
+    .tarif-box .prix { font-size: 20px; font-weight: 900; color: var(--accent); letter-spacing: -0.03em; }
+    .month-block { border-left: 2px solid var(--accent); padding-left: 14px; margin-bottom: 18px; }
     .month-title { font-size: 13px; font-weight: 700; color: var(--accent); margin-bottom: 5px; }
-    .obj-badge { display: inline-block; background: var(--card2); border-radius: 5px; padding: 2px 8px; font-size: 12px; color: var(--muted); margin-bottom: 6px; border: 1px solid var(--border); }
-    .q-block { background: var(--card2); border-radius: 8px; padding: 11px 13px; margin-bottom: 8px; border: 1px solid var(--border); }
-    .q-num { font-size: 11px; color: var(--accent); font-weight: 700; margin-bottom: 3px; }
-    .q-text { font-size: 14px; line-height: 1.5; }
-    .q-why { font-size: 12px; color: var(--muted); margin-top: 4px; font-style: italic; }
-    .phase-block { border-left: 3px solid var(--blue); padding-left: 13px; margin-bottom: 18px; }
+    .obj-badge { display: inline-block; background: var(--card2); border-radius: 5px; padding: 2px 9px; font-size: 11px; color: var(--muted); margin-bottom: 6px; border: 1px solid var(--border); }
+    .q-block { background: var(--card2); border-radius: 10px; padding: 12px 14px; margin-bottom: 8px; border: 1px solid var(--border); transition: all 0.2s; }
+    .q-block:hover { border-color: rgba(255,255,255,0.1); }
+    .q-num { font-size: 10px; color: var(--accent); font-weight: 700; margin-bottom: 3px; letter-spacing: 1px; }
+    .q-text { font-size: 13px; line-height: 1.5; }
+    .q-why { font-size: 11px; color: var(--muted); margin-top: 4px; font-style: italic; }
+    .phase-block { border-left: 2px solid var(--blue); padding-left: 14px; margin-bottom: 20px; }
     .phase-block.green { border-left-color: var(--accent2); }
     .phase-block.orange { border-left-color: var(--accent); }
     .phase-block.purple { border-left-color: var(--purple); }
-    .phase-title { font-size: 14px; font-weight: 700; margin-bottom: 8px; }
-    .story-step { display: flex; gap: 11px; margin-bottom: 11px; align-items: flex-start; }
-    .story-num { width: 27px; height: 27px; border-radius: 50%; background: var(--accent); color: #111; font-weight: 800; font-size: 13px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-    .story-content .title { font-weight: 700; font-size: 14px; margin-bottom: 3px; }
-    .story-content .desc { font-size: 12px; color: var(--muted); line-height: 1.5; }
-    .story-content .example { font-size: 12px; color: var(--accent); margin-top: 4px; font-style: italic; }
+    .phase-title { font-size: 13px; font-weight: 700; margin-bottom: 8px; }
+    .story-step { display: flex; gap: 12px; margin-bottom: 12px; align-items: flex-start; }
+    .story-num { width: 26px; height: 26px; border-radius: 50%; background: var(--accent); color: #000; font-weight: 900; font-size: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .story-content .title { font-weight: 700; font-size: 13px; margin-bottom: 3px; }
+    .story-content .desc { font-size: 11px; color: var(--muted); line-height: 1.5; }
+    .story-content .example { font-size: 11px; color: var(--accent); margin-top: 4px; font-style: italic; }
 
     /* DASHBOARD */
-    .stat-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 13px 16px; text-align: center; }
-    .stat-card .big { font-size: 24px; font-weight: 800; }
-    .stat-card .small { font-size: 11px; color: var(--muted); margin-top: 2px; }
-    .dash-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 13px 15px; cursor: pointer; transition: border-color 0.15s, background 0.15s; }
-    .dash-card:hover { border-color: var(--accent); background: rgba(240,165,0,0.03); }
-    .dash-card .dc-icon { font-size: 17px; margin-bottom: 6px; }
+    .stat-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; text-align: center; transition: all 0.2s; animation: fadeInUp 0.3s ease both; }
+    .stat-card:hover { border-color: rgba(255,255,255,0.12); transform: translateY(-1px); }
+    .stat-card .big { font-size: 26px; font-weight: 900; letter-spacing: -0.04em; }
+    .stat-card .small { font-size: 9px; color: var(--muted); margin-top: 3px; text-transform: uppercase; letter-spacing: 1px; }
+    .dash-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; cursor: pointer; transition: all 0.2s; animation: fadeInUp 0.3s ease both; }
+    .dash-card:hover { border-color: rgba(240,165,0,0.25); background: rgba(240,165,0,0.02); transform: translateY(-2px); box-shadow: 0 8px 32px rgba(0,0,0,0.5); }
+    .dash-card .dc-icon { font-size: 18px; margin-bottom: 7px; }
     .dash-card .dc-title { font-size: 13px; font-weight: 700; margin-bottom: 3px; }
     .dash-card .dc-sub { font-size: 11px; color: var(--muted); }
-    .progress-bar { background: var(--card2); border-radius: 3px; height: 3px; margin-top: 7px; }
-    .progress-fill { height: 100%; border-radius: 3px; background: var(--accent); }
+    .progress-bar { background: rgba(255,255,255,0.05); border-radius: 2px; height: 2px; margin-top: 8px; }
+    .progress-fill { height: 100%; border-radius: 2px; background: var(--accent); }
 
     /* CRM */
-    .crm-stats { display: grid; grid-template-columns: repeat(5,1fr); gap: 8px; margin-bottom: 14px; }
-    .crm-stat { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 10px 8px; text-align: center; }
-    .crm-stat .n { font-size: 22px; font-weight: 800; }
-    .crm-stat .l { font-size: 10px; color: var(--muted); margin-top: 2px; text-transform: uppercase; letter-spacing: 0.5px; }
-    .crm-filters { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 10px; }
-    .crm-filter-btn { padding: 5px 13px; border-radius: 20px; border: 1px solid var(--border); background: transparent; color: var(--muted); font-size: 12px; cursor: pointer; transition: all 0.15s; font-family: inherit; }
-    .crm-filter-btn:hover { border-color: var(--accent); color: var(--accent); }
-    .crm-filter-btn.active { background: var(--accent); color: #111; border-color: var(--accent); font-weight: 700; }
-    .crm-search { width: 100%; padding: 8px 13px; background: var(--card); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-size: 13px; outline: none; font-family: inherit; margin-bottom: 12px; transition: border-color 0.15s; }
-    .crm-search:focus { border-color: var(--accent); }
+    .crm-stats { display: grid; grid-template-columns: repeat(5,1fr); gap: 8px; margin-bottom: 16px; }
+    .crm-stat { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 12px 8px; text-align: center; transition: all 0.2s; }
+    .crm-stat:hover { border-color: rgba(255,255,255,0.1); transform: translateY(-1px); }
+    .crm-stat .n { font-size: 22px; font-weight: 900; letter-spacing: -0.04em; }
+    .crm-stat .l { font-size: 9px; color: var(--muted); margin-top: 3px; text-transform: uppercase; letter-spacing: 1px; }
+    .crm-filters { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 10px; align-items: center; }
+    .crm-filter-btn { padding: 5px 13px; border-radius: 6px; border: 1px solid var(--border); background: transparent; color: var(--muted); font-size: 11px; cursor: pointer; transition: all 0.15s; font-family: 'Inter', inherit; font-weight: 500; }
+    .crm-filter-btn:hover { border-color: rgba(255,255,255,0.2); color: var(--text2); }
+    .crm-filter-btn.active { background: var(--accent); color: #000; border-color: var(--accent); font-weight: 700; box-shadow: 0 0 16px rgba(240,165,0,0.2); }
+    .crm-search { width: 100%; padding: 9px 14px; background: var(--card); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-size: 13px; outline: none; font-family: 'Inter', inherit; margin-bottom: 12px; transition: all 0.2s; }
+    .crm-search:focus { border-color: rgba(255,255,255,0.2); background: var(--card2); }
     .crm-search::placeholder { color: var(--muted); }
-    .crm-zone-label { font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--muted); padding: 10px 0 5px; border-bottom: 1px solid var(--border); margin-bottom: 5px; display: flex; justify-content: space-between; }
-    .crm-row { background: var(--card); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 3px; overflow: hidden; transition: border-color 0.15s; }
-    .crm-row.open { border-color: var(--accent); }
-    .crm-row-header { display: flex; align-items: center; gap: 8px; padding: 8px 13px; cursor: pointer; user-select: none; }
+    .crm-zone-label { font-size: 9px; text-transform: uppercase; letter-spacing: 2px; color: var(--muted); padding: 12px 0 6px; border-bottom: 1px solid var(--border); margin-bottom: 6px; display: flex; justify-content: space-between; font-weight: 600; }
+    .crm-row { background: var(--card); border: 1px solid var(--border); border-radius: 10px; margin-bottom: 3px; overflow: hidden; transition: all 0.2s; animation: fadeInUp 0.25s ease both; }
+    .crm-row:hover { border-color: rgba(255,255,255,0.1); }
+    .crm-row.open { border-color: rgba(240,165,0,0.3); box-shadow: 0 4px 24px rgba(240,165,0,0.04); }
+    .crm-row-header { display: flex; align-items: center; gap: 8px; padding: 9px 14px; cursor: pointer; user-select: none; }
     .crm-row-header:hover { background: rgba(255,255,255,0.02); }
-    .crm-priority { color: var(--accent); font-size: 11px; flex-shrink: 0; width: 12px; }
+    .crm-priority { color: var(--accent); font-size: 10px; flex-shrink: 0; width: 12px; }
     .crm-copy-btn { background: none; border: none; color: var(--muted); font-size: 11px; cursor: pointer; padding: 1px 3px; border-radius: 3px; flex-shrink: 0; opacity: 0; transition: opacity 0.15s, color 0.15s; }
     .crm-row-header:hover .crm-copy-btn { opacity: 1; }
     .crm-copy-btn:hover { color: var(--accent); }
     .crm-copy-btn.copied { color: var(--accent2); opacity: 1; }
-    .crm-name { font-size: 13px; font-weight: 600; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .crm-contact-display { font-size: 11px; color: var(--accent2); flex-shrink: 0; max-width: 110px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .crm-zone-tag { font-size: 10px; color: var(--muted); background: var(--card2); padding: 2px 6px; border-radius: 3px; flex-shrink: 0; }
-    .crm-badge { font-size: 10px; font-weight: 700; padding: 2px 9px; border-radius: 20px; flex-shrink: 0; white-space: nowrap; }
-    .crm-has-notes { font-size: 8px; flex-shrink: 0; color: var(--accent2); }
-    .crm-msg-check { font-size: 11px; flex-shrink: 0; cursor: pointer; background: none; border: 1px solid var(--border2); border-radius: 3px; width: 16px; height: 16px; display: flex; align-items: center; justify-content: center; color: transparent; transition: all 0.15s; padding: 0; }
-    .crm-msg-check.sent { border-color: var(--blue); background: rgba(74,158,255,0.15); color: var(--blue); }
+    .crm-name { font-size: 13px; font-weight: 600; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; letter-spacing: -0.01em; }
+    .crm-contact-display { font-size: 10px; color: var(--accent2); flex-shrink: 0; max-width: 110px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .crm-zone-tag { font-size: 10px; color: var(--muted); background: var(--card2); padding: 2px 7px; border-radius: 4px; flex-shrink: 0; }
+    .crm-badge { font-size: 10px; font-weight: 600; padding: 2px 9px; border-radius: 5px; flex-shrink: 0; white-space: nowrap; }
+    .crm-has-notes { font-size: 7px; flex-shrink: 0; color: var(--accent2); }
+    .crm-msg-check { font-size: 10px; flex-shrink: 0; cursor: pointer; background: none; border: 1px solid rgba(255,255,255,0.1); border-radius: 3px; width: 16px; height: 16px; display: flex; align-items: center; justify-content: center; color: transparent; transition: all 0.15s; padding: 0; }
+    .crm-msg-check.sent { border-color: var(--blue); background: rgba(59,130,246,0.12); color: var(--blue); }
     .crm-msg-check:hover { border-color: var(--blue); }
-    .crm-chevron { font-size: 9px; color: var(--muted); flex-shrink: 0; transition: transform 0.2s; }
+    .crm-chevron { font-size: 8px; color: var(--muted); flex-shrink: 0; transition: transform 0.25s cubic-bezier(0.4,0,0.2,1); }
     .crm-row.open .crm-chevron { transform: rotate(180deg); }
-    .crm-detail { display: none; padding: 13px 15px; border-top: 1px solid var(--border); background: rgba(0,0,0,0.25); }
-    .crm-row.open .crm-detail { display: block; }
-    .crm-detail-grid { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 9px; margin-bottom: 10px; }
-    .crm-field { display: flex; flex-direction: column; gap: 3px; }
-    .crm-field label { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); }
-    .crm-input { background: var(--card2); border: 1px solid var(--border); border-radius: 5px; padding: 5px 9px; color: var(--text); font-size: 13px; outline: none; font-family: inherit; transition: border-color 0.15s; width: 100%; }
-    .crm-input:focus { border-color: var(--accent); }
-    .crm-select { background: var(--card2); border: 1px solid var(--border); border-radius: 5px; padding: 5px 9px; color: var(--text); font-size: 13px; outline: none; font-family: inherit; cursor: pointer; width: 100%; }
-    .crm-notes-field { width: 100%; background: var(--card2); border: 1px solid var(--border); border-radius: 5px; padding: 7px 9px; color: var(--text); font-size: 13px; font-family: inherit; resize: vertical; min-height: 55px; outline: none; margin-bottom: 9px; transition: border-color 0.15s; }
-    .crm-notes-field:focus { border-color: var(--accent); }
-    .crm-actions { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
-    .crm-action-btn { padding: 4px 12px; border-radius: 5px; border: 1px solid var(--border); background: transparent; color: var(--text2); font-size: 11px; cursor: pointer; transition: all 0.15s; font-family: inherit; }
-    .crm-action-btn:hover { border-color: var(--accent); color: var(--accent); background: rgba(240,165,0,0.05); }
-    .crm-action-btn.rdv { border-color: var(--green2); color: var(--green2); }
-    .crm-action-btn.rdv:hover { background: rgba(0,200,83,0.08); }
+    .crm-detail { display: none; padding: 14px 16px; border-top: 1px solid var(--border); background: rgba(0,0,0,0.3); }
+    .crm-row.open .crm-detail { display: block; animation: expandDown 0.2s ease; }
+    .crm-detail-grid { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+    .crm-field { display: flex; flex-direction: column; gap: 4px; }
+    .crm-field label { font-size: 9px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--muted); font-weight: 600; }
+    .crm-input { background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 6px; padding: 6px 10px; color: var(--text); font-size: 12px; outline: none; font-family: 'Inter', inherit; transition: all 0.15s; width: 100%; }
+    .crm-input:focus { border-color: rgba(255,255,255,0.2); background: rgba(255,255,255,0.06); }
+    .crm-select { background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 6px; padding: 6px 10px; color: var(--text); font-size: 12px; outline: none; font-family: 'Inter', inherit; cursor: pointer; width: 100%; transition: border-color 0.15s; }
+    .crm-notes-field { width: 100%; background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 6px; padding: 8px 10px; color: var(--text); font-size: 12px; font-family: 'Inter', inherit; resize: vertical; min-height: 55px; outline: none; margin-bottom: 10px; transition: all 0.15s; line-height: 1.6; }
+    .crm-notes-field:focus { border-color: rgba(255,255,255,0.2); }
+    .crm-contacts-section { margin-bottom: 12px; }
+    .crm-contacts-label { font-size: 9px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--muted); margin-bottom: 7px; display: flex; align-items: center; justify-content: space-between; font-weight: 600; }
+    .crm-contact-item { background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 4px; overflow: hidden; transition: border-color 0.15s; }
+    .crm-contact-item.open { border-color: rgba(59,130,246,0.3); }
+    .crm-contact-header { display: flex; align-items: center; gap: 8px; padding: 8px 12px; cursor: pointer; user-select: none; }
+    .crm-contact-header:hover { background: rgba(255,255,255,0.02); }
+    .crm-contact-name-tag { font-size: 12px; font-weight: 600; color: var(--text); flex: 1; }
+    .crm-contact-name-tag.empty { color: var(--muted); font-style: italic; font-weight: 400; }
+    .crm-contact-sub { font-size: 10px; color: var(--muted); }
+    .crm-contact-del { background: none; border: none; color: var(--danger); font-size: 12px; cursor: pointer; opacity: 0; padding: 2px 5px; border-radius: 3px; transition: opacity 0.15s; }
+    .crm-contact-header:hover .crm-contact-del { opacity: 0.5; }
+    .crm-contact-detail { display: none; padding: 10px 12px; border-top: 1px solid var(--border); }
+    .crm-contact-item.open .crm-contact-detail { display: block; animation: expandDown 0.2s ease; }
+    .crm-contact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
+    .crm-contact-validate { padding: 6px 20px; border-radius: 6px; border: none; background: var(--accent); color: #000; font-size: 12px; font-weight: 700; cursor: pointer; transition: all 0.15s; font-family: 'Inter', inherit; }
+    .crm-contact-validate:hover { background: #ffb700; box-shadow: 0 0 16px rgba(240,165,0,0.25); transform: translateY(-1px); }
+    .crm-add-contact-btn { padding: 4px 12px; border-radius: 5px; border: 1px dashed rgba(255,255,255,0.12); background: transparent; color: var(--muted); font-size: 10px; cursor: pointer; transition: all 0.15s; font-family: 'Inter', inherit; font-weight: 500; }
+    .crm-add-contact-btn:hover { border-color: var(--blue); color: var(--blue); }
+    .crm-actions { display: flex; gap: 5px; flex-wrap: wrap; align-items: center; }
+    /* MODAL */
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 999; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
+    .modal-overlay.open { display: flex; animation: fadeInUp 0.2s ease; }
+    .modal-box { background: var(--card); border: 1px solid rgba(255,255,255,0.1); border-radius: 14px; padding: 26px; width: 440px; max-width: 95vw; display: flex; flex-direction: column; gap: 16px; box-shadow: 0 24px 80px rgba(0,0,0,0.8); }
+    .modal-box h3 { font-size: 15px; font-weight: 800; color: var(--accent); letter-spacing: -0.02em; }
+    .modal-box label { font-size: 9px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--muted); display: block; margin-bottom: 5px; font-weight: 600; }
+    .modal-box input, .modal-box select, .modal-box textarea { width: 100%; padding: 9px 12px; background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-size: 13px; outline: none; font-family: 'Inter', inherit; transition: border-color 0.15s; }
+    .modal-box input:focus, .modal-box select:focus, .modal-box textarea:focus { border-color: rgba(255,255,255,0.2); }
+    .modal-btns { display: flex; gap: 8px; justify-content: flex-end; }
+    .modal-btn-cancel { padding: 8px 20px; border-radius: 8px; border: 1px solid var(--border); background: transparent; color: var(--text2); font-size: 13px; cursor: pointer; font-family: 'Inter', inherit; transition: all 0.15s; }
+    .modal-btn-cancel:hover { border-color: rgba(255,255,255,0.2); color: var(--text); }
+    .modal-btn-save { padding: 8px 20px; border-radius: 8px; border: none; background: var(--accent); color: #000; font-size: 13px; font-weight: 700; cursor: pointer; font-family: 'Inter', inherit; transition: all 0.15s; }
+    .modal-btn-save:hover { background: #ffb700; box-shadow: 0 0 20px rgba(240,165,0,0.3); transform: translateY(-1px); }
+    .crm-action-btn { padding: 4px 12px; border-radius: 5px; border: 1px solid var(--border); background: transparent; color: var(--text2); font-size: 11px; cursor: pointer; transition: all 0.15s; font-family: 'Inter', inherit; font-weight: 500; }
+    .crm-action-btn:hover { border-color: rgba(240,165,0,0.4); color: var(--accent); background: rgba(240,165,0,0.04); }
+    .crm-action-btn.rdv { border-color: rgba(0,200,83,0.3); color: var(--green2); }
+    .crm-action-btn.rdv:hover { background: rgba(0,200,83,0.06); }
 
     /* SUIVI TABLE */
     .suivi-tbl { width: 100%; border-collapse: collapse; font-size: 12px; }
-    .suivi-tbl th { text-align: left; padding: 6px 10px; color: var(--muted); font-weight: 600; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid var(--border); }
+    .suivi-tbl th { text-align: left; padding: 7px 10px; color: var(--muted); font-weight: 600; font-size: 9px; text-transform: uppercase; letter-spacing: 1.5px; border-bottom: 1px solid var(--border); }
     .suivi-tbl td { padding: 6px 10px; border-bottom: 1px solid var(--border); }
     .suivi-tbl tbody tr:last-child td { border-bottom: none; }
-    .suivi-inp { background: transparent; border: none; outline: none; color: var(--text); font-size: 12px; width: 100%; font-family: inherit; }
-    .suivi-sel { background: var(--card2); border: 1px solid var(--border); border-radius: 4px; color: var(--text); font-size: 11px; padding: 2px 5px; font-family: inherit; }
+    .suivi-inp { background: transparent; border: none; outline: none; color: var(--text); font-size: 12px; width: 100%; font-family: 'Inter', inherit; }
+    .suivi-sel { background: var(--card2); border: 1px solid var(--border); border-radius: 4px; color: var(--text); font-size: 11px; padding: 2px 5px; font-family: 'Inter', inherit; }
 
     /* SECTION ROWS */
-    .section-row { display: flex; align-items: center; padding: 10px 14px 3px; }
+    .section-row { display: flex; align-items: center; padding: 10px 16px 3px; }
     .section-row .section-label { flex: 1; }
     .section-add-btn { background: none; border: 1px solid transparent; color: var(--muted); font-size: 16px; cursor: pointer; padding: 0 5px; border-radius: 3px; line-height: 1; transition: all 0.15s; }
-    .section-add-btn:hover { color: var(--accent); border-color: var(--accent); background: rgba(240,165,0,0.08); }
+    .section-add-btn:hover { color: var(--accent); border-color: rgba(240,165,0,0.3); background: rgba(240,165,0,0.06); }
 
     /* HAMBURGER + OVERLAY */
     #hamburger { display: none; background: none; border: none; color: var(--text2); font-size: 20px; cursor: pointer; padding: 2px 8px; border-radius: 5px; flex-shrink: 0; }
-    #hamburger:hover { background: var(--card2); }
-    #overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 99; }
+    #hamburger:hover { background: rgba(255,255,255,0.05); }
+    #overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 99; }
 
     /* EDIT CONTROLS */
     #edit-controls { display: none; align-items: center; gap: 5px; flex-shrink: 0; }
-    .ec-btn { padding: 4px 11px; border-radius: 5px; border: 1px solid var(--border); background: transparent; color: var(--text2); font-size: 12px; cursor: pointer; transition: all 0.15s; font-family: inherit; white-space: nowrap; }
-    .ec-btn:hover { border-color: var(--accent); color: var(--accent); }
-    .ec-btn.save { border-color: var(--accent2); color: var(--accent2); }
-    .ec-btn.save:hover { background: rgba(76,175,80,0.1); }
-    .ec-btn.danger { border-color: var(--danger); color: var(--danger); }
-    .ec-btn.danger:hover { background: rgba(229,57,53,0.1); }
-    #note-editable[contenteditable="true"] { outline: 2px solid var(--accent); border-radius: 10px; padding: 10px; cursor: text; }
+    .ec-btn { padding: 5px 12px; border-radius: 6px; border: 1px solid var(--border); background: transparent; color: var(--text2); font-size: 11px; cursor: pointer; transition: all 0.15s; font-family: 'Inter', inherit; white-space: nowrap; font-weight: 500; }
+    .ec-btn:hover { border-color: rgba(255,255,255,0.2); color: var(--text); }
+    .ec-btn.save { border-color: rgba(16,185,129,0.3); color: var(--accent2); }
+    .ec-btn.save:hover { background: rgba(16,185,129,0.08); }
+    .ec-btn.danger { border-color: rgba(239,68,68,0.3); color: var(--danger); }
+    .ec-btn.danger:hover { background: rgba(239,68,68,0.08); }
+    #note-editable[contenteditable="true"] { outline: 1px solid rgba(240,165,0,0.3); border-radius: 10px; padding: 10px; cursor: text; }
 
     /* ADD MENU */
-    .add-menu { position: fixed; background: var(--card); border: 1px solid var(--border2); border-radius: 8px; padding: 5px; z-index: 1000; min-width: 140px; box-shadow: 0 6px 24px rgba(0,0,0,0.7); }
-    .add-menu-item { padding: 8px 13px; border-radius: 5px; cursor: pointer; font-size: 13px; color: var(--text2); user-select: none; }
-    .add-menu-item:hover { background: rgba(240,165,0,0.1); color: var(--accent); }
+    .add-menu { position: fixed; background: var(--card); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 5px; z-index: 1000; min-width: 150px; box-shadow: 0 12px 40px rgba(0,0,0,0.8); }
+    .add-menu-item { padding: 8px 14px; border-radius: 6px; cursor: pointer; font-size: 12px; color: var(--text2); user-select: none; transition: all 0.1s; }
+    .add-menu-item:hover { background: rgba(240,165,0,0.08); color: var(--accent); }
 
     /* ALERTES */
-    .alerte-badge { display: inline-block; background: var(--danger); color: #fff; font-size: 10px; font-weight: 800; padding: 1px 6px; border-radius: 8px; margin-left: 5px; vertical-align: middle; line-height: 1.5; }
+    .alerte-badge { display: inline-block; background: var(--danger); color: #fff; font-size: 10px; font-weight: 800; padding: 1px 6px; border-radius: 6px; margin-left: 5px; vertical-align: middle; line-height: 1.5; }
 
     /* UTILS */
     .r { color: var(--danger); } .g { color: var(--accent2); } .y { color: var(--accent); } .b { color: var(--blue); }
-    ::-webkit-scrollbar { width: 4px; height: 4px; }
+    ::-webkit-scrollbar { width: 3px; height: 3px; }
     ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: #2a2a2a; border-radius: 2px; }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 2px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.15); }
 
     /* STAT GRID 5 COL */
     .stat-grid5 { display: grid; grid-template-columns: repeat(5,1fr); gap: 8px; margin-bottom: 18px; }
 
     /* MOBILE */
     @media (max-width: 768px) {
-      #sidebar { position: fixed; left: 0; top: 0; bottom: 0; z-index: 100; transform: translateX(-100%); transition: transform 0.25s ease; box-shadow: 4px 0 24px rgba(0,0,0,0.6); }
+      #sidebar { position: fixed; left: 0; top: 0; bottom: 0; z-index: 100; transform: translateX(-100%); transition: transform 0.25s ease; box-shadow: 4px 0 40px rgba(0,0,0,0.8); }
       #sidebar.open { transform: translateX(0); }
       #overlay { display: block; opacity: 0; pointer-events: none; transition: opacity 0.25s; }
       #overlay.show { opacity: 1; pointer-events: auto; }
@@ -208,7 +253,7 @@
       .stat-grid5 { grid-template-columns: repeat(3, 1fr); }
       .grid3 { grid-template-columns: 1fr 1fr; }
       #content { padding: 14px 14px; }
-      #topbar { padding: 8px 14px; gap: 8px; }
+      #topbar { padding: 10px 14px; gap: 8px; }
       #note-title-input { max-width: 140px; }
       .ec-btn { padding: 4px 8px; font-size: 11px; }
       .crm-filter-btn { padding: 5px 10px; font-size: 11px; }
@@ -246,8 +291,20 @@
 
 <div id="sidebar">
   <div id="sidebar-header">
-    <h1>JRV V2</h1>
-    <p>Jeremy Rondeau — Videaste</p>
+    <div class="logo-wrap">
+      <svg class="logo-icon" width="34" height="34" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect width="34" height="34" rx="8" fill="#f0a500"/>
+        <rect x="0.5" y="0.5" width="33" height="33" rx="7.5" stroke="rgba(255,255,255,0.15)"/>
+        <!-- J -->
+        <path d="M10 9h4v11c0 2-1 3.5-3.5 3.5S7 22 7 20h2.5c0 .8.4 1.2 1 1.2s1-.4 1-1.2V11H10V9z" fill="#030303"/>
+        <!-- R -->
+        <path d="M16 9h4.5c2.2 0 3.5 1.3 3.5 3.2 0 1.4-.7 2.4-1.8 2.9L24.5 19H22l-1.8-3.5H18.5V19H16V9zm2.5 4.8h1.8c.8 0 1.2-.4 1.2-1.1 0-.7-.4-1.1-1.2-1.1h-1.8v2.2z" fill="#030303"/>
+      </svg>
+      <div>
+        <h1>JRV V2</h1>
+        <p>Jeremy Rondeau — Vidéaste</p>
+      </div>
+    </div>
   </div>
   <div id="note-list">
     <div class="section-row"><div class="section-label">General</div></div>
@@ -516,6 +573,95 @@
 
   // ---- UTILS ----
   function escHtml(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  function getContacts(c) {
+    if (c.contacts && Array.isArray(c.contacts)) return c.contacts;
+    // Migration ancien format
+    if (c.contact) return [{ name: c.contact, poste: c.poste||'', canal: c.canal||'LinkedIn', date: c.date||'', notes: '' }];
+    return [];
+  }
+
+  function buildContactsHTML(c) {
+    const contacts = getContacts(c);
+    if (contacts.length === 0) return `<div style="font-size:12px;color:var(--muted);padding:6px 0">Aucun contact — clique sur "+ Ajouter un contact"</div>`;
+    const canaux = ['LinkedIn','Email','Telephone','Physique','Instagram'];
+    return contacts.map((ct, i) => {
+      const canalOpts = canaux.map(x => `<option value="${x}"${ct.canal===x?' selected':''}>${x}</option>`).join('');
+      return `<div class="crm-contact-item" id="ci-${c.id}-${i}">
+        <div class="crm-contact-header" onclick="toggleContactExpand(${c.id},${i})">
+          <span class="crm-contact-name-tag${ct.name?'':' empty'}">${ct.name ? escHtml(ct.name) : 'Nouveau contact'}</span>
+          <span class="crm-contact-sub">${escHtml(ct.poste||'')}</span>
+          <button class="crm-contact-del" onclick="event.stopPropagation();removeContact(${c.id},${i})" title="Supprimer">✕</button>
+          <span style="font-size:9px;color:var(--muted)">▼</span>
+        </div>
+        <div class="crm-contact-detail">
+          <div class="crm-contact-grid">
+            <div class="crm-field"><label>Prénom Nom</label>
+              <input class="crm-input" value="${escAttr(ct.name||'')}" placeholder="Ex: Jean Dupont" id="ct-name-${c.id}-${i}"></div>
+            <div class="crm-field"><label>Poste</label>
+              <input class="crm-input" value="${escAttr(ct.poste||'')}" placeholder="Ex: Directeur de prod" id="ct-poste-${c.id}-${i}"></div>
+            <div class="crm-field"><label>Canal</label>
+              <select class="crm-select" id="ct-canal-${c.id}-${i}">${canalOpts}</select></div>
+            <div class="crm-field"><label>Date contact</label>
+              <input class="crm-input" type="date" value="${escAttr(ct.date||'')}" id="ct-date-${c.id}-${i}"></div>
+          </div>
+          <div class="crm-field" style="margin-bottom:8px"><label>Notes</label>
+            <textarea class="crm-notes-field" placeholder="Notes sur ce contact..." id="ct-notes-${c.id}-${i}" style="min-height:50px">${escHtml(ct.notes||'')}</textarea></div>
+          <button class="crm-contact-validate" onclick="validateContact(${c.id},${i})">Valider ✓</button>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  function toggleContactExpand(compId, idx) {
+    const el = document.getElementById(`ci-${compId}-${idx}`);
+    if (el) el.classList.toggle('open');
+  }
+
+  function validateContact(compId, idx) {
+    const arr = getCRMCompanies();
+    const c = arr.find(x => x.id === compId); if (!c) return;
+    if (!c.contacts) c.contacts = getContacts(c);
+    c.contacts[idx] = {
+      name:  document.getElementById(`ct-name-${compId}-${idx}`)?.value.trim() || '',
+      poste: document.getElementById(`ct-poste-${compId}-${idx}`)?.value.trim() || '',
+      canal: document.getElementById(`ct-canal-${compId}-${idx}`)?.value || 'LinkedIn',
+      date:  document.getElementById(`ct-date-${compId}-${idx}`)?.value || '',
+      notes: document.getElementById(`ct-notes-${compId}-${idx}`)?.value.trim() || '',
+    };
+    // Sync premier contact avec les anciens champs pour compatibilité
+    c.contact = c.contacts[0]?.name || '';
+    saveCRMCompanies(arr); showSaved();
+    // Ferme le contact et refresh
+    document.getElementById(`contacts-${compId}`).innerHTML = buildContactsHTML(c);
+    // Update display dans le header
+    const disp = document.querySelector(`.crm-row[data-id="${compId}"] .crm-contact-display`);
+    if (disp) disp.textContent = c.contact;
+  }
+
+  function addContact(compId) {
+    const arr = getCRMCompanies();
+    const c = arr.find(x => x.id === compId); if (!c) return;
+    if (!c.contacts) c.contacts = getContacts(c);
+    c.contacts.push({ name: '', poste: '', canal: 'LinkedIn', date: '', notes: '' });
+    saveCRMCompanies(arr);
+    const container = document.getElementById(`contacts-${compId}`);
+    container.innerHTML = buildContactsHTML(c);
+    // Ouvre le nouveau contact directement
+    const newIdx = c.contacts.length - 1;
+    const el = document.getElementById(`ci-${compId}-${newIdx}`);
+    if (el) { el.classList.add('open'); el.querySelector('input')?.focus(); }
+  }
+
+  function removeContact(compId, idx) {
+    const arr = getCRMCompanies();
+    const c = arr.find(x => x.id === compId); if (!c) return;
+    if (!c.contacts) c.contacts = getContacts(c);
+    c.contacts.splice(idx, 1);
+    c.contact = c.contacts[0]?.name || '';
+    saveCRMCompanies(arr); showSaved();
+    document.getElementById(`contacts-${compId}`).innerHTML = buildContactsHTML(c);
+  }
+
   function copyCrmName(btn, name) {
     navigator.clipboard.writeText(name).then(() => {
       btn.textContent = '✓'; btn.classList.add('copied');
@@ -523,11 +669,12 @@
     });
   }
   function toggleMsg(id) {
-    const c = companies.find(x => x.id === id);
-    if (!c) return;
+    const arr = getCRMCompanies();
+    const c = arr.find(x => x.id === id); if (!c) return;
     c.msg = !c.msg;
-    saveData();
-    renderCRM();
+    saveCRMCompanies(arr); showSaved();
+    const btn = document.querySelector(`.crm-row[data-id="${id}"] .crm-msg-check`);
+    if (btn) btn.classList.toggle('sent', c.msg);
   }
   function escAttr(s) { return (s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
   function showSaved() { const b=document.getElementById('saved-badge'); b.style.display='inline'; clearTimeout(saveTimer); saveTimer=setTimeout(()=>{b.style.display='none';},1800); }
@@ -575,13 +722,14 @@
 
   // ---- CRM DATA ----
   const STATUS_CONFIG = {
-    'a-contacter':    { label:'A contacter',    bg:'#1a1a1a', color:'#666' },
-    'message-envoye': { label:'Message envoyé', bg:'#0a1a2e', color:'#4a9eff' },
-    'pas-de-reponse': { label:'Pas de réponse', bg:'#2a1500', color:'#f0a500' },
-    'interesse':      { label:'Intéressé',      bg:'#0a1f10', color:'#4caf50' },
-    'rdv-pris':       { label:'RDV pris',        bg:'#003318', color:'#00c853' },
-    'refuse':         { label:'Refus',           bg:'#2a0000', color:'#e53935' },
-    'converti':       { label:'Converti ✓',     bg:'#180a2e', color:'#9b59b6' },
+    'a-contacter':       { label:'A contacter',        bg:'#1a1a1a', color:'#666' },
+    'demande-contact':   { label:'Demande de contact', bg:'#0d1a2e', color:'#4a9eff' },
+    'message-envoye':    { label:'Message envoyé',     bg:'#0a1a2e', color:'#4a9eff' },
+    'pas-de-reponse':    { label:'Pas de réponse',     bg:'#2a1500', color:'#f0a500' },
+    'interesse':         { label:'Intéressé',          bg:'#0a1f10', color:'#4caf50' },
+    'rdv-pris':          { label:'RDV pris',           bg:'#003318', color:'#00c853' },
+    'refuse':            { label:'Refus',              bg:'#2a0000', color:'#e53935' },
+    'converti':          { label:'Converti ✓',        bg:'#180a2e', color:'#9b59b6' },
   };
 
   const COMPANIES_DEFAULT = [
@@ -839,7 +987,8 @@
         (crmFilter === 'priorite' && c.p) ||
         (crmFilter === 'a-contacter' && c.statut === 'a-contacter') ||
         (crmFilter === 'en-cours' && ['message-envoye','pas-de-reponse'].includes(c.statut)) ||
-        (crmFilter === 'positif' && ['interesse','rdv-pris','converti'].includes(c.statut));
+        (crmFilter === 'positif' && ['interesse','rdv-pris','converti'].includes(c.statut)) ||
+        (crmFilter === 'contactees' && c.statut !== 'a-contacter');
       const mt = crmTypeFilter === 'all' || getCompanyType(c) === crmTypeFilter;
       return ms && mf && mt;
     });
@@ -870,15 +1019,14 @@
         <span class="crm-chevron">▼</span>
       </div>
       <div class="crm-detail">
+        <div class="crm-contacts-section">
+          <div class="crm-contacts-label">
+            <span>Contacts</span>
+            <button class="crm-add-contact-btn" onclick="addContact(${c.id})">+ Ajouter un contact</button>
+          </div>
+          <div id="contacts-${c.id}">${buildContactsHTML(c)}</div>
+        </div>
         <div class="crm-detail-grid">
-          <div class="crm-field"><label>Contact (prenom nom)</label>
-            <input class="crm-input" value="${escAttr(c.contact)}" placeholder="Ex: Jean Dupont" onblur="updateCompany(${c.id},'contact',this.value)"></div>
-          <div class="crm-field"><label>Poste</label>
-            <input class="crm-input" value="${escAttr(c.poste)}" placeholder="Ex: Directeur de prod" onblur="updateCompany(${c.id},'poste',this.value)"></div>
-          <div class="crm-field"><label>Canal</label>
-            <select class="crm-select" onchange="updateCompany(${c.id},'canal',this.value)">${canalOpts}</select></div>
-          <div class="crm-field"><label>Date contact</label>
-            <input class="crm-input crm-date-input" type="date" value="${escAttr(c.date)}" onchange="updateCompany(${c.id},'date',this.value)"></div>
           <div class="crm-field"><label>Statut</label>
             <select class="crm-select crm-status-select" onchange="updateCompanyStatus(${c.id},this.value)">${statutOpts}</select></div>
           <div class="crm-field"><label>Relance le</label>
@@ -889,6 +1037,7 @@
         <div class="crm-field" style="margin-bottom:9px"><label>Notes / Dernier echange</label>
           <textarea class="crm-notes-field" placeholder="Notes, contexte, suite a donner..." onblur="updateCompany(${c.id},'notes',this.value)">${escHtml(c.notes||'')}</textarea></div>
         <div class="crm-actions">
+          <button class="crm-action-btn" onclick="quickStatus(${c.id},'demande-contact')">Demande contact</button>
           <button class="crm-action-btn" onclick="quickStatus(${c.id},'message-envoye')">Message envoyé</button>
           <button class="crm-action-btn" onclick="quickStatus(${c.id},'pas-de-reponse')">Pas de réponse</button>
           <button class="crm-action-btn" onclick="quickStatus(${c.id},'interesse')">Intéressé</button>
@@ -1149,8 +1298,8 @@
       <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;align-items:center">
         <span style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-right:2px">Type :</span>
         <button class="crm-type-btn crm-filter-btn ${crmTypeFilter==='all'?'active':''}" data-type="all" onclick="setCRMTypeFilter('all')">Toutes</button>
-        <button class="crm-type-btn crm-filter-btn ${crmTypeFilter==='prod'?'active':''}" data-type="prod" onclick="setCRMTypeFilter('prod')" style="${crmTypeFilter==='prod'?'':'border-color:var(--blue);color:var(--blue)'}">Prod Video (${arr.filter(c=>getCompanyType(c)==='prod').length})</button>
-        <button class="crm-type-btn crm-filter-btn ${crmTypeFilter==='com'?'active':''}" data-type="com" onclick="setCRMTypeFilter('com')" style="${crmTypeFilter==='com'?'':'border-color:var(--purple);color:var(--purple)'}">Agences Comm (${arr.filter(c=>getCompanyType(c)==='com').length})</button>
+        <button class="crm-type-btn crm-filter-btn ${crmTypeFilter==='prod'?'active':''}" data-type="prod" onclick="setCRMTypeFilter('prod')" style="${crmTypeFilter==='prod'?'':'border-color:var(--blue);color:var(--blue)'}">LinkedIn Prospection (${arr.filter(c=>getCompanyType(c)==='prod').length})</button>
+        <button class="crm-type-btn crm-filter-btn ${crmTypeFilter==='com'?'active':''}" data-type="com" onclick="setCRMTypeFilter('com')" style="${crmTypeFilter==='com'?'':'border-color:var(--purple);color:var(--purple)'}">Messages Prospection (${arr.filter(c=>getCompanyType(c)==='com').length})</button>
       </div>
       <div class="crm-filters">
         <button class="crm-filter-btn ${crmFilter==='all'?'active':''}" data-filter="all" onclick="setCRMFilter('all')">Toutes (${arr.length})</button>
@@ -1158,6 +1307,8 @@
         <button class="crm-filter-btn ${crmFilter==='a-contacter'?'active':''}" data-filter="a-contacter" onclick="setCRMFilter('a-contacter')">A contacter</button>
         <button class="crm-filter-btn ${crmFilter==='en-cours'?'active':''}" data-filter="en-cours" onclick="setCRMFilter('en-cours')">En cours</button>
         <button class="crm-filter-btn ${crmFilter==='positif'?'active':''}" data-filter="positif" onclick="setCRMFilter('positif')">Reponse positive</button>
+        <button class="crm-filter-btn ${crmFilter==='contactees'?'active':''}" data-filter="contactees" onclick="setCRMFilter('contactees')" style="${crmFilter==='contactees'?'':'border-color:var(--blue);color:var(--blue)'}">Contactées (${arr.filter(c=>c.statut!=='a-contacter').length})</button>
+        <button onclick="openAddCompany()" style="margin-left:auto;padding:5px 13px;border-radius:20px;border:1px solid var(--accent);background:rgba(240,165,0,0.1);color:var(--accent);font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">+ Ajouter</button>
       </div>
       <input class="crm-search" placeholder="Rechercher une boite, un contact, une zone..." id="crm-search-input" value="${escAttr(crmSearch)}" oninput="setCRMSearch(this.value)">
       <div id="crm-list">${buildCRMListHTML()}</div>`;
@@ -1602,6 +1753,69 @@ https://www.rondeaujeremy.fr/
   addHideButtons();
   applyHidden();
   showNote('dashboard', document.querySelector('[data-fixed="dashboard"]'));
+
+  // ---- ADD COMPANY MODAL ----
+  function openAddCompany() {
+    document.getElementById('modal-add-company').classList.add('open');
+    document.getElementById('new-company-name').focus();
+  }
+  function closeAddCompany() {
+    document.getElementById('modal-add-company').classList.remove('open');
+    document.getElementById('new-company-name').value = '';
+    document.getElementById('new-company-zone').value = '';
+    document.getElementById('new-company-site').value = '';
+    document.getElementById('new-company-notes').value = '';
+  }
+  function saveNewCompany() {
+    const name = document.getElementById('new-company-name').value.trim();
+    if (!name) { document.getElementById('new-company-name').focus(); return; }
+    const arr = getCRMCompanies();
+    const newId = Math.max(...arr.map(c => c.id)) + 1;
+    arr.push({
+      id: newId,
+      name,
+      site: document.getElementById('new-company-site').value.trim(),
+      zone: document.getElementById('new-company-zone').value.trim() || 'Autre',
+      p: 0, contact: '', poste: '', canal: 'LinkedIn', date: '',
+      statut: 'a-contacter',
+      notes: document.getElementById('new-company-notes').value.trim(),
+      relance: '', msg: false
+    });
+    saveCRMCompanies(arr); showSaved();
+    closeAddCompany();
+    showNote('crm', document.querySelector('[data-fixed="crm"]'));
+  }
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closeAddCompany();
+  });
 </script>
+
+<div class="modal-overlay" id="modal-add-company" onclick="if(event.target===this)closeAddCompany()">
+  <div class="modal-box">
+    <h3>+ Ajouter une boîte</h3>
+    <div>
+      <label>Nom de la boîte *</label>
+      <input id="new-company-name" placeholder="Ex: Studio Nantes Prod" onkeydown="if(event.key==='Enter')saveNewCompany()">
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div>
+        <label>Zone / Ville</label>
+        <input id="new-company-zone" placeholder="Ex: Nantes">
+      </div>
+      <div>
+        <label>Site web</label>
+        <input id="new-company-site" placeholder="Ex: studio.fr">
+      </div>
+    </div>
+    <div>
+      <label>Notes</label>
+      <textarea id="new-company-notes" rows="3" placeholder="Type d'activité, contexte..."></textarea>
+    </div>
+    <div class="modal-btns">
+      <button class="modal-btn-cancel" onclick="closeAddCompany()">Annuler</button>
+      <button class="modal-btn-save" onclick="saveNewCompany()">Ajouter</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>
