@@ -120,11 +120,18 @@
     .crm-row-header { display: flex; align-items: center; gap: 8px; padding: 8px 13px; cursor: pointer; user-select: none; }
     .crm-row-header:hover { background: rgba(255,255,255,0.02); }
     .crm-priority { color: var(--accent); font-size: 11px; flex-shrink: 0; width: 12px; }
+    .crm-copy-btn { background: none; border: none; color: var(--muted); font-size: 11px; cursor: pointer; padding: 1px 3px; border-radius: 3px; flex-shrink: 0; opacity: 0; transition: opacity 0.15s, color 0.15s; }
+    .crm-row-header:hover .crm-copy-btn { opacity: 1; }
+    .crm-copy-btn:hover { color: var(--accent); }
+    .crm-copy-btn.copied { color: var(--accent2); opacity: 1; }
     .crm-name { font-size: 13px; font-weight: 600; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .crm-contact-display { font-size: 11px; color: var(--accent2); flex-shrink: 0; max-width: 110px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .crm-zone-tag { font-size: 10px; color: var(--muted); background: var(--card2); padding: 2px 6px; border-radius: 3px; flex-shrink: 0; }
     .crm-badge { font-size: 10px; font-weight: 700; padding: 2px 9px; border-radius: 20px; flex-shrink: 0; white-space: nowrap; }
     .crm-has-notes { font-size: 8px; flex-shrink: 0; color: var(--accent2); }
+    .crm-msg-check { font-size: 11px; flex-shrink: 0; cursor: pointer; background: none; border: 1px solid var(--border2); border-radius: 3px; width: 16px; height: 16px; display: flex; align-items: center; justify-content: center; color: transparent; transition: all 0.15s; padding: 0; }
+    .crm-msg-check.sent { border-color: var(--blue); background: rgba(74,158,255,0.15); color: var(--blue); }
+    .crm-msg-check:hover { border-color: var(--blue); }
     .crm-chevron { font-size: 9px; color: var(--muted); flex-shrink: 0; transition: transform 0.2s; }
     .crm-row.open .crm-chevron { transform: rotate(180deg); }
     .crm-detail { display: none; padding: 13px 15px; border-top: 1px solid var(--border); background: rgba(0,0,0,0.25); }
@@ -509,6 +516,19 @@
 
   // ---- UTILS ----
   function escHtml(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  function copyCrmName(btn, name) {
+    navigator.clipboard.writeText(name).then(() => {
+      btn.textContent = '✓'; btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = '⧉'; btn.classList.remove('copied'); }, 1200);
+    });
+  }
+  function toggleMsg(id) {
+    const c = companies.find(x => x.id === id);
+    if (!c) return;
+    c.msg = !c.msg;
+    saveData();
+    renderCRM();
+  }
   function escAttr(s) { return (s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
   function showSaved() { const b=document.getElementById('saved-badge'); b.style.display='inline'; clearTimeout(saveTimer); saveTimer=setTimeout(()=>{b.style.display='none';},1800); }
   function chk(label) { return `<label class="chk-item"><input type="checkbox"><span>${label}</span></label>`; }
@@ -841,10 +861,12 @@
     return `<div class="crm-row" data-id="${c.id}">
       <div class="crm-row-header" onclick="toggleExpand(${c.id})">
         <span class="crm-priority">${c.p ? '★' : ''}</span>
+        <button class="crm-copy-btn" onclick="event.stopPropagation();copyCrmName(this,'${escHtml(c.name).replace(/'/g,"\\'")}')">⧉</button>
         <span class="crm-name">${escHtml(c.name)}</span>
         <span class="crm-contact-display" style="${c.contact?'':'opacity:0'}">${escHtml(c.contact)}</span>
         <span class="crm-badge" style="background:${s.bg};color:${s.color}">${s.label}</span>
         <span class="crm-has-notes" style="opacity:${hasNotes?1:0}">●</span>
+        <button class="crm-msg-check${c.msg?' sent':''}" title="Message envoyé" onclick="event.stopPropagation();toggleMsg(${c.id})">✓</button>
         <span class="crm-chevron">▼</span>
       </div>
       <div class="crm-detail">
