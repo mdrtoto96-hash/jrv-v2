@@ -3,6 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <meta http-equiv="referrer" content="strict-origin-when-cross-origin">
   <title>JRV V2</title>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%23f0a500'/><text x='16' y='22' text-anchor='middle' font-family='Inter,Arial,sans-serif' font-size='14' font-weight='900' fill='%23030303'>JR</text></svg>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -154,7 +156,7 @@
     .crm-msg-check:hover { border-color: var(--blue); }
     .crm-chevron { font-size: 8px; color: var(--muted); flex-shrink: 0; transition: transform 0.25s cubic-bezier(0.4,0,0.2,1); }
     .crm-row.open .crm-chevron { transform: rotate(180deg); }
-    .crm-detail { display: none; padding: 14px 16px; border-top: 1px solid var(--border); background: rgba(0,0,0,0.3); }
+    .crm-detail { display: none; padding: 10px 14px 12px; border-top: 1px solid var(--border); background: rgba(0,0,0,0.2); }
     .crm-row.open .crm-detail { display: block; animation: expandDown 0.2s ease; }
     .crm-detail-grid { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 10px; margin-bottom: 10px; }
     .crm-field { display: flex; flex-direction: column; gap: 4px; }
@@ -192,9 +194,15 @@
     .crm-chip-del { background: none; border: none; color: var(--danger); font-size: 11px; cursor: pointer; opacity: 0; padding: 2px 5px; border-radius: 3px; transition: opacity 0.15s; }
     .crm-chip-header:hover .crm-chip-del { opacity: 0.5; }
     .crm-chip-detail { display: none; padding: 10px 12px; border-top: 1px solid var(--border); background: rgba(0,0,0,0.15); animation: expandDown 0.2s ease; }
-    /* New contact inline form */
-    .crm-new-contact-form { border: 1px dashed rgba(255,255,255,0.09); border-radius: 8px; padding: 10px 12px; margin-top: 6px; }
-    .crm-new-contact-form-title { font-size: 9px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--muted); margin-bottom: 8px; font-weight: 600; }
+    /* Compact contact chip row */
+    .crm-chip-row { display: flex; align-items: center; gap: 6px; padding: 5px 8px; border-radius: 6px; background: rgba(255,255,255,0.03); border: 1px solid var(--border); margin-bottom: 4px; }
+    .crm-chip-name-text { font-size: 12px; font-weight: 600; color: var(--text); flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .crm-chip-status-badge { font-size: 10px; padding: 1px 7px; border-radius: 20px; font-weight: 600; white-space: nowrap; flex-shrink: 0; }
+    .crm-chip-edit { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 13px; padding: 0 3px; opacity: 0.5; transition: opacity 0.15s; flex-shrink: 0; }
+    .crm-chip-edit:hover { opacity: 1; color: var(--accent); }
+    /* Add contact button */
+    .crm-add-contact-btn { margin-top: 6px; padding: 4px 12px; border-radius: 6px; border: 1px dashed rgba(255,255,255,0.12); background: transparent; color: var(--muted); font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.15s; font-family: 'Inter', inherit; }
+    .crm-add-contact-btn:hover { border-color: var(--accent); color: var(--accent); background: rgba(240,165,0,0.06); }
     .crm-contact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
     .crm-contact-validate { padding: 6px 20px; border-radius: 6px; border: none; background: var(--accent); color: #000; font-size: 12px; font-weight: 700; cursor: pointer; transition: all 0.15s; font-family: 'Inter', inherit; }
     .crm-contact-validate:hover { background: #ffb700; box-shadow: 0 0 16px rgba(240,165,0,0.25); transform: translateY(-1px); }
@@ -501,7 +509,7 @@
   }
 
   // ---- ALERTES ----
-  function getAlertes() { return JSON.parse(localStorage.getItem('jrv_alertes') || '[]'); }
+  function getAlertes() { try { return JSON.parse(localStorage.getItem('jrv_alertes') || '[]'); } catch(e) { return []; } }
   function saveAlertes(a) { localStorage.setItem('jrv_alertes', JSON.stringify(a)); }
   function addAlerte() {
     const titre = document.getElementById('al-titre').value.trim();
@@ -550,7 +558,7 @@
   }
 
   // ---- PRIORITIES ----
-  function getPriorities() { return JSON.parse(localStorage.getItem('jrv_priorities') || 'null'); }
+  function getPriorities() { try { return JSON.parse(localStorage.getItem('jrv_priorities') || 'null'); } catch(e) { return null; } }
   function savePriorities(arr) { localStorage.setItem('jrv_priorities', JSON.stringify(arr)); }
   function initPriorities() {
     if (!localStorage.getItem('jrv_priorities')) {
@@ -596,6 +604,7 @@
 
   // ---- UTILS ----
   function escHtml(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  function sanitizeUrl(u) { const s = (u||'').trim(); return /^https?:\/\//i.test(s) ? s : ''; }
   function getContacts(c) {
     if (c.contacts && Array.isArray(c.contacts)) return c.contacts;
     // Migration ancien format
@@ -610,7 +619,7 @@
     return named.map((ct, i) => {
       const name = escHtml(ct.name);
       if (ct.linkedin) {
-        return `<a href="${escAttr(ct.linkedin)}" target="_blank" onclick="event.stopPropagation()" class="crm-contact-chip link" title="${escAttr(ct.linkedin)}">${name}</a>`;
+        return `<a href="${escAttr(sanitizeUrl(ct.linkedin))}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()" class="crm-contact-chip link" title="${escAttr(ct.linkedin)}">${name}</a>`;
       }
       return `<span class="crm-contact-chip">${name}</span>`;
     }).join('<span style="color:var(--muted);font-size:9px">·</span>');
@@ -618,46 +627,16 @@
 
   function buildContactCards(c) {
     const contacts = getContacts(c);
-    const canaux = ['LinkedIn','Email','Telephone','Physique','Instagram'];
-    if (!contacts.length) return '<div style="font-size:11px;color:var(--muted);padding:2px 0 6px;opacity:0.5">Aucun contact encore</div>';
+    if (!contacts.length) return '<div style="font-size:11px;color:var(--muted);padding:4px 0;opacity:0.4">Aucun contact</div>';
     return contacts.map((ct, i) => {
-      const canalOpts = canaux.map(x => `<option value="${x}"${ct.canal===x?' selected':''}>${x}</option>`).join('');
-      const initial = (ct.name||'?')[0].toUpperCase();
-      const shots = ct.screenshots || [];
-      return `<div class="crm-chip-card" id="cc-${c.id}-${i}">
-        <div class="crm-chip-header" onclick="toggleChip(${c.id},${i})">
-          <div class="crm-chip-avatar">${initial}</div>
-          <div style="flex:1;min-width:0">
-            <div class="crm-chip-name">${escHtml(ct.name||'Contact sans nom')}</div>
-            <div class="crm-chip-poste">${escHtml(ct.poste||'')}${ct.date?' · '+ct.date:''}${shots.length?' · '+shots.length+' screen':''}</div>
-          </div>
-          ${ct.linkedin ? `<a href="${escAttr(ct.linkedin)}" target="_blank" onclick="event.stopPropagation()" class="crm-chip-li-badge">in</a>` : ''}
-          <button class="crm-chip-del" onclick="event.stopPropagation();removeContact(${c.id},${i})" title="Supprimer">✕</button>
-          <span style="font-size:9px;color:var(--muted);transition:transform 0.25s" id="cc-chev-${c.id}-${i}">▼</span>
-        </div>
-        <div class="crm-chip-detail" id="cd-${c.id}-${i}" style="display:none">
-          <div style="display:flex;gap:7px;margin-bottom:7px">
-            <input class="crm-input" value="${escAttr(ct.name||'')}" placeholder="Prénom Nom" id="ce-name-${c.id}-${i}" style="flex:1.2">
-            <input class="crm-input" value="${escAttr(ct.poste||'')}" placeholder="Poste" id="ce-poste-${c.id}-${i}" style="flex:1">
-          </div>
-          <div style="display:flex;gap:7px;margin-bottom:7px">
-            <input class="crm-input" value="${escAttr(ct.linkedin||'')}" placeholder="LinkedIn URL" id="ce-linkedin-${c.id}-${i}" style="flex:2">
-            <select class="crm-select" id="ce-canal-${c.id}-${i}" style="flex:1">${canalOpts}</select>
-            <input class="crm-input" type="date" value="${escAttr(ct.date||'')}" id="ce-date-${c.id}-${i}" style="flex:1">
-          </div>
-          <textarea class="crm-notes-field" id="ce-notes-${c.id}-${i}" placeholder="Notes..." style="min-height:40px;margin-bottom:7px">${escHtml(ct.notes||'')}</textarea>
-          <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:8px">
-            ${shots.map((src,si) => `<div class="crm-ss-thumb" onclick="viewContactSs(${c.id},${i},${si})"><img src="${src}" alt=""><button class="crm-ss-del" onclick="event.stopPropagation();removeContactSs(${c.id},${i},${si})">✕</button></div>`).join('')}
-            <div onclick="document.getElementById('ct-ss-input-${c.id}-${i}').click()"
-              ondragover="event.preventDefault();this.style.borderColor='var(--accent)'"
-              ondragleave="this.style.borderColor=''"
-              ondrop="event.preventDefault();this.style.borderColor='';handleContactSsDrop(event,${c.id},${i})"
-              style="width:60px;height:44px;border:1px dashed rgba(255,255,255,0.15);border-radius:6px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:18px;color:var(--muted);transition:border-color 0.15s;flex-shrink:0"
-              title="Ajouter un screenshot">+</div>
-            <input type="file" id="ct-ss-input-${c.id}-${i}" accept="image/*" multiple style="display:none" onchange="addContactScreenshot(${c.id},${i},this)">
-          </div>
-          <button class="crm-contact-validate" onclick="saveContactEdit(${c.id},${i})">Sauvegarder ✓</button>
-        </div>
+      const ctSt = ct.statut && STATUS_CONFIG[ct.statut] ? ct.statut : null;
+      const ctStCfg = ctSt ? STATUS_CONFIG[ctSt] : null;
+      return `<div class="crm-chip-row">
+        <div class="crm-chip-name-text">${escHtml(ct.name||'Sans nom')}</div>
+        ${ctStCfg ? `<span class="crm-chip-status-badge" style="background:${ctStCfg.bg};color:${ctStCfg.color}">${ctStCfg.label}</span>` : ''}
+        ${ct.linkedin && sanitizeUrl(ct.linkedin) ? `<a href="${escAttr(sanitizeUrl(ct.linkedin))}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()" class="crm-chip-li-badge" style="margin-left:4px">in</a>` : ''}
+        <button class="crm-chip-edit" onclick="openEditContactModal(${c.id},${i})" title="Modifier">✎</button>
+        <button class="crm-chip-del" onclick="removeContact(${c.id},${i})" title="Supprimer">✕</button>
       </div>`;
     }).join('');
   }
@@ -673,6 +652,70 @@
     if (card) card.style.borderColor = open ? '' : 'rgba(59,130,246,0.3)';
   }
 
+  const pendingNewContactSs = {};
+
+  function addNewContactSs(id, input) {
+    const files = Array.from(input.files).filter(f => f.type.startsWith('image/'));
+    if (!files.length) return;
+    if (!pendingNewContactSs[id]) pendingNewContactSs[id] = [];
+    files.forEach(file => {
+      const reader = new FileReader();
+      reader.onload = ev => {
+        pendingNewContactSs[id].push(ev.target.result);
+        renderNewContactSsGrid(id);
+      };
+      reader.readAsDataURL(file);
+    });
+    input.value = '';
+  }
+
+  function handleNewContactSsDrop(e, id) {
+    const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
+    if (!files.length) return;
+    if (!pendingNewContactSs[id]) pendingNewContactSs[id] = [];
+    files.forEach(file => {
+      const reader = new FileReader();
+      reader.onload = ev => {
+        pendingNewContactSs[id].push(ev.target.result);
+        renderNewContactSsGrid(id);
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function renderNewContactSsGrid(id) {
+    const grid = document.getElementById(`nc-ss-grid-${id}`);
+    if (!grid) return;
+    const shots = pendingNewContactSs[id] || [];
+    const thumbs = shots.map((src, si) => `
+      <div class="crm-ss-thumb" onclick="viewScreenshot2('${id}',${si})">
+        <img src="${src}" alt="">
+        <button class="crm-ss-del" onclick="event.stopPropagation();removeNewContactSs(${id},${si})">✕</button>
+      </div>`).join('');
+    grid.innerHTML = thumbs + `
+      <div onclick="document.getElementById('nc-ss-input-${id}').click()"
+        ondragover="event.preventDefault();this.style.borderColor='var(--accent)'"
+        ondragleave="this.style.borderColor=''"
+        ondrop="event.preventDefault();this.style.borderColor='';handleNewContactSsDrop(event,${id})"
+        style="width:56px;height:42px;border:1px dashed rgba(255,255,255,0.15);border-radius:6px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:18px;color:var(--muted);transition:border-color 0.15s;flex-shrink:0">+</div>
+      <input type="file" id="nc-ss-input-${id}" accept="image/*" multiple style="display:none" onchange="addNewContactSs(${id},this)">`;
+  }
+
+  function removeNewContactSs(id, si) {
+    if (!pendingNewContactSs[id]) return;
+    pendingNewContactSs[id].splice(si, 1);
+    renderNewContactSsGrid(id);
+  }
+
+  function viewScreenshot2(id, si) {
+    const src = (pendingNewContactSs[id] || [])[si]; if (!src) return;
+    const overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:9999;display:flex;align-items:center;justify-content:center;cursor:pointer;backdrop-filter:blur(4px)';
+    overlay.onclick = () => overlay.remove();
+    overlay.innerHTML = `<img src="${src}" style="max-width:90vw;max-height:90vh;border-radius:10px">`;
+    document.body.appendChild(overlay);
+  }
+
   function addAndValidateContact(id) {
     const nameEl = document.getElementById(`nc-name-${id}`);
     const name = nameEl?.value.trim();
@@ -682,14 +725,21 @@
     if (!c.contacts) c.contacts = getContacts(c);
     c.contacts.push({
       name,
-      poste:   document.getElementById(`nc-poste-${id}`)?.value.trim() || '',
+      poste:    document.getElementById(`nc-poste-${id}`)?.value.trim() || '',
       linkedin: document.getElementById(`nc-linkedin-${id}`)?.value.trim() || '',
-      canal: 'LinkedIn', date: '', notes: ''
+      canal:    document.getElementById(`nc-canal-${id}`)?.value || 'LinkedIn',
+      date:     document.getElementById(`nc-date-${id}`)?.value || '',
+      statut:   document.getElementById(`nc-statut-${id}`)?.value || 'a-contacter',
+      notes:    document.getElementById(`nc-notes-${id}`)?.value.trim() || '',
+      screenshots: pendingNewContactSs[id] || [],
     });
+    delete pendingNewContactSs[id];
     c.contact = c.contacts[0]?.name || '';
     saveCRMCompanies(arr); showSaved();
     // Clear form
-    ['nc-name','nc-poste','nc-linkedin'].forEach(p => { const el = document.getElementById(`${p}-${id}`); if(el) el.value=''; });
+    ['nc-name','nc-poste','nc-linkedin','nc-notes'].forEach(p => { const el = document.getElementById(`${p}-${id}`); if(el) el.value=''; });
+    const dateEl = document.getElementById(`nc-date-${id}`); if (dateEl) dateEl.value = '';
+    renderNewContactSsGrid(id);
     // Update DOM
     const chipsEl = document.getElementById(`contact-chips-${id}`);
     if (chipsEl) chipsEl.innerHTML = buildContactCards(c);
@@ -803,6 +853,7 @@
       linkedin:    document.getElementById(`ce-linkedin-${cid}-${idx}`)?.value.trim() || '',
       canal:       document.getElementById(`ce-canal-${cid}-${idx}`)?.value || 'LinkedIn',
       date:        document.getElementById(`ce-date-${cid}-${idx}`)?.value || '',
+      statut:      document.getElementById(`ce-statut-${cid}-${idx}`)?.value || 'a-contacter',
       notes:       document.getElementById(`ce-notes-${cid}-${idx}`)?.value.trim() || '',
       screenshots: existing.screenshots || [],
     };
@@ -1016,7 +1067,7 @@
   }
 
   // ---- CUSTOM NOTES ----
-  function getCustomNotes() { return JSON.parse(localStorage.getItem('jrv_notes') || '{}'); }
+  function getCustomNotes() { try { return JSON.parse(localStorage.getItem('jrv_notes') || '{}'); } catch(e) { return {}; } }
   function saveCustomNotes(n) { localStorage.setItem('jrv_notes', JSON.stringify(n)); }
   function deleteNote(id, e) {
     e.stopPropagation();
@@ -1198,7 +1249,7 @@
   function getCRMCompanies() {
     const stored = localStorage.getItem('jrv_crm_v2');
     if (!stored) { localStorage.setItem('jrv_crm_v2', JSON.stringify(COMPANIES_DEFAULT)); return COMPANIES_DEFAULT; }
-    const arr = JSON.parse(stored);
+    let arr; try { arr = JSON.parse(stored); } catch(e) { return COMPANIES_DEFAULT; }
     const maxId = Math.max(...arr.map(c => c.id));
     if (maxId < 120) {
       const newOnes = COMPANIES_DEFAULT.filter(c => c.id > maxId);
@@ -1413,59 +1464,8 @@
         <span class="crm-chevron">▼</span>
       </div>
       <div class="crm-detail">
-        <div class="crm-contacts-section">
-          <div class="crm-contacts-label">Contacts${getContacts(c).length ? ' (' + getContacts(c).length + ')' : ''}</div>
-          <div id="contact-chips-${c.id}">${buildContactCards(c)}</div>
-          <div class="crm-new-contact-form">
-            <div class="crm-new-contact-form-title">Nouveau contact</div>
-            <div class="crm-contact-grid">
-              <div class="crm-field"><label>Prénom Nom</label>
-                <input class="crm-input" placeholder="Jean Dupont" id="nc-name-${c.id}"></div>
-              <div class="crm-field"><label>Poste</label>
-                <input class="crm-input" placeholder="Directeur de prod" id="nc-poste-${c.id}"></div>
-              <div class="crm-field" style="grid-column:span 2"><label>LinkedIn (URL)</label>
-                <input class="crm-input" placeholder="https://linkedin.com/in/..." id="nc-linkedin-${c.id}" onkeydown="if(event.key==='Enter')addAndValidateContact(${c.id})"></div>
-            </div>
-            <button class="crm-contact-validate" onclick="addAndValidateContact(${c.id})">Ajouter ✓</button>
-          </div>
-        </div>
-        <div class="crm-detail-grid">
-          <div class="crm-field"><label>Statut</label>
-            <select class="crm-select crm-status-select" onchange="updateCompanyStatus(${c.id},this.value)">${statutOpts}</select></div>
-          <div class="crm-field"><label>Alerte</label>
-            <input class="crm-input crm-relance-input" type="date" value="${escAttr(c.relance||'')}" onchange="updateCompany(${c.id},'relance',this.value)"></div>
-          <div class="crm-field" style="grid-column:span 2"><label>Site web</label>
-            <input class="crm-input" value="${escAttr(c.site)}" onblur="updateCompany(${c.id},'site',this.value)"></div>
-        </div>
-        <div class="crm-field" style="margin-bottom:9px"><label>Notes / Dernier echange</label>
-          <textarea class="crm-notes-field" placeholder="Notes, contexte, suite a donner..." onblur="updateCompany(${c.id},'notes',this.value)">${escHtml(c.notes||'')}</textarea></div>
-        <div class="crm-screenshots-section">
-          <div class="crm-contacts-label">
-            <span>Screenshots</span>
-            <label class="crm-add-screenshot-btn" for="ss-input-${c.id}">+ Ajouter</label>
-          </div>
-          <input type="file" id="ss-input-${c.id}" accept="image/*" multiple style="display:none" onchange="addScreenshot(${c.id},this)">
-          <div class="crm-ss-dropzone" id="ss-drop-${c.id}"
-            ondragover="event.preventDefault();this.classList.add('drag-over')"
-            ondragleave="this.classList.remove('drag-over')"
-            ondrop="handleSsDrop(event,${c.id})">
-            <div id="screenshots-${c.id}" class="crm-screenshots-grid">${buildScreenshotsHTML(c)}</div>
-            <div class="crm-ss-drop-hint">↓ Glisse une image ici</div>
-          </div>
-        </div>
-        <div class="crm-actions">
-          <button class="crm-action-btn" ${ab('demande-contact')} onclick="quickStatus(${c.id},'demande-contact')">Demande contact</button>
-          <button class="crm-action-btn" ${ab('message-envoye')} onclick="quickStatus(${c.id},'message-envoye')">Message envoyé</button>
-          <button class="crm-action-btn" ${ab('pas-de-reponse')} onclick="quickStatus(${c.id},'pas-de-reponse')">Pas de réponse</button>
-          <button class="crm-action-btn" ${ab('interesse')} onclick="quickStatus(${c.id},'interesse')">Intéressé</button>
-          <button class="crm-action-btn rdv" ${ab('rdv-pris')} onclick="openRdvModal(${c.id})">RDV pris ✓</button>
-          <button class="crm-action-btn" ${ab('me-recontacte')} onclick="quickStatus(${c.id},'me-recontacte')">Me recontacte</button>
-          <button class="crm-action-btn" ${ab('refuse')} onclick="quickStatus(${c.id},'refuse')">Refus</button>
-          <button class="crm-action-btn" ${ab('converti')} onclick="quickStatus(${c.id},'converti')">Converti</button>
-          <span style="flex:1"></span>
-          <button class="crm-action-btn" onclick="setRelanceIn(${c.id},7)" title="Alerte dans 7 jours">Alerte +7j</button>
-          <button class="crm-action-btn" onclick="setRelanceIn(${c.id},14)">+14j</button>
-        </div>
+        <div id="contact-chips-${c.id}">${buildContactCards(c)}</div>
+        <button class="crm-add-contact-btn" onclick="openNewContactModal(${c.id})">+ Ajouter</button>
       </div>
     </div>`;
   }
@@ -2261,8 +2261,141 @@ https://www.rondeaujeremy.fr/
   }
 
   document.addEventListener('keydown', e => {
-    if (e.key === 'Escape') { closeAddCompany(); closeRdvModal(); }
+    if (e.key === 'Escape') { closeAddCompany(); closeRdvModal(); closeNewContactModal(); }
   });
+
+  // ---- NEW / EDIT CONTACT MODAL ----
+  let mncPendingId = null;
+  let mncEditIdx = null; // null = add mode, number = edit mode
+  const mncPendingSs = [];
+
+  function openNewContactModal(id) {
+    mncPendingId = id;
+    mncEditIdx = null;
+    mncPendingSs.length = 0;
+    document.getElementById('mnc-name').value = '';
+    document.getElementById('mnc-poste').value = '';
+    document.getElementById('mnc-linkedin').value = '';
+    document.getElementById('mnc-canal').value = 'LinkedIn';
+    document.getElementById('mnc-date').value = new Date().toISOString().split('T')[0];
+    document.getElementById('mnc-notes').value = '';
+    const sel = document.getElementById('mnc-statut');
+    sel.innerHTML = Object.entries(STATUS_CONFIG).map(([k,v]) => `<option value="${k}">${v.label}</option>`).join('');
+    sel.value = 'a-contacter';
+    document.querySelector('#modal-new-contact h3').textContent = 'Nouveau contact';
+    renderMncSsGrid();
+    document.getElementById('modal-new-contact').classList.add('open');
+    setTimeout(() => document.getElementById('mnc-name').focus(), 50);
+  }
+
+  function openEditContactModal(cid, idx) {
+    const arr = getCRMCompanies();
+    const c = arr.find(x => x.id === cid); if (!c) return;
+    const ct = getContacts(c)[idx]; if (!ct) return;
+    mncPendingId = cid;
+    mncEditIdx = idx;
+    mncPendingSs.length = 0;
+    (ct.screenshots || []).forEach(s => mncPendingSs.push(s));
+    document.getElementById('mnc-name').value = ct.name || '';
+    document.getElementById('mnc-poste').value = ct.poste || '';
+    document.getElementById('mnc-linkedin').value = ct.linkedin || '';
+    document.getElementById('mnc-canal').value = ct.canal || 'LinkedIn';
+    document.getElementById('mnc-date').value = ct.date || '';
+    document.getElementById('mnc-notes').value = ct.notes || '';
+    const sel = document.getElementById('mnc-statut');
+    sel.innerHTML = Object.entries(STATUS_CONFIG).map(([k,v]) => `<option value="${k}">${v.label}</option>`).join('');
+    sel.value = ct.statut || 'a-contacter';
+    document.querySelector('#modal-new-contact h3').textContent = 'Modifier le contact';
+    renderMncSsGrid();
+    document.getElementById('modal-new-contact').classList.add('open');
+    setTimeout(() => document.getElementById('mnc-name').focus(), 50);
+  }
+
+  function closeNewContactModal() {
+    document.getElementById('modal-new-contact').classList.remove('open');
+    mncPendingId = null;
+    mncEditIdx = null;
+    mncPendingSs.length = 0;
+  }
+
+  function renderMncSsGrid() {
+    const grid = document.getElementById('mnc-ss-grid');
+    if (!grid) return;
+    const thumbs = mncPendingSs.map((src, i) =>
+      `<div class="crm-ss-thumb" onclick="viewMncSs(${i})" style="position:relative">
+        <img src="${src}" alt="">
+        <button class="crm-ss-del" onclick="event.stopPropagation();removeMncSs(${i})">✕</button>
+      </div>`).join('');
+    grid.innerHTML = thumbs + `
+      <div onclick="document.getElementById('mnc-ss-input').click()"
+        ondragover="event.preventDefault();this.style.borderColor='var(--accent)'"
+        ondragleave="this.style.borderColor=''"
+        ondrop="event.preventDefault();this.style.borderColor='';handleMncSsDrop(event)"
+        style="width:56px;height:42px;border:1px dashed rgba(255,255,255,0.15);border-radius:6px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:18px;color:var(--muted);transition:border-color 0.15s;flex-shrink:0" title="Ajouter">+</div>
+      <input type="file" id="mnc-ss-input" accept="image/*" multiple style="display:none" onchange="addMncSs(this)">`;
+  }
+
+  function addMncSs(input) {
+    const files = Array.from(input.files).filter(f => f.type.startsWith('image/'));
+    files.forEach(file => {
+      const reader = new FileReader();
+      reader.onload = ev => { mncPendingSs.push(ev.target.result); renderMncSsGrid(); };
+      reader.readAsDataURL(file);
+    });
+    input.value = '';
+  }
+
+  function handleMncSsDrop(e) {
+    const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
+    files.forEach(file => {
+      const reader = new FileReader();
+      reader.onload = ev => { mncPendingSs.push(ev.target.result); renderMncSsGrid(); };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function removeMncSs(i) { mncPendingSs.splice(i, 1); renderMncSsGrid(); }
+
+  function viewMncSs(i) {
+    const src = mncPendingSs[i]; if (!src) return;
+    const overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:9999;display:flex;align-items:center;justify-content:center;cursor:pointer;backdrop-filter:blur(4px)';
+    overlay.onclick = () => overlay.remove();
+    overlay.innerHTML = `<img src="${src}" style="max-width:90vw;max-height:90vh;border-radius:10px">`;
+    document.body.appendChild(overlay);
+  }
+
+  function saveNewContact() {
+    const nameEl = document.getElementById('mnc-name');
+    const name = nameEl?.value.trim();
+    if (!name) { nameEl?.focus(); return; }
+    if (!mncPendingId) return;
+    const arr = getCRMCompanies();
+    const c = arr.find(x => x.id === mncPendingId); if (!c) return;
+    if (!c.contacts) c.contacts = getContacts(c);
+    const contactData = {
+      name,
+      poste:       document.getElementById('mnc-poste')?.value.trim() || '',
+      linkedin:    document.getElementById('mnc-linkedin')?.value.trim() || '',
+      canal:       document.getElementById('mnc-canal')?.value || 'LinkedIn',
+      date:        document.getElementById('mnc-date')?.value || '',
+      statut:      document.getElementById('mnc-statut')?.value || 'a-contacter',
+      notes:       document.getElementById('mnc-notes')?.value.trim() || '',
+      screenshots: [...mncPendingSs],
+    };
+    if (mncEditIdx !== null) {
+      c.contacts[mncEditIdx] = contactData;
+    } else {
+      c.contacts.push(contactData);
+    }
+    c.contact = c.contacts[0]?.name || '';
+    saveCRMCompanies(arr);
+    const savedId = mncPendingId;
+    closeNewContactModal();
+    const chipsEl = document.getElementById(`contact-chips-${savedId}`);
+    if (chipsEl) chipsEl.innerHTML = buildContactCards(c);
+    showSaved();
+  }
 </script>
 
 <div class="modal-overlay" id="modal-add-company" onclick="if(event.target===this)closeAddCompany()">
@@ -2310,6 +2443,45 @@ https://www.rondeaujeremy.fr/
     <div class="modal-btns">
       <button class="modal-btn-cancel" onclick="closeRdvModal()">Annuler</button>
       <button class="modal-btn-save" onclick="saveRdv()">Confirmer ✓</button>
+    </div>
+  </div>
+</div>
+<div class="modal-overlay" id="modal-new-contact" onclick="if(event.target===this)closeNewContactModal()">
+  <div class="modal-box" style="max-width:480px">
+    <h3>Nouveau contact</h3>
+    <div style="display:flex;gap:8px;margin-bottom:10px">
+      <div style="flex:1.2"><label>Prénom Nom *</label><input class="modal-input" id="mnc-name" placeholder="Jean Dupont"></div>
+      <div style="flex:1"><label>Poste</label><input class="modal-input" id="mnc-poste" placeholder="Directeur..."></div>
+    </div>
+    <div style="margin-bottom:10px"><label>LinkedIn URL</label><input class="modal-input" id="mnc-linkedin" placeholder="https://linkedin.com/in/..."></div>
+    <div style="display:flex;gap:8px;margin-bottom:10px">
+      <div style="flex:1"><label>Canal</label>
+        <select class="modal-input" id="mnc-canal">
+          <option>LinkedIn</option><option>Email</option><option>Telephone</option><option>Physique</option><option>Instagram</option>
+        </select>
+      </div>
+      <div style="flex:1"><label>Date</label><input class="modal-input" type="date" id="mnc-date"></div>
+    </div>
+    <div style="margin-bottom:10px"><label>Statut</label>
+      <select class="modal-input" id="mnc-statut"></select>
+    </div>
+    <div style="margin-bottom:10px"><label>Notes</label>
+      <textarea class="modal-input" id="mnc-notes" rows="3" style="resize:vertical" placeholder="Contexte, échange..."></textarea>
+    </div>
+    <div style="margin-bottom:12px">
+      <label>Screenshots</label>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:6px" id="mnc-ss-grid">
+        <div onclick="document.getElementById('mnc-ss-input').click()"
+          ondragover="event.preventDefault();this.style.borderColor='var(--accent)'"
+          ondragleave="this.style.borderColor=''"
+          ondrop="event.preventDefault();this.style.borderColor='';handleMncSsDrop(event)"
+          style="width:56px;height:42px;border:1px dashed rgba(255,255,255,0.15);border-radius:6px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:18px;color:var(--muted);transition:border-color 0.15s;flex-shrink:0" title="Ajouter">+</div>
+        <input type="file" id="mnc-ss-input" accept="image/*" multiple style="display:none" onchange="addMncSs(this)">
+      </div>
+    </div>
+    <div class="modal-btns">
+      <button class="modal-btn-cancel" onclick="closeNewContactModal()">Annuler</button>
+      <button class="modal-btn-save" onclick="saveNewContact()">Ajouter ✓</button>
     </div>
   </div>
 </div>
