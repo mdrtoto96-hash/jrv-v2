@@ -149,7 +149,12 @@
     .crm-contact-chip.link { color: var(--blue); text-decoration: none; border-bottom: 1px solid rgba(59,130,246,0.3); transition: color 0.15s; }
     .crm-contact-chip.link:hover { color: #60a5fa; border-bottom-color: rgba(96,165,250,0.6); }
     .crm-zone-tag { font-size: 10px; color: var(--muted); background: var(--card2); padding: 2px 7px; border-radius: 4px; flex-shrink: 0; }
-    .crm-badge { font-size: 10px; font-weight: 600; padding: 2px 9px; border-radius: 5px; flex-shrink: 0; white-space: nowrap; }
+    .crm-badge { font-size: 10px; font-weight: 600; padding: 2px 9px; border-radius: 5px; flex-shrink: 0; white-space: nowrap; cursor: pointer; transition: opacity 0.15s; }
+    .crm-badge:hover { opacity: 0.8; }
+    #status-popover { position: fixed; z-index: 800; background: #1a1a1a; border: 1px solid rgba(255,255,255,0.12); border-radius: 8px; padding: 4px; min-width: 170px; box-shadow: 0 8px 32px rgba(0,0,0,0.6); animation: fadeInUp 0.12s ease; }
+    .status-pop-item { display: flex; align-items: center; gap: 8px; padding: 7px 10px; border-radius: 5px; cursor: pointer; font-size: 12px; font-weight: 600; transition: background 0.1s; }
+    .status-pop-item:hover { background: rgba(255,255,255,0.06); }
+    .status-pop-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
     .crm-has-notes { font-size: 7px; flex-shrink: 0; color: var(--accent2); }
     .crm-msg-check { font-size: 10px; flex-shrink: 0; cursor: pointer; background: none; border: 1px solid rgba(255,255,255,0.1); border-radius: 3px; width: 16px; height: 16px; display: flex; align-items: center; justify-content: center; color: transparent; transition: all 0.15s; padding: 0; }
     .crm-msg-check.sent { border-color: var(--blue); background: rgba(59,130,246,0.12); color: var(--blue); }
@@ -1287,6 +1292,37 @@
     updateCRMStatsBar();
   }
 
+  let _statusPopoverId = null;
+  function openStatusPopover(id, badgeEl) {
+    closeStatusPopover();
+    _statusPopoverId = id;
+    const pop = document.createElement('div');
+    pop.id = 'status-popover';
+    pop.innerHTML = Object.entries(STATUS_CONFIG).map(([k, v]) =>
+      `<div class="status-pop-item" onclick="selectStatusFromPopover(${id},'${k}')">
+        <span class="status-pop-dot" style="background:${v.color}"></span>
+        <span style="color:${v.color}">${v.label}</span>
+      </div>`
+    ).join('');
+    document.body.appendChild(pop);
+    // Position near the badge
+    const rect = badgeEl.getBoundingClientRect();
+    const ph = pop.offsetHeight || 260;
+    const top = (rect.bottom + 6 + ph > window.innerHeight) ? rect.top - ph - 4 : rect.bottom + 4;
+    pop.style.top = Math.max(4, top) + 'px';
+    pop.style.left = Math.min(rect.left, window.innerWidth - 180) + 'px';
+    setTimeout(() => document.addEventListener('click', closeStatusPopover, { once: true }), 0);
+  }
+  function closeStatusPopover() {
+    const p = document.getElementById('status-popover');
+    if (p) p.remove();
+    _statusPopoverId = null;
+  }
+  function selectStatusFromPopover(id, status) {
+    updateCompanyStatus(id, status);
+    closeStatusPopover();
+  }
+
   function updateActionBtns(id, status) {
     const row = document.querySelector(`.crm-row[data-id="${id}"]`);
     if (!row) return;
@@ -1457,7 +1493,7 @@
         <button class="crm-copy-btn" onclick="event.stopPropagation();copyCrmName(this,'${escHtml(c.name).replace(/'/g,"\\'")}')">⧉</button>
         <span class="crm-name">${escHtml(c.name)}</span>
         <span class="crm-contact-display">${buildContactChips(c)}</span>
-        <span class="crm-badge" style="background:${s.bg};color:${s.color}">${s.label}</span>
+        <span class="crm-badge" style="background:${s.bg};color:${s.color}" onclick="event.stopPropagation();openStatusPopover(${c.id},this)" title="Changer le statut">${s.label}</span>
         <span class="crm-has-notes" style="opacity:${hasNotes?1:0}">●</span>
         <button class="crm-msg-check${c.msg?' sent':''}" title="Message envoyé" onclick="event.stopPropagation();toggleMsg(${c.id})">✓</button>
         <button class="crm-del-btn" onclick="event.stopPropagation();deleteCompany(${c.id})" title="Supprimer cette boite">✕</button>
@@ -2389,11 +2425,17 @@ https://www.rondeaujeremy.fr/
       c.contacts.push(contactData);
     }
     c.contact = c.contacts[0]?.name || '';
+    // Sync company status to the contact's status
+    if (contactData.statut && contactData.statut !== 'a-contacter') {
+      c.statut = contactData.statut;
+    }
     saveCRMCompanies(arr);
     const savedId = mncPendingId;
     closeNewContactModal();
     const chipsEl = document.getElementById(`contact-chips-${savedId}`);
     if (chipsEl) chipsEl.innerHTML = buildContactCards(c);
+    // Update badge in row
+    updateCompanyStatus(savedId, c.statut);
     showSaved();
   }
 </script>
