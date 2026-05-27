@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>JRV V2</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%23f0a500'/><text x='16' y='22' text-anchor='middle' font-family='Inter,Arial,sans-serif' font-size='14' font-weight='900' fill='%23030303'>JR</text></svg>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   <style>
@@ -135,10 +136,16 @@
     .crm-priority { color: var(--accent); font-size: 10px; flex-shrink: 0; width: 12px; }
     .crm-copy-btn { background: none; border: none; color: var(--muted); font-size: 11px; cursor: pointer; padding: 1px 3px; border-radius: 3px; flex-shrink: 0; opacity: 0; transition: opacity 0.15s, color 0.15s; }
     .crm-row-header:hover .crm-copy-btn { opacity: 1; }
+    .crm-del-btn { background: none; border: none; color: var(--danger); font-size: 11px; cursor: pointer; padding: 1px 4px; border-radius: 3px; flex-shrink: 0; opacity: 0; transition: opacity 0.15s; }
+    .crm-row-header:hover .crm-del-btn { opacity: 0.35; }
+    .crm-del-btn:hover { opacity: 1 !important; }
     .crm-copy-btn:hover { color: var(--accent); }
     .crm-copy-btn.copied { color: var(--accent2); opacity: 1; }
     .crm-name { font-size: 13px; font-weight: 600; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; letter-spacing: -0.01em; }
-    .crm-contact-display { font-size: 10px; color: var(--accent2); flex-shrink: 0; max-width: 110px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .crm-contact-display { display: flex; align-items: center; gap: 4px; flex-shrink: 0; max-width: 200px; overflow: hidden; flex-wrap: nowrap; }
+    .crm-contact-chip { font-size: 10px; color: var(--accent2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex-shrink: 0; max-width: 100px; }
+    .crm-contact-chip.link { color: var(--blue); text-decoration: none; border-bottom: 1px solid rgba(59,130,246,0.3); transition: color 0.15s; }
+    .crm-contact-chip.link:hover { color: #60a5fa; border-bottom-color: rgba(96,165,250,0.6); }
     .crm-zone-tag { font-size: 10px; color: var(--muted); background: var(--card2); padding: 2px 7px; border-radius: 4px; flex-shrink: 0; }
     .crm-badge { font-size: 10px; font-weight: 600; padding: 2px 9px; border-radius: 5px; flex-shrink: 0; white-space: nowrap; }
     .crm-has-notes { font-size: 7px; flex-shrink: 0; color: var(--accent2); }
@@ -157,24 +164,40 @@
     .crm-select { background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 6px; padding: 6px 10px; color: var(--text); font-size: 12px; outline: none; font-family: 'Inter', inherit; cursor: pointer; width: 100%; transition: border-color 0.15s; }
     .crm-notes-field { width: 100%; background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 6px; padding: 8px 10px; color: var(--text); font-size: 12px; font-family: 'Inter', inherit; resize: vertical; min-height: 55px; outline: none; margin-bottom: 10px; transition: all 0.15s; line-height: 1.6; }
     .crm-notes-field:focus { border-color: rgba(255,255,255,0.2); }
+    .crm-screenshots-section { margin-bottom: 12px; }
+    .crm-add-screenshot-btn { font-size: 10px; color: var(--accent); border: 1px solid rgba(240,165,0,0.25); border-radius: 4px; padding: 2px 9px; cursor: pointer; background: rgba(240,165,0,0.05); transition: all 0.15s; }
+    .crm-add-screenshot-btn:hover { background: rgba(240,165,0,0.12); border-color: rgba(240,165,0,0.5); }
+    .crm-ss-dropzone { border: 1px dashed rgba(255,255,255,0.08); border-radius: 8px; padding: 8px; min-height: 52px; transition: all 0.2s; position: relative; }
+    .crm-ss-dropzone.drag-over { border-color: var(--accent); background: rgba(240,165,0,0.05); box-shadow: 0 0 0 2px rgba(240,165,0,0.15); }
+    .crm-ss-dropzone.drag-over .crm-ss-drop-hint { opacity: 1; color: var(--accent); }
+    .crm-screenshots-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+    .crm-ss-drop-hint { font-size: 10px; color: var(--muted); text-align: center; padding: 6px 0 2px; opacity: 0.4; transition: opacity 0.2s; pointer-events: none; }
+    .crm-ss-empty { font-size: 11px; color: var(--muted); font-style: italic; opacity: 0.6; }
+    .crm-ss-thumb { position: relative; width: 90px; height: 65px; border-radius: 7px; overflow: hidden; border: 1px solid var(--border); cursor: pointer; transition: border-color 0.15s; flex-shrink: 0; }
+    .crm-ss-thumb:hover { border-color: rgba(255,255,255,0.2); }
+    .crm-ss-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .crm-ss-del { position: absolute; top: 3px; right: 3px; background: rgba(0,0,0,0.75); color: #fff; border: none; border-radius: 3px; font-size: 9px; cursor: pointer; padding: 2px 5px; opacity: 0; transition: opacity 0.15s; }
+    .crm-ss-thumb:hover .crm-ss-del { opacity: 1; }
     .crm-contacts-section { margin-bottom: 12px; }
     .crm-contacts-label { font-size: 9px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--muted); margin-bottom: 7px; display: flex; align-items: center; justify-content: space-between; font-weight: 600; }
-    .crm-contact-item { background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 4px; overflow: hidden; transition: border-color 0.15s; }
-    .crm-contact-item.open { border-color: rgba(59,130,246,0.3); }
-    .crm-contact-header { display: flex; align-items: center; gap: 8px; padding: 8px 12px; cursor: pointer; user-select: none; }
-    .crm-contact-header:hover { background: rgba(255,255,255,0.02); }
-    .crm-contact-name-tag { font-size: 12px; font-weight: 600; color: var(--text); flex: 1; }
-    .crm-contact-name-tag.empty { color: var(--muted); font-style: italic; font-weight: 400; }
-    .crm-contact-sub { font-size: 10px; color: var(--muted); }
-    .crm-contact-del { background: none; border: none; color: var(--danger); font-size: 12px; cursor: pointer; opacity: 0; padding: 2px 5px; border-radius: 3px; transition: opacity 0.15s; }
-    .crm-contact-header:hover .crm-contact-del { opacity: 0.5; }
-    .crm-contact-detail { display: none; padding: 10px 12px; border-top: 1px solid var(--border); }
-    .crm-contact-item.open .crm-contact-detail { display: block; animation: expandDown 0.2s ease; }
+    /* Contact chips */
+    .crm-chip-card { background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 5px; overflow: hidden; transition: border-color 0.15s; }
+    .crm-chip-header { display: flex; align-items: center; gap: 9px; padding: 8px 12px; cursor: pointer; user-select: none; }
+    .crm-chip-header:hover { background: rgba(255,255,255,0.02); }
+    .crm-chip-avatar { width: 26px; height: 26px; border-radius: 50%; background: rgba(240,165,0,0.15); color: var(--accent); font-size: 11px; font-weight: 800; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .crm-chip-name { font-size: 12px; font-weight: 600; color: var(--text); }
+    .crm-chip-poste { font-size: 10px; color: var(--muted); margin-top: 1px; }
+    .crm-chip-li-badge { font-size: 9px; background: rgba(59,130,246,0.15); color: var(--blue); border-radius: 3px; padding: 2px 6px; text-decoration: none; font-weight: 700; flex-shrink: 0; transition: background 0.15s; }
+    .crm-chip-li-badge:hover { background: rgba(59,130,246,0.3); }
+    .crm-chip-del { background: none; border: none; color: var(--danger); font-size: 11px; cursor: pointer; opacity: 0; padding: 2px 5px; border-radius: 3px; transition: opacity 0.15s; }
+    .crm-chip-header:hover .crm-chip-del { opacity: 0.5; }
+    .crm-chip-detail { display: none; padding: 10px 12px; border-top: 1px solid var(--border); background: rgba(0,0,0,0.15); animation: expandDown 0.2s ease; }
+    /* New contact inline form */
+    .crm-new-contact-form { border: 1px dashed rgba(255,255,255,0.09); border-radius: 8px; padding: 10px 12px; margin-top: 6px; }
+    .crm-new-contact-form-title { font-size: 9px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--muted); margin-bottom: 8px; font-weight: 600; }
     .crm-contact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
     .crm-contact-validate { padding: 6px 20px; border-radius: 6px; border: none; background: var(--accent); color: #000; font-size: 12px; font-weight: 700; cursor: pointer; transition: all 0.15s; font-family: 'Inter', inherit; }
     .crm-contact-validate:hover { background: #ffb700; box-shadow: 0 0 16px rgba(240,165,0,0.25); transform: translateY(-1px); }
-    .crm-add-contact-btn { padding: 4px 12px; border-radius: 5px; border: 1px dashed rgba(255,255,255,0.12); background: transparent; color: var(--muted); font-size: 10px; cursor: pointer; transition: all 0.15s; font-family: 'Inter', inherit; font-weight: 500; }
-    .crm-add-contact-btn:hover { border-color: var(--blue); color: var(--blue); }
     .crm-actions { display: flex; gap: 5px; flex-wrap: wrap; align-items: center; }
     /* MODAL */
     .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 999; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
@@ -580,6 +603,218 @@
     return [];
   }
 
+  function buildContactChips(c) {
+    const contacts = getContacts(c);
+    const named = contacts.filter(ct => ct.name);
+    if (!named.length) return '';
+    return named.map((ct, i) => {
+      const name = escHtml(ct.name);
+      if (ct.linkedin) {
+        return `<a href="${escAttr(ct.linkedin)}" target="_blank" onclick="event.stopPropagation()" class="crm-contact-chip link" title="${escAttr(ct.linkedin)}">${name}</a>`;
+      }
+      return `<span class="crm-contact-chip">${name}</span>`;
+    }).join('<span style="color:var(--muted);font-size:9px">·</span>');
+  }
+
+  function buildContactCards(c) {
+    const contacts = getContacts(c);
+    const canaux = ['LinkedIn','Email','Telephone','Physique','Instagram'];
+    if (!contacts.length) return '<div style="font-size:11px;color:var(--muted);padding:2px 0 6px;opacity:0.5">Aucun contact encore</div>';
+    return contacts.map((ct, i) => {
+      const canalOpts = canaux.map(x => `<option value="${x}"${ct.canal===x?' selected':''}>${x}</option>`).join('');
+      const initial = (ct.name||'?')[0].toUpperCase();
+      const shots = ct.screenshots || [];
+      return `<div class="crm-chip-card" id="cc-${c.id}-${i}">
+        <div class="crm-chip-header" onclick="toggleChip(${c.id},${i})">
+          <div class="crm-chip-avatar">${initial}</div>
+          <div style="flex:1;min-width:0">
+            <div class="crm-chip-name">${escHtml(ct.name||'Contact sans nom')}</div>
+            <div class="crm-chip-poste">${escHtml(ct.poste||'')}${ct.date?' · '+ct.date:''}${shots.length?' · '+shots.length+' screen':''}</div>
+          </div>
+          ${ct.linkedin ? `<a href="${escAttr(ct.linkedin)}" target="_blank" onclick="event.stopPropagation()" class="crm-chip-li-badge">in</a>` : ''}
+          <button class="crm-chip-del" onclick="event.stopPropagation();removeContact(${c.id},${i})" title="Supprimer">✕</button>
+          <span style="font-size:9px;color:var(--muted);transition:transform 0.25s" id="cc-chev-${c.id}-${i}">▼</span>
+        </div>
+        <div class="crm-chip-detail" id="cd-${c.id}-${i}" style="display:none">
+          <div style="display:flex;gap:7px;margin-bottom:7px">
+            <input class="crm-input" value="${escAttr(ct.name||'')}" placeholder="Prénom Nom" id="ce-name-${c.id}-${i}" style="flex:1.2">
+            <input class="crm-input" value="${escAttr(ct.poste||'')}" placeholder="Poste" id="ce-poste-${c.id}-${i}" style="flex:1">
+          </div>
+          <div style="display:flex;gap:7px;margin-bottom:7px">
+            <input class="crm-input" value="${escAttr(ct.linkedin||'')}" placeholder="LinkedIn URL" id="ce-linkedin-${c.id}-${i}" style="flex:2">
+            <select class="crm-select" id="ce-canal-${c.id}-${i}" style="flex:1">${canalOpts}</select>
+            <input class="crm-input" type="date" value="${escAttr(ct.date||'')}" id="ce-date-${c.id}-${i}" style="flex:1">
+          </div>
+          <textarea class="crm-notes-field" id="ce-notes-${c.id}-${i}" placeholder="Notes..." style="min-height:40px;margin-bottom:7px">${escHtml(ct.notes||'')}</textarea>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:8px">
+            ${shots.map((src,si) => `<div class="crm-ss-thumb" onclick="viewContactSs(${c.id},${i},${si})"><img src="${src}" alt=""><button class="crm-ss-del" onclick="event.stopPropagation();removeContactSs(${c.id},${i},${si})">✕</button></div>`).join('')}
+            <div onclick="document.getElementById('ct-ss-input-${c.id}-${i}').click()"
+              ondragover="event.preventDefault();this.style.borderColor='var(--accent)'"
+              ondragleave="this.style.borderColor=''"
+              ondrop="event.preventDefault();this.style.borderColor='';handleContactSsDrop(event,${c.id},${i})"
+              style="width:60px;height:44px;border:1px dashed rgba(255,255,255,0.15);border-radius:6px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:18px;color:var(--muted);transition:border-color 0.15s;flex-shrink:0"
+              title="Ajouter un screenshot">+</div>
+            <input type="file" id="ct-ss-input-${c.id}-${i}" accept="image/*" multiple style="display:none" onchange="addContactScreenshot(${c.id},${i},this)">
+          </div>
+          <button class="crm-contact-validate" onclick="saveContactEdit(${c.id},${i})">Sauvegarder ✓</button>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  function toggleChip(cid, idx) {
+    const detail = document.getElementById(`cd-${cid}-${idx}`);
+    const chev = document.getElementById(`cc-chev-${cid}-${idx}`);
+    const card = document.getElementById(`cc-${cid}-${idx}`);
+    if (!detail) return;
+    const open = detail.style.display === 'block';
+    detail.style.display = open ? 'none' : 'block';
+    if (chev) chev.style.transform = open ? '' : 'rotate(180deg)';
+    if (card) card.style.borderColor = open ? '' : 'rgba(59,130,246,0.3)';
+  }
+
+  function addAndValidateContact(id) {
+    const nameEl = document.getElementById(`nc-name-${id}`);
+    const name = nameEl?.value.trim();
+    if (!name) { nameEl?.focus(); return; }
+    const arr = getCRMCompanies();
+    const c = arr.find(x => x.id === id); if (!c) return;
+    if (!c.contacts) c.contacts = getContacts(c);
+    c.contacts.push({
+      name,
+      poste:   document.getElementById(`nc-poste-${id}`)?.value.trim() || '',
+      linkedin: document.getElementById(`nc-linkedin-${id}`)?.value.trim() || '',
+      canal: 'LinkedIn', date: '', notes: ''
+    });
+    c.contact = c.contacts[0]?.name || '';
+    saveCRMCompanies(arr); showSaved();
+    // Clear form
+    ['nc-name','nc-poste','nc-linkedin'].forEach(p => { const el = document.getElementById(`${p}-${id}`); if(el) el.value=''; });
+    // Update DOM
+    const chipsEl = document.getElementById(`contact-chips-${id}`);
+    if (chipsEl) chipsEl.innerHTML = buildContactCards(c);
+    // Ouvre le nouveau contact automatiquement
+    const newIdx = c.contacts.length - 1;
+    toggleChip(id, newIdx);
+    // Update label count
+    const lbl = document.querySelector(`.crm-row[data-id="${id}"] .crm-contacts-label`);
+    if (lbl) lbl.textContent = `Contacts (${c.contacts.length})`;
+    // Update header chips
+    const disp = document.querySelector(`.crm-row[data-id="${id}"] .crm-contact-display`);
+    if (disp) disp.innerHTML = buildContactChips(c);
+  }
+
+  function buildContactSsHTML(c, idx) {
+    const ct = getContacts(c)[idx];
+    const shots = ct?.screenshots || [];
+    if (!shots.length) return '<span class="crm-ss-empty">Aucun screenshot</span>';
+    return shots.map((src, si) => `
+      <div class="crm-ss-thumb" onclick="viewContactSs(${c.id},${idx},${si})">
+        <img src="${src}" alt="">
+        <button class="crm-ss-del" onclick="event.stopPropagation();removeContactSs(${c.id},${idx},${si})">✕</button>
+      </div>`).join('');
+  }
+
+  function addContactScreenshot(cid, idx, input) {
+    const files = Array.from(input.files).filter(f => f.type.startsWith('image/'));
+    if (!files.length) return;
+    const arr = getCRMCompanies();
+    const c = arr.find(x => x.id === cid); if (!c) return;
+    if (!c.contacts) c.contacts = getContacts(c);
+    const ct = c.contacts[idx]; if (!ct) return;
+    if (!ct.screenshots) ct.screenshots = [];
+    let loaded = 0;
+    files.forEach(file => {
+      const reader = new FileReader();
+      reader.onload = ev => {
+        ct.screenshots.push(ev.target.result);
+        loaded++;
+        if (loaded === files.length) {
+          saveCRMCompanies(arr);
+          const el = document.getElementById(`ct-ss-grid-${cid}-${idx}`);
+          if (el) el.innerHTML = buildContactSsHTML(c, idx);
+          showSaved();
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+    input.value = '';
+  }
+
+  function handleContactSsDrop(e, cid, idx) {
+    e.preventDefault();
+    const dz = document.getElementById(`ct-ss-drop-${cid}-${idx}`);
+    if (dz) dz.classList.remove('drag-over');
+    const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
+    if (!files.length) return;
+    const arr = getCRMCompanies();
+    const c = arr.find(x => x.id === cid); if (!c) return;
+    if (!c.contacts) c.contacts = getContacts(c);
+    const ct = c.contacts[idx]; if (!ct) return;
+    if (!ct.screenshots) ct.screenshots = [];
+    let loaded = 0;
+    files.forEach(file => {
+      const reader = new FileReader();
+      reader.onload = ev => {
+        ct.screenshots.push(ev.target.result);
+        loaded++;
+        if (loaded === files.length) {
+          saveCRMCompanies(arr);
+          const el = document.getElementById(`ct-ss-grid-${cid}-${idx}`);
+          if (el) el.innerHTML = buildContactSsHTML(c, idx);
+          showSaved();
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function removeContactSs(cid, idx, si) {
+    const arr = getCRMCompanies();
+    const c = arr.find(x => x.id === cid); if (!c) return;
+    const ct = getContacts(c)[idx]; if (!ct || !ct.screenshots) return;
+    ct.screenshots.splice(si, 1);
+    c.contacts = getContacts(c);
+    saveCRMCompanies(arr);
+    const el = document.getElementById(`ct-ss-grid-${cid}-${idx}`);
+    if (el) el.innerHTML = buildContactSsHTML(c, idx);
+    showSaved();
+  }
+
+  function viewContactSs(cid, idx, si) {
+    const arr = getCRMCompanies();
+    const ct = getContacts(arr.find(x => x.id === cid) || {})[idx];
+    if (!ct?.screenshots?.[si]) return;
+    const overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:9999;display:flex;align-items:center;justify-content:center;cursor:pointer;backdrop-filter:blur(4px);animation:fadeInUp 0.2s ease';
+    overlay.onclick = () => overlay.remove();
+    overlay.innerHTML = `<img src="${ct.screenshots[si]}" style="max-width:90vw;max-height:90vh;border-radius:10px;box-shadow:0 30px 80px rgba(0,0,0,0.7)">`;
+    document.body.appendChild(overlay);
+  }
+
+  function saveContactEdit(cid, idx) {
+    const arr = getCRMCompanies();
+    const c = arr.find(x => x.id === cid); if (!c) return;
+    if (!c.contacts) c.contacts = getContacts(c);
+    const existing = c.contacts[idx] || {};
+    c.contacts[idx] = {
+      name:        document.getElementById(`ce-name-${cid}-${idx}`)?.value.trim() || '',
+      poste:       document.getElementById(`ce-poste-${cid}-${idx}`)?.value.trim() || '',
+      linkedin:    document.getElementById(`ce-linkedin-${cid}-${idx}`)?.value.trim() || '',
+      canal:       document.getElementById(`ce-canal-${cid}-${idx}`)?.value || 'LinkedIn',
+      date:        document.getElementById(`ce-date-${cid}-${idx}`)?.value || '',
+      notes:       document.getElementById(`ce-notes-${cid}-${idx}`)?.value.trim() || '',
+      screenshots: existing.screenshots || [],
+    };
+    c.contact = c.contacts[0]?.name || '';
+    saveCRMCompanies(arr); showSaved();
+    // Re-render chips (tous fermés = liste propre)
+    const chipsEl = document.getElementById(`contact-chips-${cid}`);
+    if (chipsEl) chipsEl.innerHTML = buildContactCards(c);
+    const disp = document.querySelector(`.crm-row[data-id="${cid}"] .crm-contact-display`);
+    if (disp) disp.innerHTML = buildContactChips(c);
+  }
+
   function buildContactsHTML(c) {
     const contacts = getContacts(c);
     if (contacts.length === 0) return `<div style="font-size:12px;color:var(--muted);padding:6px 0">Aucun contact — clique sur "+ Ajouter un contact"</div>`;
@@ -603,6 +838,8 @@
               <select class="crm-select" id="ct-canal-${c.id}-${i}">${canalOpts}</select></div>
             <div class="crm-field"><label>Date contact</label>
               <input class="crm-input" type="date" value="${escAttr(ct.date||'')}" id="ct-date-${c.id}-${i}"></div>
+            <div class="crm-field" style="grid-column:span 2"><label>LinkedIn (URL)</label>
+              <input class="crm-input" value="${escAttr(ct.linkedin||'')}" placeholder="https://linkedin.com/in/prenom-nom" id="ct-linkedin-${c.id}-${i}"></div>
           </div>
           <div class="crm-field" style="margin-bottom:8px"><label>Notes</label>
             <textarea class="crm-notes-field" placeholder="Notes sur ce contact..." id="ct-notes-${c.id}-${i}" style="min-height:50px">${escHtml(ct.notes||'')}</textarea></div>
@@ -622,27 +859,28 @@
     const c = arr.find(x => x.id === compId); if (!c) return;
     if (!c.contacts) c.contacts = getContacts(c);
     c.contacts[idx] = {
-      name:  document.getElementById(`ct-name-${compId}-${idx}`)?.value.trim() || '',
-      poste: document.getElementById(`ct-poste-${compId}-${idx}`)?.value.trim() || '',
-      canal: document.getElementById(`ct-canal-${compId}-${idx}`)?.value || 'LinkedIn',
-      date:  document.getElementById(`ct-date-${compId}-${idx}`)?.value || '',
-      notes: document.getElementById(`ct-notes-${compId}-${idx}`)?.value.trim() || '',
+      name:    document.getElementById(`ct-name-${compId}-${idx}`)?.value.trim() || '',
+      poste:   document.getElementById(`ct-poste-${compId}-${idx}`)?.value.trim() || '',
+      canal:   document.getElementById(`ct-canal-${compId}-${idx}`)?.value || 'LinkedIn',
+      date:    document.getElementById(`ct-date-${compId}-${idx}`)?.value || '',
+      notes:   document.getElementById(`ct-notes-${compId}-${idx}`)?.value.trim() || '',
+      linkedin: document.getElementById(`ct-linkedin-${compId}-${idx}`)?.value.trim() || '',
     };
     // Sync premier contact avec les anciens champs pour compatibilité
     c.contact = c.contacts[0]?.name || '';
     saveCRMCompanies(arr); showSaved();
     // Ferme le contact et refresh
     document.getElementById(`contacts-${compId}`).innerHTML = buildContactsHTML(c);
-    // Update display dans le header
+    // Update chips dans le header
     const disp = document.querySelector(`.crm-row[data-id="${compId}"] .crm-contact-display`);
-    if (disp) disp.textContent = c.contact;
+    if (disp) disp.innerHTML = buildContactChips(c);
   }
 
   function addContact(compId) {
     const arr = getCRMCompanies();
     const c = arr.find(x => x.id === compId); if (!c) return;
     if (!c.contacts) c.contacts = getContacts(c);
-    c.contacts.push({ name: '', poste: '', canal: 'LinkedIn', date: '', notes: '' });
+    c.contacts.push({ name: '', poste: '', canal: 'LinkedIn', date: '', notes: '', linkedin: '' });
     saveCRMCompanies(arr);
     const container = document.getElementById(`contacts-${compId}`);
     container.innerHTML = buildContactsHTML(c);
@@ -659,7 +897,94 @@
     c.contacts.splice(idx, 1);
     c.contact = c.contacts[0]?.name || '';
     saveCRMCompanies(arr); showSaved();
-    document.getElementById(`contacts-${compId}`).innerHTML = buildContactsHTML(c);
+    const chipsEl = document.getElementById(`contact-chips-${compId}`);
+    if (chipsEl) chipsEl.innerHTML = buildContactCards(c);
+    const lbl = document.querySelector(`.crm-row[data-id="${compId}"] .crm-contacts-label`);
+    if (lbl) lbl.textContent = c.contacts.length ? `Contacts (${c.contacts.length})` : 'Contacts';
+    const disp = document.querySelector(`.crm-row[data-id="${compId}"] .crm-contact-display`);
+    if (disp) disp.innerHTML = buildContactChips(c);
+  }
+
+  function buildScreenshotsHTML(c) {
+    const shots = c.screenshots || [];
+    if (!shots.length) return '<span class="crm-ss-empty">Aucun screenshot</span>';
+    return shots.map((src, i) => `
+      <div class="crm-ss-thumb" onclick="viewScreenshot(${c.id},${i})">
+        <img src="${src}" alt="screenshot ${i+1}">
+        <button class="crm-ss-del" onclick="event.stopPropagation();removeScreenshot(${c.id},${i})">✕</button>
+      </div>`).join('');
+  }
+
+  function addScreenshot(id, input) {
+    const files = Array.from(input.files);
+    if (!files.length) return;
+    const arr = getCRMCompanies();
+    const c = arr.find(x => x.id === id); if (!c) return;
+    if (!c.screenshots) c.screenshots = [];
+    let loaded = 0;
+    files.forEach(file => {
+      const reader = new FileReader();
+      reader.onload = e => {
+        c.screenshots.push(e.target.result);
+        loaded++;
+        if (loaded === files.length) {
+          saveCRMCompanies(arr);
+          const el = document.getElementById(`screenshots-${id}`);
+          if (el) el.innerHTML = buildScreenshotsHTML(c);
+          showSaved();
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+    input.value = '';
+  }
+
+  function handleSsDrop(e, id) {
+    e.preventDefault();
+    const dz = document.getElementById(`ss-drop-${id}`);
+    if (dz) dz.classList.remove('drag-over');
+    const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
+    if (!files.length) return;
+    const arr = getCRMCompanies();
+    const c = arr.find(x => x.id === id); if (!c) return;
+    if (!c.screenshots) c.screenshots = [];
+    let loaded = 0;
+    files.forEach(file => {
+      const reader = new FileReader();
+      reader.onload = ev => {
+        c.screenshots.push(ev.target.result);
+        loaded++;
+        if (loaded === files.length) {
+          saveCRMCompanies(arr);
+          const el = document.getElementById(`screenshots-${id}`);
+          if (el) el.innerHTML = buildScreenshotsHTML(c);
+          showSaved();
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function removeScreenshot(id, idx) {
+    const arr = getCRMCompanies();
+    const c = arr.find(x => x.id === id); if (!c) return;
+    if (!c.screenshots) return;
+    c.screenshots.splice(idx, 1);
+    saveCRMCompanies(arr);
+    const el = document.getElementById(`screenshots-${id}`);
+    if (el) el.innerHTML = buildScreenshotsHTML(c);
+    showSaved();
+  }
+
+  function viewScreenshot(id, idx) {
+    const arr = getCRMCompanies();
+    const c = arr.find(x => x.id === id); if (!c || !c.screenshots) return;
+    const src = c.screenshots[idx]; if (!src) return;
+    const overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:9999;display:flex;align-items:center;justify-content:center;cursor:pointer;backdrop-filter:blur(4px);animation:fadeInUp 0.2s ease';
+    overlay.onclick = () => overlay.remove();
+    overlay.innerHTML = `<img src="${src}" style="max-width:90vw;max-height:90vh;border-radius:10px;box-shadow:0 30px 80px rgba(0,0,0,0.7)">`;
+    document.body.appendChild(overlay);
   }
 
   function copyCrmName(btn, name) {
@@ -728,6 +1053,7 @@
     'pas-de-reponse':    { label:'Pas de réponse',     bg:'#2a1500', color:'#f0a500' },
     'interesse':         { label:'Intéressé',          bg:'#0a1f10', color:'#4caf50' },
     'rdv-pris':          { label:'RDV pris',           bg:'#003318', color:'#00c853' },
+    'me-recontacte':     { label:'Me recontacte',      bg:'#1a0d2e', color:'#a78bfa' },
     'refuse':            { label:'Refus',              bg:'#2a0000', color:'#e53935' },
     'converti':          { label:'Converti ✓',        bg:'#180a2e', color:'#9b59b6' },
   };
@@ -910,19 +1236,73 @@
     updateCRMStatsBar();
   }
 
+  function updateActionBtns(id, status) {
+    const row = document.querySelector(`.crm-row[data-id="${id}"]`);
+    if (!row) return;
+    row.querySelectorAll('.crm-action-btn[data-statut]').forEach(btn => {
+      const st = btn.dataset.statut;
+      const cfg = STATUS_CONFIG[st];
+      if (!cfg) return;
+      if (st === status) {
+        btn.style.background = cfg.bg;
+        btn.style.borderColor = cfg.color;
+        btn.style.color = cfg.color;
+        btn.style.fontWeight = '700';
+      } else {
+        btn.style.background = '';
+        btn.style.borderColor = '';
+        btn.style.color = '';
+        btn.style.fontWeight = '';
+      }
+    });
+  }
+
   function quickStatus(id, status) {
-    updateCompanyStatus(id, status);
+    const arr = getCRMCompanies();
+    const c = arr.find(x => x.id === id);
+    // Toggle : reclique sur le statut actif → remet à "a-contacter"
+    const newStatus = (c && c.statut === status) ? 'a-contacter' : status;
+    updateCompanyStatus(id, newStatus);
     const sel = document.querySelector(`.crm-row[data-id="${id}"] .crm-status-select`);
-    if (sel) sel.value = status;
-    if (status === 'message-envoye') {
-      const arr = getCRMCompanies(); const c = arr.find(x => x.id === id);
+    if (sel) sel.value = newStatus;
+    updateActionBtns(id, newStatus);
+    if (newStatus === 'message-envoye') {
+      const arr2 = getCRMCompanies(); const c = arr2.find(x => x.id === id);
       if (c && !c.date) {
         const today = new Date().toISOString().split('T')[0];
-        c.date = today; saveCRMCompanies(arr);
+        c.date = today; saveCRMCompanies(arr2);
         const dateInp = document.querySelector(`.crm-row[data-id="${id}"] .crm-date-input`);
         if (dateInp) dateInp.value = today;
       }
     }
+  }
+
+  function dismissAlerte(id) {
+    const arr = getCRMCompanies();
+    const c = arr.find(x => x.id === id); if (!c) return;
+    c.relance = '';
+    saveCRMCompanies(arr);
+    // Re-render current page
+    showNote(currentId, document.querySelector(`[data-note="${currentId}"], [data-fixed="${currentId}"]`));
+  }
+
+  function clearAlerte(id) {
+    const arr = getCRMCompanies();
+    const c = arr.find(x => x.id === id); if (!c) return;
+    c.relance = '';
+    saveCRMCompanies(arr); showSaved();
+    const relInp = document.querySelector(`.crm-row[data-id="${id}"] .crm-relance-input`);
+    if (relInp) relInp.value = '';
+  }
+
+  function deleteCompany(id) {
+    const arr = getCRMCompanies();
+    const c = arr.find(x => x.id === id); if (!c) return;
+    if (!confirm(`Supprimer "${c.name}" ?`)) return;
+    saveCRMCompanies(arr.filter(x => x.id !== id));
+    expandedIds.delete(id);
+    refreshCRMList();
+    showSaved();
   }
 
   function setRelanceIn(id, days) {
@@ -947,13 +1327,21 @@
   }
   function setCRMTypeFilter(f) {
     crmTypeFilter = f;
-    document.querySelectorAll('.crm-type-btn').forEach(b => b.classList.toggle('active', b.dataset.type === f));
     refreshCRMList();
   }
-  function getCompanyType(c) {
-    const prodZones = ['Nantes','Vendee','Angers','Rennes','Le Mans','Niort','Saint-Nazaire'];
-    return prodZones.includes(c.zone) ? 'prod' : 'com';
+  function getSecteur(c) {
+    const z = c.zone || '';
+    if (z.startsWith('Agences Comm')) return 'comm';
+    if (z.startsWith('Agences Even') || z === 'Agences Evenementielles') return 'event';
+    if (z === 'Web & Digital') return 'web';
+    if (z === 'Institutionnels') return 'instit';
+    if (z === 'Immobilier') return 'immo';
+    if (z === 'Sport & Culture') return 'sport';
+    if (z === 'Medias') return 'media';
+    return 'prod';
   }
+  // Compat alias
+  function getCompanyType(c) { return getSecteur(c); }
 
   function setCRMSearch(q) {
     crmSearch = q;
@@ -989,7 +1377,7 @@
         (crmFilter === 'en-cours' && ['message-envoye','pas-de-reponse'].includes(c.statut)) ||
         (crmFilter === 'positif' && ['interesse','rdv-pris','converti'].includes(c.statut)) ||
         (crmFilter === 'contactees' && c.statut !== 'a-contacter');
-      const mt = crmTypeFilter === 'all' || getCompanyType(c) === crmTypeFilter;
+      const mt = crmTypeFilter === 'all' || getSecteur(c) === crmTypeFilter;
       return ms && mf && mt;
     });
     if (filtered.length === 0) return '<div style="padding:20px;color:var(--muted);text-align:center;font-size:13px;">Aucune boite trouvee</div>';
@@ -1007,45 +1395,75 @@
     const canaux = ['LinkedIn','Email','Telephone','Physique','Instagram'];
     const canalOpts = canaux.map(x => `<option value="${x}"${c.canal===x?' selected':''}>${x}</option>`).join('');
     const statutOpts = Object.entries(STATUS_CONFIG).map(([k,v]) => `<option value="${k}"${c.statut===k?' selected':''}>${v.label}</option>`).join('');
+    const ab = st => {
+      const active = c.statut === st;
+      const cfg = STATUS_CONFIG[st];
+      return `data-statut="${st}"${active ? ` style="background:${cfg.bg};border-color:${cfg.color};color:${cfg.color};font-weight:700"` : ''}`;
+    };
     return `<div class="crm-row" data-id="${c.id}">
       <div class="crm-row-header" onclick="toggleExpand(${c.id})">
         <span class="crm-priority">${c.p ? '★' : ''}</span>
         <button class="crm-copy-btn" onclick="event.stopPropagation();copyCrmName(this,'${escHtml(c.name).replace(/'/g,"\\'")}')">⧉</button>
         <span class="crm-name">${escHtml(c.name)}</span>
-        <span class="crm-contact-display" style="${c.contact?'':'opacity:0'}">${escHtml(c.contact)}</span>
+        <span class="crm-contact-display">${buildContactChips(c)}</span>
         <span class="crm-badge" style="background:${s.bg};color:${s.color}">${s.label}</span>
         <span class="crm-has-notes" style="opacity:${hasNotes?1:0}">●</span>
         <button class="crm-msg-check${c.msg?' sent':''}" title="Message envoyé" onclick="event.stopPropagation();toggleMsg(${c.id})">✓</button>
+        <button class="crm-del-btn" onclick="event.stopPropagation();deleteCompany(${c.id})" title="Supprimer cette boite">✕</button>
         <span class="crm-chevron">▼</span>
       </div>
       <div class="crm-detail">
         <div class="crm-contacts-section">
-          <div class="crm-contacts-label">
-            <span>Contacts</span>
-            <button class="crm-add-contact-btn" onclick="addContact(${c.id})">+ Ajouter un contact</button>
+          <div class="crm-contacts-label">Contacts${getContacts(c).length ? ' (' + getContacts(c).length + ')' : ''}</div>
+          <div id="contact-chips-${c.id}">${buildContactCards(c)}</div>
+          <div class="crm-new-contact-form">
+            <div class="crm-new-contact-form-title">Nouveau contact</div>
+            <div class="crm-contact-grid">
+              <div class="crm-field"><label>Prénom Nom</label>
+                <input class="crm-input" placeholder="Jean Dupont" id="nc-name-${c.id}"></div>
+              <div class="crm-field"><label>Poste</label>
+                <input class="crm-input" placeholder="Directeur de prod" id="nc-poste-${c.id}"></div>
+              <div class="crm-field" style="grid-column:span 2"><label>LinkedIn (URL)</label>
+                <input class="crm-input" placeholder="https://linkedin.com/in/..." id="nc-linkedin-${c.id}" onkeydown="if(event.key==='Enter')addAndValidateContact(${c.id})"></div>
+            </div>
+            <button class="crm-contact-validate" onclick="addAndValidateContact(${c.id})">Ajouter ✓</button>
           </div>
-          <div id="contacts-${c.id}">${buildContactsHTML(c)}</div>
         </div>
         <div class="crm-detail-grid">
           <div class="crm-field"><label>Statut</label>
             <select class="crm-select crm-status-select" onchange="updateCompanyStatus(${c.id},this.value)">${statutOpts}</select></div>
-          <div class="crm-field"><label>Relance le</label>
+          <div class="crm-field"><label>Alerte</label>
             <input class="crm-input crm-relance-input" type="date" value="${escAttr(c.relance||'')}" onchange="updateCompany(${c.id},'relance',this.value)"></div>
           <div class="crm-field" style="grid-column:span 2"><label>Site web</label>
             <input class="crm-input" value="${escAttr(c.site)}" onblur="updateCompany(${c.id},'site',this.value)"></div>
         </div>
         <div class="crm-field" style="margin-bottom:9px"><label>Notes / Dernier echange</label>
           <textarea class="crm-notes-field" placeholder="Notes, contexte, suite a donner..." onblur="updateCompany(${c.id},'notes',this.value)">${escHtml(c.notes||'')}</textarea></div>
+        <div class="crm-screenshots-section">
+          <div class="crm-contacts-label">
+            <span>Screenshots</span>
+            <label class="crm-add-screenshot-btn" for="ss-input-${c.id}">+ Ajouter</label>
+          </div>
+          <input type="file" id="ss-input-${c.id}" accept="image/*" multiple style="display:none" onchange="addScreenshot(${c.id},this)">
+          <div class="crm-ss-dropzone" id="ss-drop-${c.id}"
+            ondragover="event.preventDefault();this.classList.add('drag-over')"
+            ondragleave="this.classList.remove('drag-over')"
+            ondrop="handleSsDrop(event,${c.id})">
+            <div id="screenshots-${c.id}" class="crm-screenshots-grid">${buildScreenshotsHTML(c)}</div>
+            <div class="crm-ss-drop-hint">↓ Glisse une image ici</div>
+          </div>
+        </div>
         <div class="crm-actions">
-          <button class="crm-action-btn" onclick="quickStatus(${c.id},'demande-contact')">Demande contact</button>
-          <button class="crm-action-btn" onclick="quickStatus(${c.id},'message-envoye')">Message envoyé</button>
-          <button class="crm-action-btn" onclick="quickStatus(${c.id},'pas-de-reponse')">Pas de réponse</button>
-          <button class="crm-action-btn" onclick="quickStatus(${c.id},'interesse')">Intéressé</button>
-          <button class="crm-action-btn rdv" onclick="quickStatus(${c.id},'rdv-pris')">RDV pris ✓</button>
-          <button class="crm-action-btn" onclick="quickStatus(${c.id},'refuse')">Refus</button>
-          <button class="crm-action-btn" onclick="quickStatus(${c.id},'converti')">Converti</button>
+          <button class="crm-action-btn" ${ab('demande-contact')} onclick="quickStatus(${c.id},'demande-contact')">Demande contact</button>
+          <button class="crm-action-btn" ${ab('message-envoye')} onclick="quickStatus(${c.id},'message-envoye')">Message envoyé</button>
+          <button class="crm-action-btn" ${ab('pas-de-reponse')} onclick="quickStatus(${c.id},'pas-de-reponse')">Pas de réponse</button>
+          <button class="crm-action-btn" ${ab('interesse')} onclick="quickStatus(${c.id},'interesse')">Intéressé</button>
+          <button class="crm-action-btn rdv" ${ab('rdv-pris')} onclick="openRdvModal(${c.id})">RDV pris ✓</button>
+          <button class="crm-action-btn" ${ab('me-recontacte')} onclick="quickStatus(${c.id},'me-recontacte')">Me recontacte</button>
+          <button class="crm-action-btn" ${ab('refuse')} onclick="quickStatus(${c.id},'refuse')">Refus</button>
+          <button class="crm-action-btn" ${ab('converti')} onclick="quickStatus(${c.id},'converti')">Converti</button>
           <span style="flex:1"></span>
-          <button class="crm-action-btn" onclick="setRelanceIn(${c.id},7)" title="Definir une relance dans 7 jours">Relance +7j</button>
+          <button class="crm-action-btn" onclick="setRelanceIn(${c.id},7)" title="Alerte dans 7 jours">Alerte +7j</button>
           <button class="crm-action-btn" onclick="setRelanceIn(${c.id},14)">+14j</button>
         </div>
       </div>
@@ -1184,13 +1602,14 @@
 
       ${relancesAujourdhui.length > 0 ? `
       <div class="block" style="border-color:var(--accent);margin-bottom:13px;">
-        <h3 style="color:var(--accent)">Relances du jour (${relancesAujourdhui.length})</h3>
+        <h3 style="color:var(--accent)">Alertes du jour (${relancesAujourdhui.length})</h3>
         ${relancesAujourdhui.map(c => `
           <div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--border);">
             <span style="font-size:13px;font-weight:600;flex:1">${escHtml(c.name)}</span>
             <span style="font-size:11px;color:var(--muted)">${escHtml(c.contact||'')}</span>
             <span style="font-size:11px;background:${STATUS_CONFIG[c.statut].bg};color:${STATUS_CONFIG[c.statut].color};padding:2px 8px;border-radius:20px;">${STATUS_CONFIG[c.statut].label}</span>
             <button onclick="showNote('crm',document.querySelector('[data-fixed=crm]'))" style="font-size:11px;padding:3px 9px;border:1px solid var(--accent);background:transparent;color:var(--accent);border-radius:4px;cursor:pointer;">Voir</button>
+            <button onclick="dismissAlerte(${c.id})" title="Supprimer l'alerte" style="font-size:13px;padding:2px 6px;border:1px solid rgba(239,68,68,0.3);background:transparent;color:#ef4444;border-radius:4px;cursor:pointer;line-height:1;">✕</button>
           </div>`).join('')}
       </div>` : ''}
 
@@ -1295,11 +1714,18 @@
         <div class="crm-stat"><div class="n" id="cst-reponses" style="color:var(--accent2)">${reponses}</div><div class="l">Reponses+</div></div>
         <div class="crm-stat"><div class="n" id="cst-convertis" style="color:var(--purple)">${convertis}</div><div class="l">Convertis</div></div>
       </div>
-      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;align-items:center">
-        <span style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-right:2px">Type :</span>
-        <button class="crm-type-btn crm-filter-btn ${crmTypeFilter==='all'?'active':''}" data-type="all" onclick="setCRMTypeFilter('all')">Toutes</button>
-        <button class="crm-type-btn crm-filter-btn ${crmTypeFilter==='prod'?'active':''}" data-type="prod" onclick="setCRMTypeFilter('prod')" style="${crmTypeFilter==='prod'?'':'border-color:var(--blue);color:var(--blue)'}">LinkedIn Prospection (${arr.filter(c=>getCompanyType(c)==='prod').length})</button>
-        <button class="crm-type-btn crm-filter-btn ${crmTypeFilter==='com'?'active':''}" data-type="com" onclick="setCRMTypeFilter('com')" style="${crmTypeFilter==='com'?'':'border-color:var(--purple);color:var(--purple)'}">Messages Prospection (${arr.filter(c=>getCompanyType(c)==='com').length})</button>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <select class="crm-select" style="max-width:300px;font-size:12px" onchange="setCRMTypeFilter(this.value)">
+          <option value="all"    ${crmTypeFilter==='all'   ?'selected':''}>Tous les secteurs — ${arr.length} boites</option>
+          <option value="prod"   ${crmTypeFilter==='prod'  ?'selected':''}>🎬 Productions vidéo — ${arr.filter(c=>getSecteur(c)==='prod').length} boites</option>
+          <option value="comm"   ${crmTypeFilter==='comm'  ?'selected':''}>📣 Agences communication — ${arr.filter(c=>getSecteur(c)==='comm').length} boites</option>
+          <option value="event"  ${crmTypeFilter==='event' ?'selected':''}>🎪 Agences événementielles — ${arr.filter(c=>getSecteur(c)==='event').length} boites</option>
+          <option value="web"    ${crmTypeFilter==='web'   ?'selected':''}>💻 Web & Digital — ${arr.filter(c=>getSecteur(c)==='web').length} boites</option>
+          <option value="instit" ${crmTypeFilter==='instit'?'selected':''}>🏛 Institutionnels — ${arr.filter(c=>getSecteur(c)==='instit').length} boites</option>
+          <option value="immo"   ${crmTypeFilter==='immo'  ?'selected':''}>🏢 Immobilier — ${arr.filter(c=>getSecteur(c)==='immo').length} boites</option>
+          <option value="sport"  ${crmTypeFilter==='sport' ?'selected':''}>⚽ Sport & Culture — ${arr.filter(c=>getSecteur(c)==='sport').length} boites</option>
+          <option value="media"  ${crmTypeFilter==='media' ?'selected':''}>📺 Médias — ${arr.filter(c=>getSecteur(c)==='media').length} boites</option>
+        </select>
       </div>
       <div class="crm-filters">
         <button class="crm-filter-btn ${crmFilter==='all'?'active':''}" data-filter="all" onclick="setCRMFilter('all')">Toutes (${arr.length})</button>
@@ -1785,8 +2211,57 @@ https://www.rondeaujeremy.fr/
     closeAddCompany();
     showNote('crm', document.querySelector('[data-fixed="crm"]'));
   }
+  // ---- RDV MODAL ----
+  let rdvPendingId = null;
+  function openRdvModal(id) {
+    rdvPendingId = id;
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('rdv-date').value = today;
+    document.getElementById('rdv-time').value = '10:00';
+    document.getElementById('rdv-extra-notes').value = '';
+    document.getElementById('modal-rdv').classList.add('open');
+    document.getElementById('rdv-date').focus();
+  }
+  function closeRdvModal() {
+    document.getElementById('modal-rdv').classList.remove('open');
+    rdvPendingId = null;
+  }
+  function saveRdv() {
+    if (!rdvPendingId) return;
+    const date = document.getElementById('rdv-date').value;
+    const time = document.getElementById('rdv-time').value;
+    const extra = document.getElementById('rdv-extra-notes').value.trim();
+    // Set status
+    updateCompanyStatus(rdvPendingId, 'rdv-pris');
+    const sel = document.querySelector(`.crm-row[data-id="${rdvPendingId}"] .crm-status-select`);
+    if (sel) sel.value = 'rdv-pris';
+    // Save relance
+    if (date) {
+      updateCompany(rdvPendingId, 'relance', date);
+      const relInp = document.querySelector(`.crm-row[data-id="${rdvPendingId}"] .crm-relance-input`);
+      if (relInp) relInp.value = date;
+    }
+    // Append note
+    if (extra || (date && time)) {
+      const arr = getCRMCompanies();
+      const c = arr.find(x => x.id === rdvPendingId);
+      if (c) {
+        const rdvNote = `[RDV ${date}${time ? ' à ' + time : ''}]${extra ? ' ' + extra : ''}`;
+        c.notes = c.notes ? c.notes + '\n' + rdvNote : rdvNote;
+        saveCRMCompanies(arr);
+        const notesEl = document.querySelector(`.crm-row[data-id="${rdvPendingId}"] .crm-notes-field`);
+        if (notesEl) notesEl.value = c.notes;
+        const hasNotes = document.querySelector(`.crm-row[data-id="${rdvPendingId}"] .crm-has-notes`);
+        if (hasNotes) hasNotes.style.opacity = '1';
+      }
+    }
+    updateActionBtns(rdvPendingId, 'rdv-pris');
+    closeRdvModal();
+    showSaved();
+  }
+
   document.addEventListener('keydown', e => {
-    if (e.key === 'Escape') closeAddCompany();
+    if (e.key === 'Escape') { closeAddCompany(); closeRdvModal(); }
   });
 </script>
 
@@ -1814,6 +2289,27 @@ https://www.rondeaujeremy.fr/
     <div class="modal-btns">
       <button class="modal-btn-cancel" onclick="closeAddCompany()">Annuler</button>
       <button class="modal-btn-save" onclick="saveNewCompany()">Ajouter</button>
+    </div>
+  </div>
+</div>
+<div class="modal-overlay" id="modal-rdv" onclick="if(event.target===this)closeRdvModal()">
+  <div class="modal-box" style="max-width:360px">
+    <h3>📅 RDV pris</h3>
+    <div>
+      <label>Date du RDV</label>
+      <input class="modal-input" type="date" id="rdv-date">
+    </div>
+    <div>
+      <label>Heure</label>
+      <input class="modal-input" type="time" id="rdv-time">
+    </div>
+    <div>
+      <label>Notes (optionnel)</label>
+      <textarea class="modal-input" id="rdv-extra-notes" rows="3" style="resize:vertical" placeholder="Ordre du jour, contexte, nom du contact..."></textarea>
+    </div>
+    <div class="modal-btns">
+      <button class="modal-btn-cancel" onclick="closeRdvModal()">Annuler</button>
+      <button class="modal-btn-save" onclick="saveRdv()">Confirmer ✓</button>
     </div>
   </div>
 </div>
