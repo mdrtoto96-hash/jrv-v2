@@ -230,6 +230,14 @@
     .inject-btn { padding: 5px 14px; border-radius: 6px; border: none; background: var(--blue); color: #080808; font-size: 11px; font-weight: 700; cursor: pointer; font-family: inherit; transition: all 0.15s; }
     .inject-btn:hover:not(.done) { background: #5aaeff; }
     .inject-btn.done { background: var(--accent2); cursor: default; }
+    .inject-warning { background: rgba(231,176,60,0.07); border: 1px solid rgba(231,176,60,0.28); border-radius: 7px; padding: 9px 12px; margin-top: 8px; font-size: 11px; color: #e8b84b; line-height: 1.55; }
+    .inject-warning-title { font-weight: 700; margin-bottom: 4px; }
+    .crm-modify-card { background: rgba(76,175,80,0.07); border: 1px solid rgba(76,175,80,0.25); border-radius: 9px; padding: 11px 13px; margin-top: 8px; }
+    .crm-modify-title { font-size: 11px; font-weight: 700; color: var(--accent2); margin-bottom: 5px; }
+    .crm-modify-summary { font-size: 12px; color: var(--text); margin-bottom: 8px; }
+    .crm-modify-btn { padding: 5px 14px; border-radius: 6px; border: none; background: var(--accent2); color: #080808; font-size: 11px; font-weight: 700; cursor: pointer; font-family: inherit; transition: all 0.15s; }
+    .crm-modify-btn:hover:not([disabled]) { opacity: 0.85; }
+    .crm-modify-btn[disabled] { opacity: 0.5; cursor: default; }
     /* Input bar */
     .chat-input-bar { display: flex; align-items: center; gap: 8px; padding: 12px 0 2px; border-top: 1px solid var(--border); flex-shrink: 0; }
     .mic-btn { width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--border2); background: var(--card); color: var(--muted); font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s; flex-shrink: 0; }
@@ -266,6 +274,9 @@
     .crm-msg-check:hover { border-color: var(--blue); }
     .crm-chevron { font-size: 9px; color: var(--muted); flex-shrink: 0; transition: transform 0.2s; }
     .crm-row.open .crm-chevron { transform: rotate(180deg); }
+    .crm-delete-btn { background: none; border: none; color: transparent; font-size: 16px; line-height: 1; cursor: pointer; padding: 1px 4px; border-radius: 3px; flex-shrink: 0; transition: color 0.15s, background 0.15s; }
+    .crm-row-header:hover .crm-delete-btn { color: #c0392b; }
+    .crm-delete-btn:hover { color: #e74c3c !important; background: rgba(231,76,60,0.1); }
     .crm-detail { display: none; padding: 13px 15px; border-top: 1px solid var(--border); background: rgba(0,0,0,0.25); }
     .crm-row.open .crm-detail { display: block; }
     .crm-detail-grid { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 9px; margin-bottom: 10px; }
@@ -722,6 +733,20 @@
     const btn = document.querySelector(`.crm-row[data-id="${id}"] .crm-msg-check`);
     if (btn) btn.classList.toggle('sent', c.msg);
   }
+  async function deleteCompany(id) {
+    const arr = getCRMCompanies();
+    const c = arr.find(x => x.id === id); if (!c) return;
+    if (!confirm(`Supprimer "${c.name}" du CRM ?\nCette action est irréversible.`)) return;
+    try {
+      await fetch(_SB_URL + '/rest/v1/companies?id=eq.' + id, { method: 'DELETE', headers: _SB_HDR });
+    } catch(e) { console.warn('Supabase delete failed:', e); }
+    _sbCompanies = arr.filter(x => x.id !== id);
+    _lsSet('jrv_crm_v2', JSON.stringify(_sbCompanies));
+    const row = document.querySelector(`.crm-row[data-id="${id}"]`);
+    if (row) { row.style.opacity = '0'; row.style.transform = 'translateX(20px)'; row.style.transition = 'all 0.2s'; setTimeout(() => row.remove(), 200); }
+    updateCRMStatsBar();
+    showSaved();
+  }
   function escAttr(s) { return (s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
   function showSaved() { const b=document.getElementById('saved-badge'); b.style.display='inline'; clearTimeout(saveTimer); saveTimer=setTimeout(()=>{b.style.display='none';},1800); }
   function chk(label) { return `<label class="chk-item"><input type="checkbox"><span>${label}</span></label>`; }
@@ -1113,6 +1138,7 @@
         <span class="crm-badge" style="background:${s.bg};color:${s.color}">${s.label}</span>
         <span class="crm-has-notes" style="opacity:${hasNotes?1:0}">●</span>
         <button class="crm-msg-check${c.msg?' sent':''}" title="Message envoyé" onclick="event.stopPropagation();toggleMsg(${c.id})">✓</button>
+        <button class="crm-delete-btn" onclick="event.stopPropagation();deleteCompany(${c.id})" title="Supprimer ce lead">×</button>
         <span class="crm-chevron">▼</span>
       </div>
       <div class="crm-detail">
@@ -2144,10 +2170,25 @@ https://www.rondeaujeremy.fr/
     if (msg.injectId && injectCache[msg.injectId]) {
       const companies = injectCache[msg.injectId];
       const preview = companies.slice(0,3).map(c=>c.name).join(', ') + (companies.length>3?' ...':'');
-      extra = `<div class="inject-card">
-        <div class="inject-title">📦 ${companies.length} boîte(s) prêtes</div>
+      extra += `<div class="inject-card">
+        <div class="inject-title">📦 ${companies.length} boîte(s) vérifiées</div>
         <div class="inject-preview">${escHtml(preview)}</div>
         <button class="inject-btn" id="inj-${msg.injectId}" onclick="chatInject('${msg.injectId}',this)">Injecter dans le CRM →</button>
+      </div>`;
+    }
+    if (msg.flagged && msg.flagged.length > 0) {
+      const flagLines = msg.flagged.map(f => `• ${escHtml(f.name)}${f.location_note ? ' — '+escHtml(f.location_note) : ''}`).join('<br>');
+      extra += `<div class="inject-warning">
+        <div class="inject-warning-title">⚠️ Écartées (localisation incertaine)</div>
+        ${flagLines}
+      </div>`;
+    }
+    if (msg.modifyAction) {
+      const ma = msg.modifyAction;
+      extra += `<div class="crm-modify-card">
+        <div class="crm-modify-title">🔧 Modification CRM</div>
+        <div class="crm-modify-summary">ID #${ma.id} — <b>${escHtml(ma.field)}</b> → <b>${escHtml(String(ma.value))}</b></div>
+        <button class="crm-modify-btn" id="mod-${ma.id}-${ma.field}" onclick="applyCrmModify(${JSON.stringify(ma)},this)">Appliquer →</button>
       </div>`;
     }
     const escapedContent = escHtml(msg.content).replace(/\n/g,'<br>');
@@ -2209,7 +2250,7 @@ https://www.rondeaujeremy.fr/
           rdvPris: crmArr.filter(c=>c.statut==='rdv-pris').length,
           converti: crmArr.filter(c=>c.statut==='converti').length,
           relancesUrgentes: crmArr.filter(c=>c.relance&&new Date(c.relance)<=now).length,
-          dernieres10: crmArr.slice(-10).map(c=>({name:c.name,statut:c.statut,zone:c.zone,date:c.date}))
+          dernieres10: crmArr.slice(-10).map(c=>({id:c.id,name:c.name,statut:c.statut,zone:c.zone,date:c.date}))
         });
       } else if (agentId === 'copywriter') {
         extraContext = `Entreprises déjà dans le CRM de Jeremy (${crmNames.length} au total) : ${crmNames.join(', ')}`;
@@ -2231,24 +2272,43 @@ https://www.rondeaujeremy.fr/
       // Remove typing indicator
       document.getElementById('chat-typing')?.remove();
 
-      // Sourcing: detect JSON array → offer inject
+      // Detect modify_crm action (all agents)
+      let modifyAction = null;
+      try {
+        const clean = result.replace(/```json\n?/g,'').replace(/```\n?/g,'').trim();
+        if (clean.startsWith('{') && clean.includes('"action":"modify_crm"')) {
+          const parsed = JSON.parse(clean);
+          if (parsed.action === 'modify_crm' && parsed.id && parsed.field) modifyAction = parsed;
+        }
+      } catch(e) {}
+
+      // Sourcing: detect JSON array → offer inject (with confidence)
       let agentMsg;
-      if (agentId === 'sourcing') {
-        let companies = null;
+      if (agentId === 'sourcing' && !modifyAction) {
+        let companies = null, flagged = [];
         try {
           const clean = result.replace(/```json\n?/g,'').replace(/```\n?/g,'').trim();
           if (clean.startsWith('[')) {
             const parsed = JSON.parse(clean);
-            if (Array.isArray(parsed) && parsed[0]?.name) companies = parsed;
+            if (Array.isArray(parsed) && parsed[0]?.name) {
+              companies = parsed.filter(c => c.confidence !== 'low');
+              flagged = parsed.filter(c => c.confidence === 'low');
+            }
           }
         } catch(e) {}
         if (companies && companies.length > 0) {
           const iid = 'inj' + Date.now();
           injectCache[iid] = companies;
-          agentMsg = { role: 'agent', content: `J'ai trouvé ${companies.length} boîte(s) correspondant à ta demande.`, injectId: iid, time: new Date() };
+          const summaryParts = [`J'ai trouvé ${companies.length} boîte(s) vérifiées pour ta demande.`];
+          if (flagged.length > 0) summaryParts.push(`⚠️ ${flagged.length} boîte(s) écartées (localisation incertaine).`);
+          agentMsg = { role: 'agent', content: summaryParts.join('\n'), injectId: iid, flagged, time: new Date() };
+        } else if (flagged.length > 0) {
+          agentMsg = { role: 'agent', content: `Aucune boîte validée pour cette zone. ${flagged.length} écartée(s) pour localisation incertaine.`, flagged, time: new Date() };
         } else {
           agentMsg = { role: 'agent', content: result, time: new Date() };
         }
+      } else if (modifyAction) {
+        agentMsg = { role: 'agent', content: modifyAction.summary || 'Modification CRM demandée.', modifyAction, time: new Date() };
       } else {
         agentMsg = { role: 'agent', content: result, time: new Date() };
       }
@@ -2274,6 +2334,29 @@ https://www.rondeaujeremy.fr/
     } finally {
       if (sendBtn) sendBtn.disabled = false;
     }
+  }
+
+  async function applyCrmModify(action, btn) {
+    btn.disabled = true; btn.textContent = 'Application...';
+    const allowedFields = ['statut','notes','contact','poste','relance','date','site','priority','p'];
+    if (!allowedFields.includes(action.field)) { btn.textContent = '✗ Champ non autorisé'; return; }
+    const arr = getCRMCompanies();
+    const c = arr.find(x => x.id === action.id);
+    if (!c) { btn.textContent = '✗ Entreprise introuvable'; return; }
+    c[action.field] = action.value;
+    try {
+      const patch = {}; patch[action.field] = action.value;
+      await fetch(_SB_URL + '/rest/v1/companies?id=eq.' + action.id, {
+        method: 'PATCH',
+        headers: Object.assign({}, _SB_HDR, { 'Prefer': 'return=minimal' }),
+        body: JSON.stringify(patch)
+      });
+    } catch(e) { console.warn('Supabase patch failed:', e); }
+    saveCRMCompanies(arr, c);
+    if (action.field === 'statut') updateCompanyStatus(action.id, action.value);
+    btn.textContent = '✓ Appliqué';
+    btn.style.background = '#27ae60';
+    showSaved();
   }
 
   async function chatInject(injectId, btn) {
