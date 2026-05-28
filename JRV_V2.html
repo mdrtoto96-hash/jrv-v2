@@ -7,7 +7,6 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
@@ -1615,20 +1614,35 @@ https://www.rondeaujeremy.fr/
   // ---- SUPABASE SYNC ----
   const _SB_URL = 'https://emetgeoaoexrafyofimc.supabase.co';
   const _SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVtZXRnZW9hb2V4cmFmeW9maW1jIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk4NTAxNDMsImV4cCI6MjA5NTQyNjE0M30.nSHrbn3dcGXZH601rjte-9E4QbzR78yG2xCSXLkA06U';
-  let _sb = null, _sbReady = false, _sbSync = false;
+  const _SB_TABLE = _SB_URL + '/rest/v1/app_storage';
+  const _SB_HDR = { 'apikey': _SB_KEY, 'Authorization': 'Bearer ' + _SB_KEY, 'Content-Type': 'application/json' };
+  let _sbReady = false, _sbSync = false;
   const _lsSet = localStorage.setItem.bind(localStorage);
   const _lsRemove = localStorage.removeItem.bind(localStorage);
 
+  function _sbUpsert(k, v) {
+    let val; try { val = JSON.parse(v); } catch { val = v; }
+    fetch(_SB_TABLE, {
+      method: 'POST',
+      headers: Object.assign({}, _SB_HDR, { 'Prefer': 'resolution=merge-duplicates,return=minimal' }),
+      body: JSON.stringify({ key: k, value: val, updated_at: new Date().toISOString() })
+    }).then(function(r) { if (!r.ok) r.text().then(function(t) { console.warn('SB upsert err:', r.status, t); }); });
+  }
+
+  function _sbDelete(k) {
+    fetch(_SB_TABLE + '?key=eq.' + encodeURIComponent(k), {
+      method: 'DELETE',
+      headers: _SB_HDR
+    }).then(function(r) { if (!r.ok) r.text().then(function(t) { console.warn('SB delete err:', r.status, t); }); });
+  }
+
   localStorage.setItem = function(k, v) {
     _lsSet(k, v);
-    if (_sbReady && !_sbSync && _sb) {
-      let val; try { val = JSON.parse(v); } catch { val = v; }
-      _sb.from('app_storage').upsert({ key: k, value: val, updated_at: new Date().toISOString() }).then();
-    }
+    if (_sbReady && !_sbSync) _sbUpsert(k, v);
   };
   localStorage.removeItem = function(k) {
     _lsRemove(k);
-    if (_sbReady && !_sbSync && _sb) { _sb.from('app_storage').delete().eq('key', k).then(); }
+    if (_sbReady && !_sbSync) _sbDelete(k);
   };
 
   // ---- INIT ----
@@ -1641,41 +1655,47 @@ https://www.rondeaujeremy.fr/
   showNote('dashboard', document.querySelector('[data-fixed="dashboard"]'));
 
   // Connexion Supabase après le rendu initial
-  if (typeof supabase !== 'undefined') {
-    _sb = supabase.createClient(_SB_URL, _SB_KEY);
-    _sb.from('app_storage').select('*').then(({ data, error }) => {
-      if (error) { console.warn('Supabase erreur:', error.message); _sbReady = true; return; }
-      if (!data || data.length === 0) {
+  fetch(_SB_TABLE + '?select=key,value', { headers: _SB_HDR })
+    .then(function(r) {
+      if (!r.ok) { r.text().then(function(t) { console.warn('Supabase init err:', r.status, t); }); _sbReady = true; return null; }
+      return r.json();
+    })
+    .then(function(data) {
+      if (!data) return;
+      if (data.length === 0) {
         // Supabase vide → envoyer tout le localStorage
-        const upserts = [];
-        for (let i = 0; i < localStorage.length; i++) {
-          const k = localStorage.key(i);
-          const v = localStorage.getItem(k);
-          let val; try { val = JSON.parse(v); } catch { val = v; }
+        var upserts = [];
+        for (var i = 0; i < localStorage.length; i++) {
+          var k = localStorage.key(i);
+          var v = localStorage.getItem(k);
+          var val; try { val = JSON.parse(v); } catch(e) { val = v; }
           upserts.push({ key: k, value: val, updated_at: new Date().toISOString() });
         }
         if (upserts.length) {
-          _sb.from('app_storage').upsert(upserts).then(({ error: e }) => {
-            if (!e) console.log('✓ Données locales envoyées vers Supabase (' + upserts.length + ' clés)');
+          fetch(_SB_TABLE, {
+            method: 'POST',
+            headers: Object.assign({}, _SB_HDR, { 'Prefer': 'resolution=merge-duplicates,return=minimal' }),
+            body: JSON.stringify(upserts)
+          }).then(function(r2) {
+            if (r2.ok) console.log('Supabase: ' + upserts.length + ' cles envoyees');
+            else r2.text().then(function(t) { console.warn('SB push err:', r2.status, t); });
             _sbReady = true;
           });
         } else { _sbReady = true; }
       } else {
-        // Supabase a des données → mettre à jour localStorage et re-render
+        // Supabase a des données → charger dans localStorage et re-render
         _sbSync = true;
-        data.forEach(row => { _lsSet(row.key, typeof row.value === 'string' ? row.value : JSON.stringify(row.value)); });
+        data.forEach(function(row) { _lsSet(row.key, typeof row.value === 'string' ? row.value : JSON.stringify(row.value)); });
         _sbSync = false;
         _sbReady = true;
         initPriorities();
         renderSidebarCustom();
         updateAlertesBadge();
-        if (typeof currentId !== 'undefined' && currentId) {
-          showNote(currentId, document.querySelector('.note-item.active'));
-        }
-        console.log('✓ Supabase sync OK (' + data.length + ' clés chargées)');
+        if (typeof currentId !== 'undefined' && currentId) showNote(currentId, document.querySelector('.note-item.active'));
+        console.log('Supabase sync OK: ' + data.length + ' cles chargees');
       }
-    });
-  }
+    })
+    .catch(function(e) { console.warn('Supabase erreur reseau:', e); _sbReady = true; });
 
   // ---- ADD COMPANY MODAL ----
   function openAddCompany() {
