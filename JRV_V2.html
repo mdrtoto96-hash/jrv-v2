@@ -2192,20 +2192,27 @@ https://www.rondeaujeremy.fr/
       const hist = chatHistories[agentId].filter(m => m.role === 'user' || m.role === 'agent').slice(-10);
       const apiMessages = hist.map(m => ({ role: m.role === 'user' ? 'user' : 'assistant', content: m.content }));
 
-      // Inject fresh CRM context for stratege agent
+      // Inject CRM context for all agents
       let extraContext = '';
-      if (agentId === 'stratege') {
-        const arr = getCRMCompanies();
+      const crmArr = getCRMCompanies();
+      const crmNames = crmArr.map(c => c.name).filter(Boolean);
+      if (agentId === 'sourcing') {
+        extraContext = `DONNÉES CRM ACTUELLES — ${crmNames.length} entreprises déjà présentes :\n${crmNames.join(', ')}\n\nRÈGLE ABSOLUE : Il est STRICTEMENT INTERDIT de proposer ou suggérer une entreprise dont le nom figure dans cette liste. Vérifie chaque suggestion contre cette liste avant de répondre.`;
+      } else if (agentId === 'stratege') {
+        const now = new Date();
         extraContext = JSON.stringify({
-          total: arr.length,
-          aContacter: arr.filter(c=>c.statut==='a-contacter').length,
-          messageEnvoye: arr.filter(c=>c.statut==='message-envoye').length,
-          pasReponse: arr.filter(c=>c.statut==='pas-de-reponse').length,
-          interesse: arr.filter(c=>c.statut==='interesse').length,
-          rdvPris: arr.filter(c=>c.statut==='rdv-pris').length,
-          converti: arr.filter(c=>c.statut==='converti').length,
-          relancesUrgentes: arr.filter(c=>c.relance&&new Date(c.relance)<=new Date()).length
+          total: crmArr.length,
+          aContacter: crmArr.filter(c=>c.statut==='a-contacter').length,
+          messageEnvoye: crmArr.filter(c=>c.statut==='message-envoye').length,
+          pasReponse: crmArr.filter(c=>c.statut==='pas-de-reponse').length,
+          interesse: crmArr.filter(c=>c.statut==='interesse').length,
+          rdvPris: crmArr.filter(c=>c.statut==='rdv-pris').length,
+          converti: crmArr.filter(c=>c.statut==='converti').length,
+          relancesUrgentes: crmArr.filter(c=>c.relance&&new Date(c.relance)<=now).length,
+          dernieres10: crmArr.slice(-10).map(c=>({name:c.name,statut:c.statut,zone:c.zone,date:c.date}))
         });
+      } else if (agentId === 'copywriter') {
+        extraContext = `Entreprises déjà dans le CRM de Jeremy (${crmNames.length} au total) : ${crmNames.join(', ')}`;
       }
 
       const token = localStorage.getItem('jrv_auth_token') || '';
