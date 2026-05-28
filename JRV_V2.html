@@ -540,7 +540,7 @@
     const arr = getCRMCompanies();
     const c = arr.find(x => x.id === id); if (!c) return;
     c.msg = !c.msg;
-    saveCRMCompanies(arr); showSaved();
+    saveCRMCompanies(arr, c); showSaved();
     const btn = document.querySelector(`.crm-row[data-id="${id}"] .crm-msg-check`);
     if (btn) btn.classList.toggle('sent', c.msg);
   }
@@ -748,13 +748,16 @@
     }
     return arr;
   }
-  function saveCRMCompanies(arr) { localStorage.setItem('jrv_crm_v2', JSON.stringify(arr)); }
+  function saveCRMCompanies(arr, changed) {
+    localStorage.setItem('jrv_crm_v2', JSON.stringify(arr));
+    if (changed) _sbUpsertCompany(changed);
+  }
 
   // ---- CRM HELPERS ----
   function updateCompany(id, field, val) {
     const arr = getCRMCompanies();
     const c = arr.find(x => x.id === id); if (!c) return;
-    c[field] = val; saveCRMCompanies(arr); showSaved();
+    c[field] = val; saveCRMCompanies(arr, c); showSaved();
     if (field === 'contact') {
       const el = document.querySelector(`.crm-row[data-id="${id}"] .crm-contact-display`);
       if (el) el.textContent = val;
@@ -769,7 +772,7 @@
   function updateCompanyStatus(id, status) {
     const arr = getCRMCompanies();
     const c = arr.find(x => x.id === id); if (!c) return;
-    c.statut = status; saveCRMCompanies(arr); showSaved();
+    c.statut = status; saveCRMCompanies(arr, c); showSaved();
     const s = STATUS_CONFIG[status] || STATUS_CONFIG['a-contacter'];
     const badge = document.querySelector(`.crm-row[data-id="${id}"] .crm-badge`);
     if (badge) { badge.textContent = s.label; badge.style.background = s.bg; badge.style.color = s.color; }
@@ -784,7 +787,7 @@
       const arr = getCRMCompanies(); const c = arr.find(x => x.id === id);
       if (c && !c.date) {
         const today = new Date().toISOString().split('T')[0];
-        c.date = today; saveCRMCompanies(arr);
+        c.date = today; saveCRMCompanies(arr, c);
         const dateInp = document.querySelector(`.crm-row[data-id="${id}"] .crm-date-input`);
         if (dateInp) dateInp.value = today;
       }
@@ -1636,6 +1639,17 @@ https://www.rondeaujeremy.fr/
     }).then(function(r) { if (!r.ok) r.text().then(function(t) { console.warn('SB delete err:', r.status, t); }); });
   }
 
+  function _sbUpsertCompany(c) {
+    fetch(_SB_URL + '/rest/v1/companies', {
+      method: 'POST',
+      headers: Object.assign({}, _SB_HDR, { 'Prefer': 'resolution=merge-duplicates,return=minimal' }),
+      body: JSON.stringify({ id: c.id, name: c.name, site: c.site || '', zone: c.zone || '',
+        priority: c.p || 0, contact: c.contact || '', poste: c.poste || '',
+        canal: c.canal || 'LinkedIn', date: c.date || '', statut: c.statut || 'a-contacter',
+        notes: c.notes || '', relance: c.relance || '', updated_at: new Date().toISOString() })
+    }).then(function(r) { if (!r.ok) r.text().then(function(t) { console.warn('SB company err:', r.status, t); }); });
+  }
+
   localStorage.setItem = function(k, v) {
     _lsSet(k, v);
     if (_sbReady && !_sbSync) _sbUpsert(k, v);
@@ -1697,6 +1711,45 @@ https://www.rondeaujeremy.fr/
     })
     .catch(function(e) { console.warn('Supabase erreur reseau:', e); _sbReady = true; });
 
+  // Sync table companies (migration automatique + chargement cross-device)
+  fetch(_SB_URL + '/rest/v1/companies?select=*&order=id', { headers: _SB_HDR })
+    .then(function(r) { return r.ok ? r.json() : null; })
+    .then(function(data) {
+      if (!data) return;
+      if (data.length === 0) {
+        // Supabase vide → migrer les boites depuis localStorage
+        var companies = getCRMCompanies();
+        var rows = companies.map(function(c) {
+          return { id: c.id, name: c.name, site: c.site || '', zone: c.zone || '',
+            priority: c.p || 0, contact: c.contact || '', poste: c.poste || '',
+            canal: c.canal || 'LinkedIn', date: c.date || '', statut: c.statut || 'a-contacter',
+            notes: c.notes || '', relance: c.relance || '', updated_at: new Date().toISOString() };
+        });
+        fetch(_SB_URL + '/rest/v1/companies', {
+          method: 'POST',
+          headers: Object.assign({}, _SB_HDR, { 'Prefer': 'resolution=merge-duplicates,return=minimal' }),
+          body: JSON.stringify(rows)
+        }).then(function(r2) {
+          if (r2.ok) console.log('Supabase: ' + rows.length + ' boites migreees');
+          else r2.text().then(function(t) { console.warn('SB companies migrate err:', r2.status, t); });
+        });
+      } else {
+        // Supabase a des donnees → charger dans localStorage
+        var arr = data.map(function(row) {
+          return { id: row.id, name: row.name, site: row.site || '', zone: row.zone || '',
+            p: row.priority || 0, contact: row.contact || '', poste: row.poste || '',
+            canal: row.canal || 'LinkedIn', date: row.date || '', statut: row.statut || 'a-contacter',
+            notes: row.notes || '', relance: row.relance || '' };
+        });
+        _lsSet('jrv_crm_v2', JSON.stringify(arr));
+        console.log('Supabase: ' + arr.length + ' boites chargees');
+        if (document.querySelector('#note-crm')) {
+          showNote('crm', document.querySelector('[data-fixed="crm"]'));
+        }
+      }
+    })
+    .catch(function(e) { console.warn('Supabase companies err:', e); });
+
   // ---- ADD COMPANY MODAL ----
   function openAddCompany() {
     document.getElementById('modal-add-company').classList.add('open');
@@ -1724,7 +1777,8 @@ https://www.rondeaujeremy.fr/
       notes: document.getElementById('new-company-notes').value.trim(),
       relance: '', msg: false
     });
-    saveCRMCompanies(arr); showSaved();
+    var newC = arr[arr.length - 1];
+    saveCRMCompanies(arr, newC); showSaved();
     closeAddCompany();
     showNote('crm', document.querySelector('[data-fixed="crm"]'));
   }
