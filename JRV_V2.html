@@ -114,6 +114,12 @@
     .crm-filter-btn { padding: 5px 13px; border-radius: 20px; border: 1px solid var(--border); background: transparent; color: var(--muted); font-size: 12px; cursor: pointer; transition: all 0.15s; font-family: inherit; }
     .crm-filter-btn:hover { border-color: var(--accent); color: var(--accent); }
     .crm-filter-btn.active { background: var(--accent); color: #080808; border-color: var(--accent); font-weight: 700; }
+    .crm-cat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 8px; margin-bottom: 14px; }
+    .crm-cat-card { padding: 12px 8px 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--card); cursor: pointer; text-align: center; transition: all 0.15s; font-family: inherit; }
+    .crm-cat-card:hover { border-color: var(--accent); transform: translateY(-1px); }
+    .crm-cat-card.active { border-color: var(--accent); background: rgba(255,255,255,0.07); }
+    .crm-cat-card .cat-n { font-size: 22px; font-weight: 800; line-height: 1; margin-bottom: 5px; }
+    .crm-cat-card .cat-l { font-size: 9px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.4px; line-height: 1.3; }
     .crm-search { width: 100%; padding: 8px 13px; background: var(--card); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-size: 13px; outline: none; font-family: inherit; margin-bottom: 12px; transition: border-color 0.15s; }
     .crm-search:focus { border-color: var(--accent); }
     .crm-search::placeholder { color: var(--muted); }
@@ -342,6 +348,19 @@
   let crmFilter = 'all';
   let crmTypeFilter = 'all';
   let crmSearch = '';
+  let _sbCompanies = null;
+
+  const CAT_CONFIG = {
+    'all':    { label: 'Toutes',          color: 'var(--accent)'  },
+    'prod':   { label: 'Prod Video',       color: 'var(--blue)'   },
+    'com':    { label: 'Agences Comm',     color: 'var(--purple)' },
+    'live':   { label: 'Captation Live',   color: '#ff8c42'       },
+    'event':  { label: 'Evenementiel',     color: '#ffd166'       },
+    'sport':  { label: 'Sport & Culture',  color: '#06d6a0'       },
+    'media':  { label: 'Medias',           color: '#e63946'       },
+    'instit': { label: 'Institutionnels',  color: '#adb5bd'       },
+    'immo':   { label: 'Immobilier',       color: '#a8836e'       },
+  };
   let expandedIds = new Set();
   let searchDebounce = null;
   let isEditMode = false;
@@ -735,22 +754,22 @@
   const DELETED_IDS = [37, 52, 53, 118];
 
   function getCRMCompanies() {
+    if (_sbCompanies !== null) return _sbCompanies;
     const stored = localStorage.getItem('jrv_crm_v2');
-    if (!stored) { localStorage.setItem('jrv_crm_v2', JSON.stringify(COMPANIES_DEFAULT)); return COMPANIES_DEFAULT; }
-    let arr = JSON.parse(stored);
-    arr = arr.filter(c => !DELETED_IDS.includes(c.id));
-    const maxId = Math.max(...arr.map(c => c.id));
-    if (maxId < 120) {
-      const newOnes = COMPANIES_DEFAULT.filter(c => c.id > maxId && !DELETED_IDS.includes(c.id));
-      const merged = [...arr, ...newOnes];
-      localStorage.setItem('jrv_crm_v2', JSON.stringify(merged));
-      return merged;
-    }
-    return arr;
+    if (!stored) return COMPANIES_DEFAULT.filter(c => !DELETED_IDS.includes(c.id));
+    return JSON.parse(stored).filter(c => !DELETED_IDS.includes(c.id));
   }
   function saveCRMCompanies(arr, changed) {
     localStorage.setItem('jrv_crm_v2', JSON.stringify(arr));
-    if (changed) _sbUpsertCompany(changed);
+    if (changed) {
+      // Mettre à jour le cache mémoire
+      if (_sbCompanies) {
+        var idx = _sbCompanies.findIndex(function(c) { return c.id === changed.id; });
+        if (idx >= 0) _sbCompanies[idx] = Object.assign(_sbCompanies[idx], changed);
+        else _sbCompanies.push(changed);
+      }
+      _sbUpsertCompany(changed);
+    }
   }
 
   // ---- CRM HELPERS ----
@@ -820,8 +839,36 @@
     refreshCRMList();
   }
   function getCompanyType(c) {
-    const prodZones = ['Nantes','Vendee','Angers','Rennes','Le Mans','Niort','Saint-Nazaire'];
-    return prodZones.includes(c.zone) ? 'prod' : 'com';
+    return c.category || 'prod';
+  }
+
+  function loadCRMFromSupabase() {
+    fetch(_SB_URL + '/rest/v1/companies?select=*&order=id', { headers: _SB_HDR })
+      .then(function(r) { return r.ok ? r.json() : null; })
+      .then(function(data) {
+        if (!data || data.length === 0) return;
+        _sbCompanies = data.map(function(row) {
+          return { id: row.id, name: row.name, site: row.site || '', zone: row.zone || '',
+            p: row.priority || 0, contact: row.contact || '', poste: row.poste || '',
+            canal: row.canal || 'LinkedIn', date: row.date || '', statut: row.statut || 'a-contacter',
+            notes: row.notes || '', relance: row.relance || '', category: row.category || 'prod' };
+        });
+        var noteEditable = document.getElementById('note-editable');
+        var crmItem = document.querySelector('[data-fixed="crm"]');
+        if (noteEditable && crmItem && crmItem.classList.contains('active')) {
+          noteEditable.innerHTML = renderProspection();
+          updateCRMStatsBar();
+          restoreExpandedRows();
+        }
+      })
+      .catch(function(e) { console.warn('CRM load err:', e); });
+  }
+
+  function restoreExpandedRows() {
+    expandedIds.forEach(function(id) {
+      var row = document.querySelector('.crm-row[data-id="' + id + '"]');
+      if (row) row.classList.add('expanded');
+    });
   }
 
   function setCRMSearch(q) {
@@ -971,7 +1018,7 @@
     if (!noScratch) document.getElementById('sp-'+id)?.addEventListener('input', function() { localStorage.setItem('scratch_'+id, this.value); showSaved(); });
     if (EDITABLE_NOTES.includes(id)) { if(ec) ec.style.display='flex'; if(savedEdit) { const rb=document.getElementById('reset-edit-btn'); if(rb) rb.style.display=''; } }
     if (id === 'dashboard') { renderSuiviTable(); renderHiddenBlock(); renderPrioritiesBlock(); }
-    if (id === 'crm') updateCRMStatsBar();
+    if (id === 'crm') { updateCRMStatsBar(); loadCRMFromSupabase(); }
     if (id === 'alertes') renderAlertesLists();
     restoreChecks(id);
   }
@@ -1156,6 +1203,25 @@
     const contacted = arr.filter(c => c.statut !== 'a-contacter').length;
     const reponses = arr.filter(c => ['interesse','rdv-pris','converti'].includes(c.statut)).length;
     const convertis = arr.filter(c => c.statut === 'converti').length;
+    const priorites = arr.filter(c => c.p).length;
+
+    // Cartes catégories — uniquement celles qui ont des boîtes
+    const catCounts = {};
+    arr.forEach(c => { const cat = c.category || 'prod'; catCounts[cat] = (catCounts[cat] || 0) + 1; });
+    const catCards = Object.keys(CAT_CONFIG).map(cat => {
+      const count = cat === 'all' ? arr.length : (catCounts[cat] || 0);
+      if (cat !== 'all' && count === 0) return '';
+      const cfg = CAT_CONFIG[cat];
+      const isActive = crmTypeFilter === cat;
+      return `<button class="crm-cat-card${isActive ? ' active' : ''}" onclick="setCRMTypeFilter('${cat}')" style="${isActive ? 'border-color:'+cfg.color+';' : ''}">
+        <div class="cat-n" style="color:${cfg.color}">${count}</div>
+        <div class="cat-l">${cfg.label}</div>
+      </button>`;
+    }).join('');
+
+    const aContacter = arr.filter(c => c.statut === 'a-contacter').length;
+    const enCours = arr.filter(c => ['message-envoye','pas-de-reponse'].includes(c.statut)).length;
+
     return `
       <div class="crm-stats">
         <div class="crm-stat"><div class="n" id="cst-total">${arr.length}</div><div class="l">Total</div></div>
@@ -1164,19 +1230,14 @@
         <div class="crm-stat"><div class="n" id="cst-reponses" style="color:var(--accent2)">${reponses}</div><div class="l">Reponses+</div></div>
         <div class="crm-stat"><div class="n" id="cst-convertis" style="color:var(--purple)">${convertis}</div><div class="l">Convertis</div></div>
       </div>
-      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;align-items:center">
-        <span style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-right:2px">Type :</span>
-        <button class="crm-type-btn crm-filter-btn ${crmTypeFilter==='all'?'active':''}" data-type="all" onclick="setCRMTypeFilter('all')">Toutes</button>
-        <button class="crm-type-btn crm-filter-btn ${crmTypeFilter==='prod'?'active':''}" data-type="prod" onclick="setCRMTypeFilter('prod')" style="${crmTypeFilter==='prod'?'':'border-color:var(--blue);color:var(--blue)'}">Prod Video (${arr.filter(c=>getCompanyType(c)==='prod').length})</button>
-        <button class="crm-type-btn crm-filter-btn ${crmTypeFilter==='com'?'active':''}" data-type="com" onclick="setCRMTypeFilter('com')" style="${crmTypeFilter==='com'?'':'border-color:var(--purple);color:var(--purple)'}">Agences Comm (${arr.filter(c=>getCompanyType(c)==='com').length})</button>
-      </div>
+      <div class="crm-cat-grid">${catCards}</div>
       <div class="crm-filters">
         <button class="crm-filter-btn ${crmFilter==='all'?'active':''}" data-filter="all" onclick="setCRMFilter('all')">Toutes (${arr.length})</button>
-        <button class="crm-filter-btn ${crmFilter==='priorite'?'active':''}" data-filter="priorite" onclick="setCRMFilter('priorite')">Priorites ★</button>
-        <button class="crm-filter-btn ${crmFilter==='a-contacter'?'active':''}" data-filter="a-contacter" onclick="setCRMFilter('a-contacter')">A contacter</button>
-        <button class="crm-filter-btn ${crmFilter==='en-cours'?'active':''}" data-filter="en-cours" onclick="setCRMFilter('en-cours')">En cours</button>
-        <button class="crm-filter-btn ${crmFilter==='positif'?'active':''}" data-filter="positif" onclick="setCRMFilter('positif')">Reponse positive</button>
-        <button class="crm-filter-btn ${crmFilter==='contactees'?'active':''}" data-filter="contactees" onclick="setCRMFilter('contactees')" style="${crmFilter==='contactees'?'':'border-color:var(--blue);color:var(--blue)'}">Contactées (${arr.filter(c=>c.statut!=='a-contacter').length})</button>
+        <button class="crm-filter-btn ${crmFilter==='priorite'?'active':''}" data-filter="priorite" onclick="setCRMFilter('priorite')">Priorites ★ (${priorites})</button>
+        <button class="crm-filter-btn ${crmFilter==='a-contacter'?'active':''}" data-filter="a-contacter" onclick="setCRMFilter('a-contacter')">A contacter (${aContacter})</button>
+        <button class="crm-filter-btn ${crmFilter==='en-cours'?'active':''}" data-filter="en-cours" onclick="setCRMFilter('en-cours')">En cours (${enCours})</button>
+        <button class="crm-filter-btn ${crmFilter==='positif'?'active':''}" data-filter="positif" onclick="setCRMFilter('positif')">Reponse+ (${reponses})</button>
+        <button class="crm-filter-btn ${crmFilter==='contactees'?'active':''}" data-filter="contactees" onclick="setCRMFilter('contactees')">Contactees (${contacted})</button>
         <button onclick="openAddCompany()" style="margin-left:auto;padding:5px 13px;border-radius:20px;border:1px solid var(--accent);background:rgba(255,255,255,0.1);color:var(--accent);font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">+ Ajouter</button>
       </div>
       <input class="crm-search" placeholder="Rechercher une boite, un contact, une zone..." id="crm-search-input" value="${escAttr(crmSearch)}" oninput="setCRMSearch(this.value)">

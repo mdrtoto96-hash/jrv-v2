@@ -31,6 +31,7 @@ async function insertCompanies(companies) {
     site: c.site || '',
     zone: c.zone || 'Autre',
     priority: c.priority || c.p || 0,
+    category: c.category || 'prod',
     contact: '',
     poste: '',
     canal: 'LinkedIn',
