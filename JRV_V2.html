@@ -4,27 +4,31 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>JRV V2</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
-      --bg: #0f0f0f; --sidebar: #161616; --card: #1c1c1c; --card2: #222;
-      --border: #282828; --border2: #333;
-      --accent: #f0a500; --accent2: #4caf50; --blue: #4a9eff;
+      --bg: #080808; --sidebar: #0f0f0f; --card: #141414; --card2: #1a1a1a;
+      --border: #222222; --border2: #2e2e2e;
+      --accent: #ffffff; --accent2: #4caf50; --blue: #4a9eff;
       --purple: #9b59b6; --danger: #e53935; --green2: #00c853;
-      --text: #e8e8e8; --text2: #bbb; --muted: #666;
+      --text: #f0f0f0; --text2: #888888; --muted: #444444;
     }
-    body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); color: var(--text); display: flex; height: 100vh; overflow: hidden; font-size: 15px; }
+    body { font-family: 'Inter', 'Segoe UI', Arial, sans-serif; background: var(--bg); color: var(--text); display: flex; height: 100vh; overflow: hidden; font-size: 15px; letter-spacing: -0.01em; }
 
     /* SIDEBAR */
     #sidebar { width: 252px; min-width: 252px; background: var(--sidebar); border-right: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden; }
     #sidebar-header { padding: 15px 14px 11px; border-bottom: 1px solid var(--border); }
-    #sidebar-header h1 { font-size: 15px; font-weight: 800; color: var(--accent); letter-spacing: 1px; }
-    #sidebar-header p { font-size: 11px; color: var(--muted); margin-top: 2px; }
+    #sidebar-header h1 { font-size: 14px; font-weight: 800; color: var(--accent); letter-spacing: 2px; text-transform: uppercase; }
+    #sidebar-header p { font-size: 11px; color: var(--muted); margin-top: 3px; letter-spacing: 0.3px; }
     .section-label { font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--muted); padding: 12px 14px 4px; }
     #note-list { flex: 1; overflow-y: auto; padding-bottom: 8px; }
     .note-item { padding: 7px 12px; cursor: pointer; border-left: 3px solid transparent; display: flex; align-items: center; justify-content: space-between; gap: 8px; transition: background 0.1s; border-radius: 0 6px 6px 0; margin-right: 6px; }
     .note-item:hover { background: #1e1e1e; }
-    .note-item.active { background: #1f1a0f; border-left-color: var(--accent); }
+    .note-item.active { background: #1e1e1e; border-left-color: var(--accent); }
     .note-item .nt { font-size: 13px; font-weight: 600; color: var(--text2); line-height: 1.3; }
     .note-item .ns { font-size: 11px; color: var(--muted); margin-top: 1px; }
     .note-item.active .nt { color: var(--accent); }
@@ -32,7 +36,7 @@
     .note-item:hover .del-btn { opacity: 0.6; }
     .note-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
     #add-note-btn { margin: 8px 12px; padding: 8px; background: transparent; border: 1px dashed var(--border2); border-radius: 8px; color: var(--muted); font-size: 12px; cursor: pointer; width: calc(100% - 24px); text-align: center; transition: all 0.15s; }
-    #add-note-btn:hover { border-color: var(--accent); color: var(--accent); background: rgba(240,165,0,0.05); }
+    #add-note-btn:hover { border-color: var(--accent); color: var(--accent); background: rgba(255,255,255,0.05); }
 
     /* MAIN */
     #main { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
@@ -51,8 +55,8 @@
     .custom-note-area::placeholder { color: #2a2a2a; }
 
     /* BLOCKS */
-    .block { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 15px 20px; margin-bottom: 13px; }
-    .block h3 { font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--accent); margin-bottom: 11px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+    .block { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px 20px; margin-bottom: 13px; box-shadow: 0 1px 3px rgba(0,0,0,0.4); }
+    .block h3 { font-size: 10px; text-transform: uppercase; letter-spacing: 2px; color: var(--accent); margin-bottom: 11px; padding-bottom: 8px; border-bottom: 1px solid var(--border); font-weight: 700; }
     .block h4 { font-size: 11px; font-weight: 700; color: var(--muted); margin: 11px 0 6px; text-transform: uppercase; letter-spacing: 1px; }
     .block ul { padding-left: 18px; } .block li { margin-bottom: 6px; line-height: 1.6; font-size: 14px; }
     .block p { line-height: 1.7; margin-bottom: 8px; color: var(--text); font-size: 14px; }
@@ -91,11 +95,11 @@
     .story-content .example { font-size: 12px; color: var(--accent); margin-top: 4px; font-style: italic; }
 
     /* DASHBOARD */
-    .stat-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 13px 16px; text-align: center; }
-    .stat-card .big { font-size: 24px; font-weight: 800; }
-    .stat-card .small { font-size: 11px; color: var(--muted); margin-top: 2px; }
-    .dash-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 13px 15px; cursor: pointer; transition: border-color 0.15s, background 0.15s; }
-    .dash-card:hover { border-color: var(--accent); background: rgba(240,165,0,0.03); }
+    .stat-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.4); }
+    .stat-card .big { font-size: 26px; font-weight: 800; letter-spacing: -1px; }
+    .stat-card .small { font-size: 10px; color: var(--muted); margin-top: 3px; text-transform: uppercase; letter-spacing: 1px; }
+    .dash-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; cursor: pointer; transition: border-color 0.2s, background 0.2s, transform 0.15s; box-shadow: 0 1px 3px rgba(0,0,0,0.4); }
+    .dash-card:hover { border-color: var(--accent); background: rgba(255,255,255,0.03); transform: translateY(-1px); }
     .dash-card .dc-icon { font-size: 17px; margin-bottom: 6px; }
     .dash-card .dc-title { font-size: 13px; font-weight: 700; margin-bottom: 3px; }
     .dash-card .dc-sub { font-size: 11px; color: var(--muted); }
@@ -110,7 +114,7 @@
     .crm-filters { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 10px; }
     .crm-filter-btn { padding: 5px 13px; border-radius: 20px; border: 1px solid var(--border); background: transparent; color: var(--muted); font-size: 12px; cursor: pointer; transition: all 0.15s; font-family: inherit; }
     .crm-filter-btn:hover { border-color: var(--accent); color: var(--accent); }
-    .crm-filter-btn.active { background: var(--accent); color: #111; border-color: var(--accent); font-weight: 700; }
+    .crm-filter-btn.active { background: var(--accent); color: #080808; border-color: var(--accent); font-weight: 700; }
     .crm-search { width: 100%; padding: 8px 13px; background: var(--card); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-size: 13px; outline: none; font-family: inherit; margin-bottom: 12px; transition: border-color 0.15s; }
     .crm-search:focus { border-color: var(--accent); }
     .crm-search::placeholder { color: var(--muted); }
@@ -145,8 +149,19 @@
     .crm-notes-field { width: 100%; background: var(--card2); border: 1px solid var(--border); border-radius: 5px; padding: 7px 9px; color: var(--text); font-size: 13px; font-family: inherit; resize: vertical; min-height: 55px; outline: none; margin-bottom: 9px; transition: border-color 0.15s; }
     .crm-notes-field:focus { border-color: var(--accent); }
     .crm-actions { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+    /* MODAL ADD COMPANY */
+    .modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:999; align-items:center; justify-content:center; }
+    .modal-overlay.open { display:flex; }
+    .modal-box { background:var(--card); border:1px solid var(--border2); border-radius:12px; padding:24px; width:420px; max-width:95vw; display:flex; flex-direction:column; gap:14px; }
+    .modal-box h3 { font-size:15px; font-weight:700; color:var(--accent); }
+    .modal-box label { font-size:10px; text-transform:uppercase; letter-spacing:1px; color:var(--muted); display:block; margin-bottom:4px; }
+    .modal-box input, .modal-box select, .modal-box textarea { width:100%; padding:8px 11px; background:var(--card2); border:1px solid var(--border); border-radius:7px; color:var(--text); font-size:13px; outline:none; font-family:inherit; }
+    .modal-box input:focus, .modal-box select:focus { border-color:var(--accent); }
+    .modal-btns { display:flex; gap:8px; justify-content:flex-end; }
+    .modal-btn-cancel { padding:7px 18px; border-radius:7px; border:1px solid var(--border); background:transparent; color:var(--text2); font-size:13px; cursor:pointer; }
+    .modal-btn-save { padding:7px 18px; border-radius:7px; border:none; background:var(--accent); color:#080808; font-size:13px; font-weight:700; cursor:pointer; }
     .crm-action-btn { padding: 4px 12px; border-radius: 5px; border: 1px solid var(--border); background: transparent; color: var(--text2); font-size: 11px; cursor: pointer; transition: all 0.15s; font-family: inherit; }
-    .crm-action-btn:hover { border-color: var(--accent); color: var(--accent); background: rgba(240,165,0,0.05); }
+    .crm-action-btn:hover { border-color: var(--accent); color: var(--accent); background: rgba(255,255,255,0.05); }
     .crm-action-btn.rdv { border-color: var(--green2); color: var(--green2); }
     .crm-action-btn.rdv:hover { background: rgba(0,200,83,0.08); }
 
@@ -162,7 +177,7 @@
     .section-row { display: flex; align-items: center; padding: 10px 14px 3px; }
     .section-row .section-label { flex: 1; }
     .section-add-btn { background: none; border: 1px solid transparent; color: var(--muted); font-size: 16px; cursor: pointer; padding: 0 5px; border-radius: 3px; line-height: 1; transition: all 0.15s; }
-    .section-add-btn:hover { color: var(--accent); border-color: var(--accent); background: rgba(240,165,0,0.08); }
+    .section-add-btn:hover { color: var(--accent); border-color: var(--accent); background: rgba(255,255,255,0.08); }
 
     /* HAMBURGER + OVERLAY */
     #hamburger { display: none; background: none; border: none; color: var(--text2); font-size: 20px; cursor: pointer; padding: 2px 8px; border-radius: 5px; flex-shrink: 0; }
@@ -182,7 +197,7 @@
     /* ADD MENU */
     .add-menu { position: fixed; background: var(--card); border: 1px solid var(--border2); border-radius: 8px; padding: 5px; z-index: 1000; min-width: 140px; box-shadow: 0 6px 24px rgba(0,0,0,0.7); }
     .add-menu-item { padding: 8px 13px; border-radius: 5px; cursor: pointer; font-size: 13px; color: var(--text2); user-select: none; }
-    .add-menu-item:hover { background: rgba(240,165,0,0.1); color: var(--accent); }
+    .add-menu-item:hover { background: rgba(255,255,255,0.1); color: var(--accent); }
 
     /* ALERTES */
     .alerte-badge { display: inline-block; background: var(--danger); color: #fff; font-size: 10px; font-weight: 800; padding: 1px 6px; border-radius: 8px; margin-left: 5px; vertical-align: middle; line-height: 1.5; }
@@ -523,11 +538,12 @@
     });
   }
   function toggleMsg(id) {
-    const c = companies.find(x => x.id === id);
-    if (!c) return;
+    const arr = getCRMCompanies();
+    const c = arr.find(x => x.id === id); if (!c) return;
     c.msg = !c.msg;
-    saveData();
-    renderCRM();
+    saveCRMCompanies(arr); showSaved();
+    const btn = document.querySelector(`.crm-row[data-id="${id}"] .crm-msg-check`);
+    if (btn) btn.classList.toggle('sent', c.msg);
   }
   function escAttr(s) { return (s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
   function showSaved() { const b=document.getElementById('saved-badge'); b.style.display='inline'; clearTimeout(saveTimer); saveTimer=setTimeout(()=>{b.style.display='none';},1800); }
@@ -577,7 +593,7 @@
   const STATUS_CONFIG = {
     'a-contacter':    { label:'A contacter',    bg:'#1a1a1a', color:'#666' },
     'message-envoye': { label:'Message envoyé', bg:'#0a1a2e', color:'#4a9eff' },
-    'pas-de-reponse': { label:'Pas de réponse', bg:'#2a1500', color:'#f0a500' },
+    'pas-de-reponse': { label:'Pas de réponse', bg:'#252525', color:'#ffffff' },
     'interesse':      { label:'Intéressé',      bg:'#0a1f10', color:'#4caf50' },
     'rdv-pris':       { label:'RDV pris',        bg:'#003318', color:'#00c853' },
     'refuse':         { label:'Refus',           bg:'#2a0000', color:'#e53935' },
@@ -622,7 +638,6 @@
     {id:35,name:'Biux',                 site:'biux.fr',                    zone:'Le Mans', p:0, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'Corporate, communication entreprise Le Mans', relance:''},
     {id:36,name:'Unite 5 Production',   site:'unite5-production.com',      zone:'Niort',  p:0, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'Corporate, intervient sur Nantes + La Rochelle', relance:''},
     // === AGENCES DE COMMUNICATION / PUBLICITE ===
-    {id:37,name:'Agence Heaven',         site:'heaven.fr',                  zone:'Agences Comm — Nantes', p:1, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'Agence brand/digital. Produisent du contenu video pour leurs clients PME/ETI. Ideal pour sous-traitance video.', relance:''},
     {id:38,name:'Agence FW7',            site:'fw7.fr',                     zone:'Agences Comm — Nantes', p:1, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'Agence creative/digital Nantes. Cherchent des freelances video pour campagnes clients.', relance:''},
     {id:39,name:'Agence Intuiti',        site:'intuiti.fr',                 zone:'Agences Comm — Nantes', p:1, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'Marketing digital Nantes. Besoin de contenus video pour campagnes reseaux sociaux clients.', relance:''},
     {id:40,name:'Agence Kaliop',         site:'kaliop.com',                 zone:'Agences Comm — Nantes', p:0, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'Digital/web Nantes. Projets de communication digitale avec video.', relance:''},
@@ -638,8 +653,6 @@
     {id:50,name:'Agence Keyzz',          site:'keyzz.fr',                   zone:'Agences Comm — Nantes', p:0, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'Digital Nantes. A verifier si actifs video.', relance:''},
     // === AGENCES EVENEMENTIELLES ===
     {id:51,name:'GL Events',             site:'gl-events.com',              zone:'Agences Evenementielles', p:1, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'Leader national evenementiel, presente dans toute la France dont Nantes. ENORME besoin de captation video pro pour leurs events. Priorite.', relance:''},
-    {id:52,name:'Agence Hopscotch',      site:'hopscotch.fr',               zone:'Agences Evenementielles', p:0, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'Evenementiel B2B national. Besoin de captation + recap/aftermovie pour conferences clients.', relance:''},
-    {id:53,name:'Agence Wato',           site:'wato.fr',                    zone:'Agences Evenementielles', p:0, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'Evenementiel experiential haut de gamme. Recap aftermovie tres important pour eux.', relance:''},
     {id:54,name:'Agence Prism',          site:'prismevents.fr',             zone:'Agences Evenementielles', p:0, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'Evenementiel Nantes/Paris. Aftermovies et captations.', relance:''},
     {id:55,name:'Agence Must Events',    site:'must-events.com',            zone:'Agences Evenementielles', p:0, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'Agence evenementielle Loire-Atlantique. A verifier.', relance:''},
     {id:56,name:'Agence Adeuza',         site:'adeuza.com',                 zone:'Agences Evenementielles', p:0, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'Evenementiel entreprise Nantes. Besoin de captation et recap.', relance:''},
@@ -716,18 +729,20 @@
     {id:115,name:'Convergence Production', site:'convergence-production.com',  zone:'Captation Live Concert', p:0, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'Captation spectacles musicaux (musique classique, concerts, opera) partout en France. Equipes en deplacement. Niche culturelle premium.', relance:''},
     {id:116,name:'OV-Prod',                site:'ov-prod.com',                zone:'Captation Live Concert', p:0, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'Captation video evenements, conferences, spectacles, concerts. Grand Ouest. Multi-cameras et live streaming.', relance:''},
     {id:117,name:'Studio Le Carre',        site:'studiolecarre.com',          zone:'Captation Live Concert', p:1, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'SPECIALISTE captation concert et spectacle vivant. Films festival, captation live scene. Niche culturelle identique au profil JRV. PRIORITE.', relance:''},
-    {id:118,name:'Kronos Productions',     site:'kronosprod.com',             zone:'Captation Live Concert', p:1, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'Captation multi-cam live concerts + streaming — Paris / France. Gros volume de missions. Cherchent cameramen pour deplacement. Excellente cible pour missions ponctuelles. PRIORITE.', relance:''},
     {id:119,name:'STARDUST Group',         site:'stardust-group.com',         zone:'Captation Live Concert', p:0, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'Prestations techniques + production audiovisuelle. Captation live concerts, evenements. Equipement haut de gamme. A verifier bureau regional.', relance:''},
     {id:120,name:'Chic Monkey Studio',     site:'chic-monkey.com',            zone:'Captation Live Concert', p:0, contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter', notes:'Production audiovisuelle Rennes. Captation live, concerts, clips. Profil creatif proche de JRV. Bon pour reseau Bretagne.', relance:''},
   ];
 
+  const DELETED_IDS = [37, 52, 53, 118];
+
   function getCRMCompanies() {
     const stored = localStorage.getItem('jrv_crm_v2');
     if (!stored) { localStorage.setItem('jrv_crm_v2', JSON.stringify(COMPANIES_DEFAULT)); return COMPANIES_DEFAULT; }
-    const arr = JSON.parse(stored);
+    let arr = JSON.parse(stored);
+    arr = arr.filter(c => !DELETED_IDS.includes(c.id));
     const maxId = Math.max(...arr.map(c => c.id));
     if (maxId < 120) {
-      const newOnes = COMPANIES_DEFAULT.filter(c => c.id > maxId);
+      const newOnes = COMPANIES_DEFAULT.filter(c => c.id > maxId && !DELETED_IDS.includes(c.id));
       const merged = [...arr, ...newOnes];
       localStorage.setItem('jrv_crm_v2', JSON.stringify(merged));
       return merged;
@@ -839,7 +854,8 @@
         (crmFilter === 'priorite' && c.p) ||
         (crmFilter === 'a-contacter' && c.statut === 'a-contacter') ||
         (crmFilter === 'en-cours' && ['message-envoye','pas-de-reponse'].includes(c.statut)) ||
-        (crmFilter === 'positif' && ['interesse','rdv-pris','converti'].includes(c.statut));
+        (crmFilter === 'positif' && ['interesse','rdv-pris','converti'].includes(c.statut)) ||
+        (crmFilter === 'contactees' && c.statut !== 'a-contacter');
       const mt = crmTypeFilter === 'all' || getCompanyType(c) === crmTypeFilter;
       return ms && mf && mt;
     });
@@ -1158,6 +1174,8 @@
         <button class="crm-filter-btn ${crmFilter==='a-contacter'?'active':''}" data-filter="a-contacter" onclick="setCRMFilter('a-contacter')">A contacter</button>
         <button class="crm-filter-btn ${crmFilter==='en-cours'?'active':''}" data-filter="en-cours" onclick="setCRMFilter('en-cours')">En cours</button>
         <button class="crm-filter-btn ${crmFilter==='positif'?'active':''}" data-filter="positif" onclick="setCRMFilter('positif')">Reponse positive</button>
+        <button class="crm-filter-btn ${crmFilter==='contactees'?'active':''}" data-filter="contactees" onclick="setCRMFilter('contactees')" style="${crmFilter==='contactees'?'':'border-color:var(--blue);color:var(--blue)'}">Contactées (${arr.filter(c=>c.statut!=='a-contacter').length})</button>
+        <button onclick="openAddCompany()" style="margin-left:auto;padding:5px 13px;border-radius:20px;border:1px solid var(--accent);background:rgba(255,255,255,0.1);color:var(--accent);font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">+ Ajouter</button>
       </div>
       <input class="crm-search" placeholder="Rechercher une boite, un contact, une zone..." id="crm-search-input" value="${escAttr(crmSearch)}" oninput="setCRMSearch(this.value)">
       <div id="crm-list">${buildCRMListHTML()}</div>`;
@@ -1594,6 +1612,25 @@ https://www.rondeaujeremy.fr/
     });
   }
 
+  // ---- SUPABASE SYNC ----
+  const _SB_URL = 'https://emetgeoaoexrafyofimc.supabase.co';
+  const _SB_KEY = 'sb_publishable_Vn90o7K8WyeYHHQf125bCQ_b9FPdUUz';
+  let _sb = null, _sbReady = false, _sbSync = false;
+  const _lsSet = localStorage.setItem.bind(localStorage);
+  const _lsRemove = localStorage.removeItem.bind(localStorage);
+
+  localStorage.setItem = function(k, v) {
+    _lsSet(k, v);
+    if (_sbReady && !_sbSync && _sb) {
+      let val; try { val = JSON.parse(v); } catch { val = v; }
+      _sb.from('app_storage').upsert({ key: k, value: val, updated_at: new Date().toISOString() }).then();
+    }
+  };
+  localStorage.removeItem = function(k) {
+    _lsRemove(k);
+    if (_sbReady && !_sbSync && _sb) { _sb.from('app_storage').delete().eq('key', k).then(); }
+  };
+
   // ---- INIT ----
   initPriorities();
   renderSidebarCustom();
@@ -1602,6 +1639,106 @@ https://www.rondeaujeremy.fr/
   addHideButtons();
   applyHidden();
   showNote('dashboard', document.querySelector('[data-fixed="dashboard"]'));
+
+  // Connexion Supabase après le rendu initial
+  if (typeof supabase !== 'undefined') {
+    _sb = supabase.createClient(_SB_URL, _SB_KEY);
+    _sb.from('app_storage').select('*').then(({ data, error }) => {
+      if (error) { console.warn('Supabase erreur:', error.message); _sbReady = true; return; }
+      if (!data || data.length === 0) {
+        // Supabase vide → envoyer tout le localStorage
+        const upserts = [];
+        for (let i = 0; i < localStorage.length; i++) {
+          const k = localStorage.key(i);
+          const v = localStorage.getItem(k);
+          let val; try { val = JSON.parse(v); } catch { val = v; }
+          upserts.push({ key: k, value: val, updated_at: new Date().toISOString() });
+        }
+        if (upserts.length) {
+          _sb.from('app_storage').upsert(upserts).then(({ error: e }) => {
+            if (!e) console.log('✓ Données locales envoyées vers Supabase (' + upserts.length + ' clés)');
+            _sbReady = true;
+          });
+        } else { _sbReady = true; }
+      } else {
+        // Supabase a des données → mettre à jour localStorage et re-render
+        _sbSync = true;
+        data.forEach(row => { _lsSet(row.key, typeof row.value === 'string' ? row.value : JSON.stringify(row.value)); });
+        _sbSync = false;
+        _sbReady = true;
+        initPriorities();
+        renderSidebarCustom();
+        updateAlertesBadge();
+        if (typeof currentId !== 'undefined' && currentId) {
+          showNote(currentId, document.querySelector('.note-item.active'));
+        }
+        console.log('✓ Supabase sync OK (' + data.length + ' clés chargées)');
+      }
+    });
+  }
+
+  // ---- ADD COMPANY MODAL ----
+  function openAddCompany() {
+    document.getElementById('modal-add-company').classList.add('open');
+    document.getElementById('new-company-name').focus();
+  }
+  function closeAddCompany() {
+    document.getElementById('modal-add-company').classList.remove('open');
+    document.getElementById('new-company-name').value = '';
+    document.getElementById('new-company-zone').value = '';
+    document.getElementById('new-company-site').value = '';
+    document.getElementById('new-company-notes').value = '';
+  }
+  function saveNewCompany() {
+    const name = document.getElementById('new-company-name').value.trim();
+    if (!name) { document.getElementById('new-company-name').focus(); return; }
+    const arr = getCRMCompanies();
+    const newId = Math.max(...arr.map(c => c.id)) + 1;
+    arr.push({
+      id: newId,
+      name,
+      site: document.getElementById('new-company-site').value.trim(),
+      zone: document.getElementById('new-company-zone').value.trim() || 'Autre',
+      p: 0, contact: '', poste: '', canal: 'LinkedIn', date: '',
+      statut: 'a-contacter',
+      notes: document.getElementById('new-company-notes').value.trim(),
+      relance: '', msg: false
+    });
+    saveCRMCompanies(arr); showSaved();
+    closeAddCompany();
+    showNote('crm', document.querySelector('[data-fixed="crm"]'));
+  }
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closeAddCompany();
+  });
 </script>
+
+<div class="modal-overlay" id="modal-add-company" onclick="if(event.target===this)closeAddCompany()">
+  <div class="modal-box">
+    <h3>+ Ajouter une boîte</h3>
+    <div>
+      <label>Nom de la boîte *</label>
+      <input id="new-company-name" placeholder="Ex: Studio Nantes Prod" onkeydown="if(event.key==='Enter')saveNewCompany()">
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div>
+        <label>Zone / Ville</label>
+        <input id="new-company-zone" placeholder="Ex: Nantes">
+      </div>
+      <div>
+        <label>Site web</label>
+        <input id="new-company-site" placeholder="Ex: studio.fr">
+      </div>
+    </div>
+    <div>
+      <label>Notes</label>
+      <textarea id="new-company-notes" rows="3" placeholder="Type d'activité, contexte..."></textarea>
+    </div>
+    <div class="modal-btns">
+      <button class="modal-btn-cancel" onclick="closeAddCompany()">Annuler</button>
+      <button class="modal-btn-save" onclick="saveNewCompany()">Ajouter</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>
