@@ -1652,7 +1652,7 @@ https://www.rondeaujeremy.fr/
 
   localStorage.setItem = function(k, v) {
     _lsSet(k, v);
-    if (_sbReady && !_sbSync) _sbUpsert(k, v);
+    if (_sbReady && !_sbSync && k !== 'jrv_crm_v2') _sbUpsert(k, v);
   };
   localStorage.removeItem = function(k) {
     _lsRemove(k);
@@ -1699,7 +1699,10 @@ https://www.rondeaujeremy.fr/
       } else {
         // Supabase a des données → charger dans localStorage et re-render
         _sbSync = true;
-        data.forEach(function(row) { _lsSet(row.key, typeof row.value === 'string' ? row.value : JSON.stringify(row.value)); });
+        data.forEach(function(row) {
+          if (row.key === 'jrv_crm_v2') return; // géré par la table companies
+          _lsSet(row.key, typeof row.value === 'string' ? row.value : JSON.stringify(row.value));
+        });
         _sbSync = false;
         _sbReady = true;
         initPriorities();
@@ -1743,8 +1746,10 @@ https://www.rondeaujeremy.fr/
         });
         _lsSet('jrv_crm_v2', JSON.stringify(arr));
         console.log('Supabase: ' + arr.length + ' boites chargees');
-        if (document.querySelector('#note-crm')) {
-          showNote('crm', document.querySelector('[data-fixed="crm"]'));
+        // Re-render CRM si c'est la section active
+        var crmItem = document.querySelector('[data-fixed="crm"]');
+        if (crmItem && crmItem.classList.contains('active')) {
+          showNote('crm', crmItem);
         }
       }
     })

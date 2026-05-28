@@ -40,48 +40,82 @@ Objectif : trouver des boîtes de production audiovisuelle pour décrocher des m
 - Toujours tester en local (http://localhost:8080) avant de push
 - Le dossier s'appelle "JRV production " (avec espace à la fin)
 
-## Roadmap — 3 Agents à construire
+## Architecture Agents — Décisions techniques
 
-### Agent 1 — Scraper
-- Trouve des centaines de boîtes de prod sur le web
-- Les injecte directement dans la table `companies` Supabase
-- Déclenché en un clic depuis le CRM
+### Principe : Claude Code EST l'agent
+Pas d'API Anthropic commerciale. Pas de frais supplémentaires.
+Claude Code (terminal) génère les données depuis ses connaissances et les insère directement dans Supabase via l'API REST.
 
-### Agent 2 — Copywriter
-- Bouton sur chaque fiche boîte dans le CRM
-- Génère un message LinkedIn ultra-personnalisé basé sur :
-  - Les infos de la boîte (site, zone, spécialité)
-  - Les réussites et missions précédentes de JRV
-  - Le style de message qui a bien marché
+### Workflow
+1. Jeremy demande dans le terminal : "Trouve-moi 20 boîtes événementielles à Lyon"
+2. Claude génère la liste JSON depuis ses connaissances
+3. Claude exécute `scripts/insert-companies.js` → insère dans Supabase
+4. Les données apparaissent immédiatement dans le CRM
 
-### Agent 3 — Workflow
-- Gère les relances automatiquement selon le statut Supabase
-- Rappels : relancer après X jours sans réponse
-- Suivi pipeline visuel
+---
 
-## Prochaine étape immédiate
-Migrer COMPANIES_DEFAULT (hardcodé dans HTML) vers table `companies` dans Supabase.
-Cela permet d'ajouter/supprimer des boîtes sans toucher au code.
+## Agent 1 — Scraper & Sourcing (via Claude Code terminal)
 
-### SQL à créer dans Supabase :
-```sql
-create table if not exists public.companies (
-  id serial primary key,
-  name text not null,
-  site text,
-  zone text,
-  priority int default 0,
-  contact text default '',
-  poste text default '',
-  canal text default 'LinkedIn',
-  date text default '',
-  statut text default 'a-contacter',
-  notes text default '',
-  relance text default '',
-  created_at timestamptz default now(),
-  updated_at timestamptz default now()
-);
-alter table public.companies disable row level security;
-grant all on public.companies to anon;
-grant usage, select on sequence public.companies_id_seq to anon;
-```
+### Commande type
+"Ajoute [N] boîtes de [secteur] à [ville] dans mon CRM"
+
+### Secteurs gérés
+- Production audiovisuelle
+- Agence de communication
+- Agence événementielle
+- Captation live / concert
+- Sport & Culture
+- Médias / TV régionale
+- Immobilier
+
+### Script : `scripts/insert-companies.js`
+- Prend un JSON array en argument ou stdin
+- POST vers Supabase `companies` avec upsert (pas de doublons)
+- Affiche le nombre de boîtes insérées
+
+---
+
+## Agent 2 — Copywriter LinkedIn (via Claude Code terminal)
+
+### Commande type
+"Génère-moi les messages LinkedIn pour les 10 dernières boîtes ajoutées"
+"Génère un message pour [nom boîte]"
+
+### Workflow
+1. Claude fetch les boîtes depuis Supabase (ou prend les infos directement)
+2. Génère un message LinkedIn personnalisé pour chacune
+3. Présente les messages dans le terminal
+4. Jeremy copie-colle sur LinkedIn
+
+### Critères message JRV
+- Accroche sur la spécialité de la boîte (captation live, événementiel, corporate...)
+- Référence à une réalisation concrète de JRV si pertinent
+- Proposition de collaboration / mission freelance
+- Ton pro mais humain, 300-400 caractères max
+- Pas de copier-coller générique
+
+---
+
+## Agent 3 — Workflow & Relances (100% JS dans le CRM)
+
+### Fonctionnement (pas d'API, JS pur)
+- Filtre : statut='message-envoye' AND date > 4 jours → liste "À relancer"
+- Badge rouge dans sidebar si relances en attente
+- Section "À relancer aujourd'hui" en haut du CRM
+- Jeremy peut demander à Claude (terminal) de générer le message de relance
+
+---
+
+## Tables Supabase
+
+### `app_storage`
+Sync localStorage cross-device (notes, priorités, etc.)
+
+### `companies`
+Boîtes de prod. Champs : id, name, site, zone, priority, contact, poste, canal, date, statut, notes, relance, created_at, updated_at
+
+---
+
+## Script d'insertion Supabase
+Fichier : `scripts/insert-companies.js`
+Usage : `node scripts/insert-companies.js '[{...}]'`
