@@ -835,7 +835,13 @@
   }
   function setCRMTypeFilter(f) {
     crmTypeFilter = f;
-    document.querySelectorAll('.crm-type-btn').forEach(b => b.classList.toggle('active', b.dataset.type === f));
+    document.querySelectorAll('.crm-cat-card').forEach(function(b) {
+      var cat = b.getAttribute('data-cat');
+      var isActive = cat === f;
+      var cfg = CAT_CONFIG[cat] || {};
+      b.classList.toggle('active', isActive);
+      b.style.borderColor = isActive ? (cfg.color || 'var(--accent)') : 'var(--border)';
+    });
     refreshCRMList();
   }
   function getCompanyType(c) {
@@ -1213,7 +1219,7 @@
       if (cat !== 'all' && count === 0) return '';
       const cfg = CAT_CONFIG[cat];
       const isActive = crmTypeFilter === cat;
-      return `<button class="crm-cat-card${isActive ? ' active' : ''}" onclick="setCRMTypeFilter('${cat}')" style="${isActive ? 'border-color:'+cfg.color+';' : ''}">
+      return `<button class="crm-cat-card${isActive ? ' active' : ''}" data-cat="${cat}" onclick="setCRMTypeFilter('${cat}')" style="border-color:${isActive ? cfg.color : 'var(--border)'}">
         <div class="cat-n" style="color:${cfg.color}">${count}</div>
         <div class="cat-l">${cfg.label}</div>
       </button>`;
