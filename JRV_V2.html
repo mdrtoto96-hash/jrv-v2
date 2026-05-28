@@ -114,12 +114,135 @@
     .crm-filter-btn { padding: 5px 13px; border-radius: 20px; border: 1px solid var(--border); background: transparent; color: var(--muted); font-size: 12px; cursor: pointer; transition: all 0.15s; font-family: inherit; }
     .crm-filter-btn:hover { border-color: var(--accent); color: var(--accent); }
     .crm-filter-btn.active { background: var(--accent); color: #080808; border-color: var(--accent); font-weight: 700; }
-    .crm-cat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 8px; margin-bottom: 14px; }
-    .crm-cat-card { padding: 12px 8px 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--card); cursor: pointer; text-align: center; transition: all 0.15s; font-family: inherit; }
-    .crm-cat-card:hover { border-color: var(--accent); transform: translateY(-1px); }
-    .crm-cat-card.active { border-color: var(--accent); background: rgba(255,255,255,0.07); }
-    .crm-cat-card .cat-n { font-size: 22px; font-weight: 800; line-height: 1; margin-bottom: 5px; }
-    .crm-cat-card .cat-l { font-size: 9px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.4px; line-height: 1.3; }
+    .crm-cat-strip { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 6px; margin-bottom: 10px; scrollbar-width: none; }
+    .crm-cat-strip::-webkit-scrollbar { display: none; }
+    .crm-cat-chip { flex-shrink: 0; padding: 5px 14px; border-radius: 20px; border: 1px solid var(--border); background: var(--card); cursor: pointer; font-size: 12px; font-family: inherit; white-space: nowrap; transition: all 0.15s; color: var(--muted); }
+    .crm-cat-chip:hover { border-color: var(--accent); color: var(--accent); }
+    .crm-cat-chip.active { font-weight: 700; color: #080808; background: var(--accent); border-color: var(--accent); }
+    .agent-bar { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; padding: 8px 12px; background: var(--card); border: 1px solid var(--border); border-radius: 8px; opacity: 0.6; }
+    .agent-bar-input { flex: 1; background: none; border: none; color: var(--muted); font-size: 12px; font-family: inherit; outline: none; cursor: default; }
+    .agent-bar-badge { font-size: 10px; padding: 2px 8px; border-radius: 10px; background: rgba(255,255,255,0.08); color: var(--muted); white-space: nowrap; }
+    .crm-pagination { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 14px 0 4px; }
+    .crm-page-btn { padding: 5px 14px; border-radius: 6px; border: 1px solid var(--border); background: var(--card); color: var(--text); font-size: 12px; font-family: inherit; cursor: pointer; transition: all 0.15s; }
+    .crm-page-btn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+    .crm-page-btn:disabled { opacity: 0.3; cursor: default; }
+    .crm-page-info { font-size: 12px; color: var(--muted); min-width: 80px; text-align: center; }
+    .crm-ai-btn { background: none; border: 1px solid rgba(255,255,255,0.15); border-radius: 4px; color: var(--muted); font-size: 11px; padding: 2px 6px; cursor: not-allowed; opacity: 0.5; flex-shrink: 0; }
+
+    /* AGENTS IA */
+    .agent-avatar { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0; background: var(--card2); border: 1px solid var(--border); }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .agent-spin { display: inline-block; width: 13px; height: 13px; border: 2px solid rgba(255,255,255,0.1); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; flex-shrink: 0; }
+    .agent-sourcing-bar { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; padding: 9px 13px; background: var(--card); border: 1px solid var(--border2); border-radius: 9px; transition: border-color 0.2s; }
+    .agent-sourcing-bar:focus-within { border-color: rgba(255,255,255,0.3); }
+    .agent-sourcing-input { flex: 1; background: none; border: none; color: var(--text); font-size: 12.5px; font-family: inherit; outline: none; }
+    .agent-sourcing-input::placeholder { color: var(--muted); }
+    .agent-sourcing-btn { padding: 4px 13px; border-radius: 5px; border: 1px solid var(--border2); background: rgba(255,255,255,0.06); color: var(--accent); font-size: 11px; font-weight: 700; cursor: pointer; font-family: inherit; transition: all 0.15s; white-space: nowrap; }
+    .agent-sourcing-btn:hover:not(:disabled) { background: rgba(255,255,255,0.12); border-color: var(--accent); }
+    .agent-sourcing-btn:disabled { opacity: 0.35; cursor: default; }
+    .agent-tracker-card { padding: 9px 13px; background: var(--card); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 12px; }
+    .agent-tracker-btn { padding: 3px 11px; border-radius: 5px; border: 1px solid var(--border2); background: transparent; color: var(--muted); font-size: 11px; cursor: pointer; font-family: inherit; transition: all 0.15s; }
+    .agent-tracker-btn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+    .agent-tracker-btn:disabled { opacity: 0.35; cursor: default; }
+    .agent-copy-btn { padding: 3px 9px; border-radius: 4px; border: 1px solid var(--border2); background: transparent; color: var(--muted); font-size: 11px; cursor: pointer; font-family: inherit; transition: all 0.15s; white-space: nowrap; flex-shrink: 0; }
+    .agent-copy-btn:hover { border-color: var(--blue); color: var(--blue); }
+    /* SIDE PANEL COPYWRITER */
+    .agent-panel { position: fixed; right: 0; top: 0; bottom: 0; width: 400px; max-width: 95vw; background: var(--sidebar); border-left: 1px solid var(--border2); z-index: 500; display: flex; flex-direction: column; transform: translateX(100%); transition: transform 0.28s cubic-bezier(0.4,0,0.2,1); box-shadow: -6px 0 32px rgba(0,0,0,0.6); }
+    .agent-panel.open { transform: translateX(0); }
+    .agent-panel-header { padding: 15px 16px 13px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; flex-shrink: 0; background: var(--card); }
+    .agent-panel-close { background: none; border: none; color: var(--muted); font-size: 20px; cursor: pointer; padding: 0 4px; border-radius: 3px; line-height: 1; margin-left: auto; }
+    .agent-panel-close:hover { color: var(--accent); }
+    .agent-panel-body { flex: 1; overflow-y: auto; padding: 16px; }
+    .agent-panel-footer { padding: 12px 16px; border-top: 1px solid var(--border); display: flex; gap: 8px; flex-shrink: 0; }
+    .agent-msg-output { font-size: 13px; line-height: 1.9; color: var(--text); white-space: pre-wrap; background: var(--card2); padding: 15px 16px; border-radius: 9px; border: 1px solid var(--border); }
+    .agent-panel-btn { flex: 1; padding: 8px; border-radius: 7px; border: 1px solid var(--border); background: transparent; color: var(--text2); font-size: 12px; cursor: pointer; font-family: inherit; transition: all 0.15s; font-weight: 500; }
+    .agent-panel-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .agent-panel-btn.primary { background: var(--accent); color: #080808; border-color: var(--accent); font-weight: 700; }
+    .agent-panel-btn.primary:hover { background: #e8e8e8; }
+
+    /* AUTH LOGIN */
+    #login-screen { position: fixed; inset: 0; background: var(--bg); z-index: 9999; display: none; align-items: center; justify-content: center; }
+    .login-box { width: 290px; display: flex; flex-direction: column; align-items: center; gap: 13px; }
+    .login-logo { font-size: 22px; font-weight: 800; letter-spacing: 5px; color: var(--accent); }
+    .login-sub { font-size: 10px; color: var(--muted); letter-spacing: 2.5px; text-transform: uppercase; margin-top: -5px; }
+    .login-sep { width: 28px; height: 1px; background: var(--border); margin: 4px 0; }
+    .login-form { width: 100%; display: flex; flex-direction: column; gap: 8px; }
+    .login-input { width: 100%; padding: 11px 16px; background: var(--card); border: 1px solid var(--border2); border-radius: 9px; color: var(--text); font-size: 15px; outline: none; font-family: inherit; text-align: center; letter-spacing: 5px; transition: border-color 0.2s; }
+    .login-input:focus { border-color: rgba(255,255,255,0.35); }
+    .login-input::placeholder { letter-spacing: 0.5px; color: var(--muted); font-size: 12px; }
+    .login-btn { width: 100%; padding: 11px; background: var(--accent); color: #080808; font-size: 12px; font-weight: 800; border: none; border-radius: 9px; cursor: pointer; font-family: inherit; letter-spacing: 2px; text-transform: uppercase; transition: all 0.15s; }
+    .login-btn:hover:not(:disabled) { background: #e0e0e0; }
+    .login-btn:disabled { opacity: 0.45; cursor: default; }
+    .login-error { font-size: 12px; color: var(--danger); min-height: 18px; text-align: center; letter-spacing: 0; }
+    @keyframes shake { 0%,100%{transform:translateX(0)} 20%,60%{transform:translateX(-7px)} 40%,80%{transform:translateX(7px)} }
+    .login-shake { animation: shake 0.38s ease; }
+    .logout-btn { background: none; border: 1px solid transparent; color: var(--muted); font-size: 11px; cursor: pointer; padding: 3px 8px; border-radius: 4px; transition: all 0.15s; font-family: inherit; flex-shrink: 0; }
+    .logout-btn:hover { color: var(--danger); border-color: rgba(229,57,53,0.3); }
+
+    /* AGENT HUB */
+    .agent-hub { padding: 4px 0 20px; }
+    .agent-hub-label { font-size: 10px; text-transform: uppercase; letter-spacing: 2px; color: var(--muted); margin-bottom: 16px; }
+    .agent-cards-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 11px; margin-bottom: 22px; }
+    .agent-hub-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px 16px 16px; cursor: pointer; transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s; position: relative; overflow: hidden; }
+    .agent-hub-card:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(0,0,0,0.35); }
+    .ahc-glow { position: absolute; inset: 0; border-radius: 14px; opacity: 0; transition: opacity 0.3s; pointer-events: none; }
+    .agent-hub-card:hover .ahc-glow { opacity: 1; }
+    .ahc-emoji { font-size: 30px; margin-bottom: 12px; display: block; }
+    .ahc-name { font-size: 13px; font-weight: 800; margin-bottom: 5px; }
+    .ahc-spec { font-size: 11px; color: var(--muted); line-height: 1.5; margin-bottom: 16px; min-height: 36px; }
+    .ahc-btn { width: 100%; padding: 7px; border-radius: 7px; border: 1px solid; background: transparent; font-size: 11px; font-weight: 700; cursor: pointer; font-family: inherit; letter-spacing: 0.5px; transition: all 0.15s; }
+
+    /* CHAT */
+    .chat-page { display: flex; flex-direction: column; height: calc(100vh - 100px); }
+    .chat-header { display: flex; align-items: center; gap: 10px; padding-bottom: 13px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+    .chat-back { background: none; border: 1px solid var(--border); border-radius: 6px; color: var(--muted); font-size: 11px; cursor: pointer; padding: 4px 10px; font-family: inherit; transition: all 0.15s; flex-shrink: 0; }
+    .chat-back:hover { border-color: var(--accent); color: var(--accent); }
+    .chat-agent-id { display: flex; flex-direction: column; }
+    .chat-agent-name { font-size: 14px; font-weight: 800; }
+    .chat-agent-spec { font-size: 10px; color: var(--muted); margin-top: 1px; }
+    .chat-status { margin-left: auto; font-size: 11px; color: var(--muted); display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+    .chat-sdot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent2); flex-shrink: 0; transition: background 0.3s; }
+    .chat-sdot.thinking { background: var(--accent); animation: sdot-pulse 1s ease-in-out infinite; }
+    @keyframes sdot-pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.35;transform:scale(0.75)} }
+    .chat-messages { flex: 1; overflow-y: auto; padding: 14px 0; display: flex; flex-direction: column; gap: 10px; }
+    .chat-msg { display: flex; align-items: flex-end; gap: 7px; max-width: 88%; }
+    .chat-msg.user { align-self: flex-end; flex-direction: row-reverse; }
+    .chat-msg.agent { align-self: flex-start; }
+    .chat-msg.system { align-self: center; max-width: 100%; }
+    .chat-bubble { padding: 10px 14px; border-radius: 12px; font-size: 13px; line-height: 1.7; word-break: break-word; }
+    .chat-msg.user .chat-bubble { background: var(--accent); color: #080808; border-radius: 12px 12px 2px 12px; font-weight: 500; }
+    .chat-msg.agent .chat-bubble { background: var(--card2); border: 1px solid var(--border); color: var(--text); border-radius: 2px 12px 12px 12px; }
+    .chat-msg.system .chat-bubble { background: rgba(229,57,53,0.1); border: 1px solid rgba(229,57,53,0.3); color: var(--danger); font-size: 12px; border-radius: 8px; width: 100%; padding: 10px 14px; }
+    .chat-msg.info .chat-bubble { background: rgba(74,158,255,0.08); border: 1px solid rgba(74,158,255,0.25); color: var(--blue); font-size: 12px; border-radius: 8px; }
+    .chat-time { font-size: 10px; color: var(--muted); margin: 0 3px 2px; flex-shrink: 0; white-space: nowrap; }
+    .speak-btn { background: none; border: none; cursor: pointer; opacity: 0.35; font-size: 14px; transition: opacity 0.15s; padding: 1px; flex-shrink: 0; margin-bottom: 4px; line-height: 1; }
+    .speak-btn:hover, .speak-btn.speaking { opacity: 1; }
+    /* Typing indicator */
+    .typing-bubble { display: flex; align-items: center; gap: 4px; padding: 11px 15px; background: var(--card2); border: 1px solid var(--border); border-radius: 2px 12px 12px 12px; }
+    .tydot { width: 6px; height: 6px; border-radius: 50%; background: var(--muted); animation: tybounce 1.2s ease-in-out infinite; }
+    .tydot:nth-child(2) { animation-delay: 0.2s; }
+    .tydot:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes tybounce { 0%,100%{opacity:0.3;transform:translateY(0)} 50%{opacity:1;transform:translateY(-4px)} }
+    /* Inject card */
+    .inject-card { background: rgba(74,158,255,0.07); border: 1px solid rgba(74,158,255,0.25); border-radius: 9px; padding: 11px 13px; margin-top: 8px; }
+    .inject-title { font-size: 11px; font-weight: 700; color: var(--blue); margin-bottom: 5px; }
+    .inject-preview { font-size: 10px; color: var(--muted); margin-bottom: 8px; line-height: 1.5; }
+    .inject-btn { padding: 5px 14px; border-radius: 6px; border: none; background: var(--blue); color: #080808; font-size: 11px; font-weight: 700; cursor: pointer; font-family: inherit; transition: all 0.15s; }
+    .inject-btn:hover:not(.done) { background: #5aaeff; }
+    .inject-btn.done { background: var(--accent2); cursor: default; }
+    /* Input bar */
+    .chat-input-bar { display: flex; align-items: center; gap: 8px; padding: 12px 0 2px; border-top: 1px solid var(--border); flex-shrink: 0; }
+    .mic-btn { width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--border2); background: var(--card); color: var(--muted); font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s; flex-shrink: 0; }
+    .mic-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .mic-btn.listening { border-color: var(--danger); color: var(--danger); background: rgba(229,57,53,0.1); animation: mic-pulse 1s ease-in-out infinite; }
+    @keyframes mic-pulse { 0%,100%{box-shadow:0 0 0 0 rgba(229,57,53,0.4)} 50%{box-shadow:0 0 0 9px rgba(229,57,53,0)} }
+    .chat-text-input { flex: 1; background: var(--card); border: 1px solid var(--border2); border-radius: 20px; padding: 9px 16px; color: var(--text); font-size: 13px; font-family: inherit; outline: none; resize: none; line-height: 1.5; max-height: 100px; transition: border-color 0.15s; overflow-y: auto; }
+    .chat-text-input:focus { border-color: rgba(255,255,255,0.3); }
+    .chat-text-input::placeholder { color: var(--muted); }
+    .chat-send-btn { width: 36px; height: 36px; border-radius: 50%; border: none; background: var(--accent); color: #080808; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.15s; font-weight: 700; }
+    .chat-send-btn:hover:not(:disabled) { background: #e0e0e0; transform: scale(1.05); }
+    .chat-send-btn:disabled { opacity: 0.35; cursor: default; transform: none; }
+    @media (max-width: 768px) { .agent-cards-grid { grid-template-columns: 1fr; } .chat-page { height: calc(100vh - 130px); } }
     .crm-search { width: 100%; padding: 8px 13px; background: var(--card); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-size: 13px; outline: none; font-family: inherit; margin-bottom: 12px; transition: border-color 0.15s; }
     .crm-search:focus { border-color: var(--accent); }
     .crm-search::placeholder { color: var(--muted); }
@@ -262,6 +385,20 @@
 </head>
 <body>
 
+<!-- ECRAN DE CONNEXION -->
+<div id="login-screen">
+  <div class="login-box" id="login-box">
+    <div class="login-logo">JRV V2</div>
+    <div class="login-sub">Jeremy Rondeau — Videaste</div>
+    <div class="login-sep"></div>
+    <form class="login-form" onsubmit="doLogin(event)">
+      <input type="password" id="login-password" class="login-input" placeholder="Mot de passe" autocomplete="current-password">
+      <button type="submit" class="login-btn" id="login-btn">Connexion</button>
+    </form>
+    <div id="login-error" class="login-error"></div>
+  </div>
+</div>
+
 <div id="overlay" onclick="toggleSidebar()"></div>
 
 <div id="sidebar">
@@ -272,11 +409,7 @@
   <div id="note-list">
     <div class="section-row"><div class="section-label">General</div></div>
     <div class="note-item active" data-fixed="dashboard" onclick="showNote('dashboard',this)">
-      <div><div class="nt">Dashboard</div><div class="ns">Vue d'ensemble</div></div>
-      <div class="note-dot" style="background:var(--accent)"></div>
-    </div>
-    <div class="note-item" data-fixed="allNotes" onclick="showNote('allNotes',this)">
-      <div><div class="nt">Toutes mes notes</div><div class="ns" id="all-notes-sub">0 notes</div></div>
+      <div><div class="nt">Dashboard</div><div class="ns">Vue d'ensemble</div></div>      <div class="note-dot" style="background:var(--accent)"></div>
     </div>
     <div class="note-item" data-fixed="alertes" onclick="showNote('alertes',this)">
       <div><div class="nt">Alertes<span class="alerte-badge" id="alertes-badge" style="display:none"></span></div><div class="ns" id="alertes-sub">Aucune alerte</div></div>
@@ -288,10 +421,13 @@
       <div><div class="nt">CRM Boites de prod</div><div class="ns" id="sb-crm-sub">suivi complet</div></div>
       <div class="note-dot" style="background:var(--blue)"></div>
     </div>
-    <div class="note-item" data-fixed="scripts" onclick="showNote('scripts',this)">
-      <div><div class="nt">LinkedIn &amp; Prospection</div><div class="ns">Scripts · Templates · Strategie</div></div>
-    </div>
     <div id="section-prospection-custom"></div>
+
+    <div class="section-row"><div class="section-label">Agents IA</div></div>
+    <div class="note-item" data-fixed="agents" onclick="showNote('agents',this)">
+      <div><div class="nt">Centre des Agents</div><div class="ns">Hub IA, voix & chat</div></div>
+      <div class="note-dot" style="background:var(--purple)"></div>
+    </div>
 
     <div class="section-row"><div class="section-label">Projets</div><button class="section-add-btn" onclick="showAddMenu(event,'projets')" title="Ajouter une note">+</button></div>
     <div class="note-item" data-fixed="wakeSurf" onclick="showNote('wakeSurf',this)">
@@ -303,15 +439,6 @@
       <div class="note-dot" style="background:var(--accent2)"></div>
     </div>
     <div id="section-projets-custom"></div>
-
-    <div class="section-row"><div class="section-label">Strategie</div><button class="section-add-btn" onclick="showAddMenu(event,'strategie')" title="Ajouter une note">+</button></div>
-    <div class="note-item" data-fixed="strategie" onclick="showNote('strategie',this)">
-      <div><div class="nt">Plan 8 Mois</div><div class="ns">Objectifs + actions</div></div>
-    </div>
-    <div class="note-item" data-fixed="showreel" onclick="showNote('showreel',this)">
-      <div><div class="nt">Post Showreel</div><div class="ns">Texte pret a poster</div></div>
-    </div>
-    <div id="section-strategie-custom"></div>
 
     <div class="section-row"><div class="section-label">Craft</div><button class="section-add-btn" onclick="showAddMenu(event,'craft')" title="Ajouter une note">+</button></div>
     <div class="note-item" data-fixed="docTech" onclick="showNote('docTech',this)">
@@ -337,6 +464,7 @@
       <button id="reset-edit-btn" class="ec-btn danger" onclick="resetEditMode()" style="display:none">Reset</button>
     </div>
     <span id="saved-badge">Sauvegarde ✓</span>
+    <button class="logout-btn" onclick="doLogout()" title="Se déconnecter">⎋ Déco</button>
   </div>
   <div id="content"></div>
 </div>
@@ -348,6 +476,8 @@
   let crmFilter = 'all';
   let crmTypeFilter = 'all';
   let crmSearch = '';
+  let crmPage = 1;
+  const CRM_PAGE_SIZE = 20;
   let _sbCompanies = null;
 
   const CAT_CONFIG = {
@@ -366,6 +496,35 @@
   let isEditMode = false;
   let addMenuOpen = false;
 
+  // ---- CHAT STATE ----
+  const chatHistories = {};
+  const injectCache = {};
+  let chatCurrentAgent = null;
+  let chatSpeechRec = null;
+  let chatMicListening = false;
+  let chatSpeaking = false;
+
+  const AGENT_DEFS = {
+    sourcing: {
+      emoji: '🕵️', name: 'Chasseur de Pistes',
+      specialty: 'Trouve des boîtes de prod, agences comm, event, live...',
+      color: '#4a9eff', colorBg: 'rgba(74,158,255,0.07)',
+      hint: '"Trouve 15 boîtes événementielles à Bordeaux"'
+    },
+    stratege: {
+      emoji: '🧠', name: 'Stratège Business',
+      specialty: 'Analyse tes stats CRM et dicte des plans d\'action',
+      color: '#9b59b6', colorBg: 'rgba(155,89,182,0.07)',
+      hint: '"Analyse mes stats et donne-moi un plan pour cette semaine"'
+    },
+    copywriter: {
+      emoji: '✍️', name: 'Copywriter Pro',
+      specialty: 'Rédige tes messages LinkedIn prêts à envoyer',
+      color: '#4caf50', colorBg: 'rgba(76,175,80,0.07)',
+      hint: '"Génère un message pour Iconik Productions"'
+    }
+  };
+
   // ---- CONSTANTS ----
   const EDITABLE_NOTES = ['wakeSurf','mathis','strategie','showreel','scripts','docTech'];
   const TYPE_LABELS = { projet:'Projet', call:'Call', post:'Post LinkedIn', libre:'Note libre' };
@@ -375,7 +534,7 @@
     post: `Post LinkedIn : [Titre]\n\nDate cible : \n\n---\n\nTexte du post :\n\n\n\nHashtags : \n\nRappels apres publication :\n- Repondre aux commentaires dans les 2h\n- Tagger 2-3 personnes`,
     libre: ``
   };
-  const TITLE_MAP = { dashboard:'Dashboard', crm:'CRM Boites de prod', scripts:'LinkedIn & Prospection', wakeSurf:'Doc Wake Surf', mathis:'Call Mathis Faudrit', strategie:'Plan 8 Mois', showreel:'Post Showreel', docTech:'Faire un Doc Impactant', allNotes:'Toutes mes notes', alertes:'Alertes' };
+  const TITLE_MAP = { dashboard:'Dashboard', crm:'CRM Boites de prod', agents:'Centre des Agents', scripts:'LinkedIn & Prospection', wakeSurf:'Doc Wake Surf', mathis:'Call Mathis Faudrit', strategie:'Plan 8 Mois', showreel:'Post Showreel', docTech:'Faire un Doc Impactant', allNotes:'Toutes mes notes', alertes:'Alertes' };
 
   // ---- MOBILE ----
   function toggleSidebar() {
@@ -829,13 +988,18 @@
   }
 
   function setCRMFilter(f) {
-    crmFilter = f;
+    crmFilter = f; crmPage = 1;
     document.querySelectorAll('.crm-filter-btn').forEach(b => b.classList.toggle('active', b.dataset.filter === f));
     refreshCRMList();
   }
+  function setCRMPage(p) {
+    crmPage = p;
+    refreshCRMList();
+    document.getElementById('crm-list')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
   function setCRMTypeFilter(f) {
-    crmTypeFilter = f;
-    document.querySelectorAll('.crm-cat-card').forEach(function(b) {
+    crmTypeFilter = f; crmPage = 1;
+    document.querySelectorAll('.crm-cat-chip').forEach(function(b) {
       var cat = b.getAttribute('data-cat');
       var isActive = cat === f;
       var cfg = CAT_CONFIG[cat] || {};
@@ -878,7 +1042,7 @@
   }
 
   function setCRMSearch(q) {
-    crmSearch = q;
+    crmSearch = q; crmPage = 1;
     clearTimeout(searchDebounce);
     searchDebounce = setTimeout(refreshCRMList, 180);
   }
@@ -915,12 +1079,23 @@
       return ms && mf && mt;
     });
     if (filtered.length === 0) return '<div style="padding:20px;color:var(--muted);text-align:center;font-size:13px;">Aucune boite trouvee</div>';
-    const zones = [...new Set(filtered.map(c => c.zone))];
-    return zones.map(zone => {
-      const zc = filtered.filter(c => c.zone === zone);
+    const totalPages = Math.max(1, Math.ceil(filtered.length / CRM_PAGE_SIZE));
+    if (crmPage > totalPages) crmPage = 1;
+    const start = (crmPage - 1) * CRM_PAGE_SIZE;
+    const paginated = filtered.slice(start, start + CRM_PAGE_SIZE);
+    const zones = [...new Set(paginated.map(c => c.zone))];
+    const listHTML = zones.map(zone => {
+      const zc = paginated.filter(c => c.zone === zone);
       return `<div class="crm-zone-label"><span>${zone}</span><span>${zc.length} boite${zc.length>1?'s':''}</span></div>
       ${zc.map(c => renderCompanyRow(c)).join('')}`;
     }).join('');
+    const paginationHTML = totalPages > 1 ? `
+      <div class="crm-pagination">
+        <button class="crm-page-btn" onclick="setCRMPage(${crmPage-1})" ${crmPage<=1?'disabled':''}>←</button>
+        <span class="crm-page-info">Page ${crmPage} / ${totalPages}<br><span style="font-size:10px">${filtered.length} boites</span></span>
+        <button class="crm-page-btn" onclick="setCRMPage(${crmPage+1})" ${crmPage>=totalPages?'disabled':''}>→</button>
+      </div>` : '';
+    return listHTML + paginationHTML;
   }
 
   function renderCompanyRow(c) {
@@ -960,6 +1135,7 @@
         <div class="crm-field" style="margin-bottom:9px"><label>Notes / Dernier echange</label>
           <textarea class="crm-notes-field" placeholder="Notes, contexte, suite a donner..." onblur="updateCompany(${c.id},'notes',this.value)">${escHtml(c.notes||'')}</textarea></div>
         <div class="crm-actions">
+          <button class="agent-copy-btn" onclick="runCopywriterAgent(${c.id})" title="Générer un message LinkedIn avec l'IA">✍️ Message IA</button>
           <button class="crm-action-btn" onclick="quickStatus(${c.id},'message-envoye')">Message envoyé</button>
           <button class="crm-action-btn" onclick="quickStatus(${c.id},'pas-de-reponse')">Pas de réponse</button>
           <button class="crm-action-btn" onclick="quickStatus(${c.id},'interesse')">Intéressé</button>
@@ -1013,8 +1189,8 @@
 
     titleInput.value = TITLE_MAP[id] || id; titleInput.setAttribute('readonly', true); titleInput.oninput = null;
 
-    const RENDER_MAP = { dashboard:renderDashboard, crm:renderProspection, scripts:renderLinkedinScripts, wakeSurf:renderWakeSurf, mathis:renderMathis, strategie:renderStrategie, showreel:renderShowreel, docTech:renderDocTech, allNotes:renderAllNotes, alertes:renderAlertes };
-    const noScratch = ['allNotes','alertes'].includes(id);
+    const RENDER_MAP = { dashboard:renderDashboard, crm:renderProspection, agents:renderAgentsCentre, scripts:renderLinkedinScripts, wakeSurf:renderWakeSurf, mathis:renderMathis, strategie:renderStrategie, showreel:renderShowreel, docTech:renderDocTech, allNotes:renderAllNotes, alertes:renderAlertes };
+    const noScratch = ['allNotes','alertes','agents'].includes(id);
     const scratch = noScratch ? '' : (localStorage.getItem('scratch_' + id) || '');
     const scratchHTML = noScratch ? '' : `<div class="scratchpad-wrap"><div class="scratchpad-label">Notes rapides</div><textarea class="scratchpad" id="sp-${id}" placeholder="Notes de session, idees, todo...">${escHtml(scratch)}</textarea></div>`;
     const savedEdit = EDITABLE_NOTES.includes(id) ? localStorage.getItem('edited_' + id) : null;
@@ -1136,10 +1312,10 @@
           <div class="dc-sub">18 questions + organisation</div>
           <div class="progress-bar"><div class="progress-fill" style="width:10%"></div></div>
         </div>
-        <div class="dash-card" onclick="showNote('strategie',document.querySelector('[data-fixed=strategie]'))">
-          <div class="dc-title">Plan 8 Mois</div>
-          <div class="dc-sub">Mois 1 en cours — MAI</div>
-          <div class="progress-bar"><div class="progress-fill" style="width:12%"></div></div>
+        <div class="dash-card" onclick="showNote('docTech',document.querySelector('[data-fixed=docTech]'))">
+          <div class="dc-title">Doc Impactant</div>
+          <div class="dc-sub">Techniques + formats</div>
+          <div class="progress-bar"><div class="progress-fill" style="width:0%"></div></div>
         </div>
       </div>
 
@@ -1214,21 +1390,38 @@
     // Cartes catégories — uniquement celles qui ont des boîtes
     const catCounts = {};
     arr.forEach(c => { const cat = c.category || 'prod'; catCounts[cat] = (catCounts[cat] || 0) + 1; });
-    const catCards = Object.keys(CAT_CONFIG).map(cat => {
+    const catChips = Object.keys(CAT_CONFIG).map(cat => {
       const count = cat === 'all' ? arr.length : (catCounts[cat] || 0);
       if (cat !== 'all' && count === 0) return '';
       const cfg = CAT_CONFIG[cat];
       const isActive = crmTypeFilter === cat;
-      return `<button class="crm-cat-card${isActive ? ' active' : ''}" data-cat="${cat}" onclick="setCRMTypeFilter('${cat}')" style="border-color:${isActive ? cfg.color : 'var(--border)'}">
-        <div class="cat-n" style="color:${cfg.color}">${count}</div>
-        <div class="cat-l">${cfg.label}</div>
-      </button>`;
+      return `<button class="crm-cat-chip${isActive ? ' active' : ''}" data-cat="${cat}" onclick="setCRMTypeFilter('${cat}')" style="${isActive ? `background:${cfg.color};border-color:${cfg.color};color:#080808` : ''}">${cfg.label} <span style="opacity:0.6">${count}</span></button>`;
     }).join('');
 
     const aContacter = arr.filter(c => c.statut === 'a-contacter').length;
     const enCours = arr.filter(c => ['message-envoye','pas-de-reponse'].includes(c.statut)).length;
 
     return `
+      <div class="agent-sourcing-bar">
+        <div class="agent-avatar">🕵️</div>
+        <input type="text" class="agent-sourcing-input" id="agent-sourcing-input"
+          placeholder="Ex : Trouve 15 boîtes événementielles à Lyon..."
+          onkeydown="if(event.key==='Enter')runSourcingAgent()">
+        <div class="agent-spin" id="agent-sourcing-spinner" style="display:none"></div>
+        <button class="agent-sourcing-btn" id="agent-sourcing-btn" onclick="runSourcingAgent()">Sourcer →</button>
+      </div>
+      <div style="font-size:11px;margin:-2px 0 8px 12px;display:none" id="agent-sourcing-status"></div>
+      <div class="agent-tracker-card">
+        <div style="display:flex;align-items:center;gap:9px">
+          <div class="agent-avatar">📊</div>
+          <div style="flex:1">
+            <div style="font-size:12px;font-weight:700">Analyste IA</div>
+            <div style="font-size:10px;color:var(--muted);margin-top:1px">Insights & priorités de prospection</div>
+          </div>
+          <button class="agent-tracker-btn" id="tracker-run-btn" onclick="runTrackerAgent()">Analyser →</button>
+        </div>
+        <div id="tracker-output"></div>
+      </div>
       <div class="crm-stats">
         <div class="crm-stat"><div class="n" id="cst-total">${arr.length}</div><div class="l">Total</div></div>
         <div class="crm-stat"><div class="n" id="cst-contacted" style="color:var(--blue)">${contacted}</div><div class="l">Contactees</div></div>
@@ -1236,7 +1429,7 @@
         <div class="crm-stat"><div class="n" id="cst-reponses" style="color:var(--accent2)">${reponses}</div><div class="l">Reponses+</div></div>
         <div class="crm-stat"><div class="n" id="cst-convertis" style="color:var(--purple)">${convertis}</div><div class="l">Convertis</div></div>
       </div>
-      <div class="crm-cat-grid">${catCards}</div>
+      <div class="crm-cat-strip">${catChips}</div>
       <div class="crm-filters">
         <button class="crm-filter-btn ${crmFilter==='all'?'active':''}" data-filter="all" onclick="setCRMFilter('all')">Toutes (${arr.length})</button>
         <button class="crm-filter-btn ${crmFilter==='priorite'?'active':''}" data-filter="priorite" onclick="setCRMFilter('priorite')">Priorites ★ (${priorites})</button>
@@ -1711,7 +1904,7 @@ https://www.rondeaujeremy.fr/
       method: 'POST',
       headers: Object.assign({}, _SB_HDR, { 'Prefer': 'resolution=merge-duplicates,return=minimal' }),
       body: JSON.stringify({ id: c.id, name: c.name, site: c.site || '', zone: c.zone || '',
-        priority: c.p || 0, contact: c.contact || '', poste: c.poste || '',
+        priority: c.p || 0, category: c.category || 'prod', contact: c.contact || '', poste: c.poste || '',
         canal: c.canal || 'LinkedIn', date: c.date || '', statut: c.statut || 'a-contacter',
         notes: c.notes || '', relance: c.relance || '', updated_at: new Date().toISOString() })
     }).then(function(r) { if (!r.ok) r.text().then(function(t) { console.warn('SB company err:', r.status, t); }); });
@@ -1727,13 +1920,14 @@ https://www.rondeaujeremy.fr/
   };
 
   // ---- INIT ----
-  initPriorities();
-  renderSidebarCustom();
-  updateAllNotesSub();
-  updateAlertesBadge();
-  addHideButtons();
-  applyHidden();
-  showNote('dashboard', document.querySelector('[data-fixed="dashboard"]'));
+  function initApp() {
+    initPriorities();
+    renderSidebarCustom();
+    updateAllNotesSub();
+    updateAlertesBadge();
+    addHideButtons();
+    applyHidden();
+    showNote('dashboard', document.querySelector('[data-fixed="dashboard"]'));
 
   // Connexion Supabase après le rendu initial
   fetch(_SB_TABLE + '?select=key,value', { headers: _SB_HDR })
@@ -1821,6 +2015,14 @@ https://www.rondeaujeremy.fr/
       }
     })
     .catch(function(e) { console.warn('Supabase companies err:', e); });
+  } // fin initApp()
+
+  // Lancer l'app si déjà authentifié, sinon afficher le login
+  if (checkAuth()) {
+    initApp();
+  } else {
+    showLoginScreen();
+  }
 
   // ---- ADD COMPANY MODAL ----
   function openAddCompany() {
@@ -1854,10 +2056,683 @@ https://www.rondeaujeremy.fr/
     closeAddCompany();
     showNote('crm', document.querySelector('[data-fixed="crm"]'));
   }
+  // ---- AGENT HUB & CHAT ----
+
+  function renderAgentsCentre() {
+    const cards = Object.entries(AGENT_DEFS).map(([id, def]) => `
+      <div class="agent-hub-card" onclick="openAgentChat('${id}')" style="border-color:${def.color}22">
+        <div class="ahc-glow" style="background:radial-gradient(circle at top left,${def.colorBg},transparent 65%)"></div>
+        <span class="ahc-emoji">${def.emoji}</span>
+        <div class="ahc-name">${def.name}</div>
+        <div class="ahc-spec">${def.specialty}</div>
+        <div class="ahc-btn" style="border-color:${def.color};color:${def.color}">Démarrer →</div>
+      </div>`).join('');
+    return `<div class="agent-hub">
+      <div class="agent-hub-label">Sélectionne ton agent</div>
+      <div class="agent-cards-grid">${cards}</div>
+      <div style="text-align:center;font-size:11px;color:var(--muted);padding:8px 0">
+        🎙️ Voix activée — parle à tes agents ou écris, ils comprennent les deux
+      </div>
+    </div>`;
+  }
+
+  function openAgentChat(agentId) {
+    chatCurrentAgent = agentId;
+    const def = AGENT_DEFS[agentId];
+    if (!def) return;
+    // Update topbar title
+    const ti = document.getElementById('note-title-input');
+    if (ti) ti.value = def.emoji + ' ' + def.name;
+    // Welcome message on first open
+    if (!chatHistories[agentId]) {
+      chatHistories[agentId] = [{
+        role: 'agent',
+        content: `Bonjour ! Je suis ton ${def.name}.\n${def.specialty}.\n\nEssaie par exemple : ${def.hint}`,
+        time: new Date()
+      }];
+    }
+    const content = document.getElementById('content');
+    if (content) content.innerHTML = buildChatPageHTML(agentId);
+    chatScrollBottom();
+    setTimeout(function() { const inp = document.getElementById('chat-text-input'); if (inp) inp.focus(); }, 80);
+  }
+
+  function buildChatPageHTML(agentId) {
+    const def = AGENT_DEFS[agentId];
+    const msgs = (chatHistories[agentId] || []).map(buildMsgHTML).join('');
+    return `<div class="chat-page">
+      <div class="chat-header">
+        <button class="chat-back" onclick="showNote('agents', document.querySelector('[data-fixed=\\'agents\\']'))">← Hub</button>
+        <div class="agent-avatar" style="background:${def.colorBg};border-color:${def.color}55;font-size:17px;width:34px;height:34px">${def.emoji}</div>
+        <div class="chat-agent-id">
+          <div class="chat-agent-name">${def.name}</div>
+          <div class="chat-agent-spec">${def.specialty}</div>
+        </div>
+        <div class="chat-status">
+          <div class="chat-sdot" id="chat-sdot"></div>
+          <span id="chat-stext">Prêt</span>
+        </div>
+      </div>
+      <div class="chat-messages" id="chat-messages">${msgs}</div>
+      <div class="chat-input-bar">
+        <button class="mic-btn" id="chat-mic-btn" onclick="toggleMic()" title="Parler">🎤</button>
+        <textarea class="chat-text-input" id="chat-text-input" rows="1"
+          placeholder="Écris ou parle à ${def.name}..."
+          onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();chatSend();}"
+          oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,100)+'px'"></textarea>
+        <button class="chat-send-btn" id="chat-send-btn" onclick="chatSend()" title="Envoyer">↑</button>
+      </div>
+    </div>`;
+  }
+
+  function buildMsgHTML(msg) {
+    const t = msg.time ? new Date(msg.time).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}) : '';
+    if (msg.role === 'system') {
+      return `<div class="chat-msg system"><div class="chat-bubble">${escHtml(msg.content)}</div></div>`;
+    }
+    if (msg.role === 'info') {
+      return `<div class="chat-msg info"><div class="chat-bubble">${escHtml(msg.content)}</div></div>`;
+    }
+    if (msg.role === 'user') {
+      return `<div class="chat-msg user">
+        <div class="chat-bubble">${escHtml(msg.content)}</div>
+        <div class="chat-time">${t}</div>
+      </div>`;
+    }
+    // Agent message
+    let extra = '';
+    if (msg.injectId && injectCache[msg.injectId]) {
+      const companies = injectCache[msg.injectId];
+      const preview = companies.slice(0,3).map(c=>c.name).join(', ') + (companies.length>3?' ...':'');
+      extra = `<div class="inject-card">
+        <div class="inject-title">📦 ${companies.length} boîte(s) prêtes</div>
+        <div class="inject-preview">${escHtml(preview)}</div>
+        <button class="inject-btn" id="inj-${msg.injectId}" onclick="chatInject('${msg.injectId}',this)">Injecter dans le CRM →</button>
+      </div>`;
+    }
+    const escapedContent = escHtml(msg.content).replace(/\n/g,'<br>');
+    return `<div class="chat-msg agent">
+      <button class="speak-btn" onclick="chatToggleSpeak(this,${JSON.stringify(msg.content)})" title="Lire">🔊</button>
+      <div>
+        <div class="chat-bubble">${escapedContent}${extra ? '<div>'+extra+'</div>' : ''}</div>
+        <div class="chat-time">${t}</div>
+      </div>
+    </div>`;
+  }
+
+  async function chatSend() {
+    const agentId = chatCurrentAgent;
+    if (!agentId) return;
+    const input = document.getElementById('chat-text-input');
+    const sendBtn = document.getElementById('chat-send-btn');
+    const text = input ? input.value.trim() : '';
+    if (!text) return;
+
+    // Stop mic if running
+    if (chatMicListening) stopMic();
+
+    // Add user message
+    const userMsg = { role: 'user', content: text, time: new Date() };
+    chatHistories[agentId].push(userMsg);
+    if (input) { input.value = ''; input.style.height = 'auto'; }
+
+    const msgs = document.getElementById('chat-messages');
+    if (msgs) {
+      msgs.innerHTML += buildMsgHTML(userMsg);
+      msgs.innerHTML += `<div class="chat-msg agent" id="chat-typing">
+        <div class="typing-bubble"><div class="tydot"></div><div class="tydot"></div><div class="tydot"></div></div>
+      </div>`;
+      chatScrollBottom();
+    }
+    chatSetStatus('Réflexion...', true);
+    if (sendBtn) sendBtn.disabled = true;
+
+    try {
+      // Build multi-turn messages payload (last 10 messages)
+      const hist = chatHistories[agentId].filter(m => m.role === 'user' || m.role === 'agent').slice(-10);
+      const apiMessages = hist.map(m => ({ role: m.role === 'user' ? 'user' : 'assistant', content: m.content }));
+
+      // Inject fresh CRM context for stratege agent
+      let extraContext = '';
+      if (agentId === 'stratege') {
+        const arr = getCRMCompanies();
+        extraContext = JSON.stringify({
+          total: arr.length,
+          aContacter: arr.filter(c=>c.statut==='a-contacter').length,
+          messageEnvoye: arr.filter(c=>c.statut==='message-envoye').length,
+          pasReponse: arr.filter(c=>c.statut==='pas-de-reponse').length,
+          interesse: arr.filter(c=>c.statut==='interesse').length,
+          rdvPris: arr.filter(c=>c.statut==='rdv-pris').length,
+          converti: arr.filter(c=>c.statut==='converti').length,
+          relancesUrgentes: arr.filter(c=>c.relance&&new Date(c.relance)<=new Date()).length
+        });
+      }
+
+      const token = localStorage.getItem('jrv_auth_token') || '';
+      const res = await fetch('/api/agent', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+        body: JSON.stringify({ agent: agentId, messages: apiMessages, context: extraContext })
+      });
+
+      if (res.status === 401) { doLogout(); throw new Error('Session expirée, reconnecte-toi'); }
+      if (res.status === 402 || res.status === 403) throw new Error('CREDITS_EXHAUSTED');
+      if (!res.ok) { const t = await res.text(); throw new Error(t); }
+      const data = await res.json();
+      const result = data.result || '';
+
+      // Remove typing indicator
+      document.getElementById('chat-typing')?.remove();
+
+      // Sourcing: detect JSON array → offer inject
+      let agentMsg;
+      if (agentId === 'sourcing') {
+        let companies = null;
+        try {
+          const clean = result.replace(/```json\n?/g,'').replace(/```\n?/g,'').trim();
+          if (clean.startsWith('[')) {
+            const parsed = JSON.parse(clean);
+            if (Array.isArray(parsed) && parsed[0]?.name) companies = parsed;
+          }
+        } catch(e) {}
+        if (companies && companies.length > 0) {
+          const iid = 'inj' + Date.now();
+          injectCache[iid] = companies;
+          agentMsg = { role: 'agent', content: `J'ai trouvé ${companies.length} boîte(s) correspondant à ta demande.`, injectId: iid, time: new Date() };
+        } else {
+          agentMsg = { role: 'agent', content: result, time: new Date() };
+        }
+      } else {
+        agentMsg = { role: 'agent', content: result, time: new Date() };
+      }
+
+      chatHistories[agentId].push(agentMsg);
+      if (msgs) { msgs.innerHTML += buildMsgHTML(agentMsg); chatScrollBottom(); }
+      chatSetStatus('Prêt', false);
+
+    } catch(e) {
+      document.getElementById('chat-typing')?.remove();
+      let errContent;
+      if (e.message === 'CREDITS_EXHAUSTED') {
+        errContent = '⚠️ Crédits Anthropic épuisés. Recharge ton compte sur console.anthropic.com pour réactiver tes agents.';
+      } else if (e.message.includes('Session')) {
+        errContent = e.message;
+      } else {
+        errContent = 'Erreur : ' + e.message;
+      }
+      const errMsg = { role: 'system', content: errContent, time: new Date() };
+      chatHistories[agentId].push(errMsg);
+      if (msgs) { msgs.innerHTML += buildMsgHTML(errMsg); chatScrollBottom(); }
+      chatSetStatus('Erreur', false);
+    } finally {
+      if (sendBtn) sendBtn.disabled = false;
+    }
+  }
+
+  async function chatInject(injectId, btn) {
+    const companies = injectCache[injectId];
+    if (!companies) return;
+    btn.disabled = true; btn.textContent = 'Injection...';
+    try {
+      const rMax = await fetch(_SB_URL + '/rest/v1/companies?select=id&order=id.desc&limit=1', { headers: _SB_HDR });
+      const ex = rMax.ok ? await rMax.json() : [];
+      let maxId = ex.length > 0 ? ex[0].id : 200;
+      const rows = companies.map(function(c,i) {
+        return { id:maxId+i+1, name:c.name, site:c.site||'', zone:c.zone||'Autre', priority:c.priority||0,
+          category:c.category||'prod', contact:'', poste:'', canal:'LinkedIn', date:'', statut:'a-contacter',
+          notes:c.notes||'', relance:'', updated_at:new Date().toISOString() };
+      });
+      const ins = await fetch(_SB_URL + '/rest/v1/companies', {
+        method:'POST',
+        headers:Object.assign({},_SB_HDR,{'Prefer':'resolution=merge-duplicates,return=representation'}),
+        body:JSON.stringify(rows)
+      });
+      if (!ins.ok) { const e=await ins.text(); throw new Error(e); }
+      const inserted = await ins.json();
+      const arr = getCRMCompanies();
+      inserted.forEach(function(row) {
+        arr.push({ id:row.id, name:row.name, site:row.site||'', zone:row.zone||'', p:row.priority||0,
+          category:row.category||'prod', contact:'', poste:'', canal:'LinkedIn', date:'',
+          statut:'a-contacter', notes:row.notes||'', relance:'' });
+      });
+      _sbCompanies = arr; _lsSet('jrv_crm_v2', JSON.stringify(arr));
+      btn.textContent = '✓ ' + inserted.length + ' boîtes ajoutées !';
+      btn.classList.add('done');
+      // Confirmation message
+      const confirmMsg = { role:'info', content:`✓ ${inserted.length} boîte(s) injectées dans ton CRM.`, time:new Date() };
+      chatHistories[chatCurrentAgent].push(confirmMsg);
+      const msgs = document.getElementById('chat-messages');
+      if (msgs) { msgs.innerHTML += buildMsgHTML(confirmMsg); chatScrollBottom(); }
+    } catch(e) {
+      btn.textContent = '✗ Erreur — ' + e.message.slice(0,40);
+      btn.style.background = 'var(--danger)';
+      btn.disabled = false;
+    }
+  }
+
+  function chatSetStatus(text, thinking) {
+    const dot = document.getElementById('chat-sdot');
+    const txt = document.getElementById('chat-stext');
+    if (dot) { dot.className = 'chat-sdot' + (thinking?' thinking':''); }
+    if (txt) txt.textContent = text;
+  }
+
+  function chatScrollBottom() {
+    const msgs = document.getElementById('chat-messages');
+    if (msgs) setTimeout(function() { msgs.scrollTop = msgs.scrollHeight; }, 60);
+  }
+
+  // ---- VOICE INPUT ----
+  function toggleMic() {
+    if (chatMicListening) { stopMic(); } else { startMic(); }
+  }
+
+  function startMic() {
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) {
+      const m = { role:'system', content:'La reconnaissance vocale nécessite Chrome ou Edge.', time:new Date() };
+      if (chatCurrentAgent && chatHistories[chatCurrentAgent]) {
+        chatHistories[chatCurrentAgent].push(m);
+        const msgs = document.getElementById('chat-messages');
+        if (msgs) { msgs.innerHTML += buildMsgHTML(m); chatScrollBottom(); }
+      }
+      return;
+    }
+    const rec = new SR();
+    rec.lang = 'fr-FR';
+    rec.continuous = false;
+    rec.interimResults = true;
+    const micBtn = document.getElementById('chat-mic-btn');
+    const input = document.getElementById('chat-text-input');
+
+    rec.onstart = function() {
+      chatMicListening = true;
+      if (micBtn) { micBtn.classList.add('listening'); micBtn.textContent = '⏹'; }
+    };
+    rec.onresult = function(e) {
+      const transcript = Array.from(e.results).map(r=>r[0].transcript).join('');
+      if (input) { input.value = transcript; input.style.height='auto'; input.style.height=Math.min(input.scrollHeight,100)+'px'; }
+    };
+    rec.onerror = function(e) { console.warn('Speech error:', e.error); stopMic(); };
+    rec.onend = function() {
+      chatMicListening = false;
+      if (micBtn) { micBtn.classList.remove('listening'); micBtn.textContent = '🎤'; }
+      chatSpeechRec = null;
+      const inp = document.getElementById('chat-text-input');
+      if (inp && inp.value.trim()) setTimeout(chatSend, 350);
+    };
+    rec.start();
+    chatSpeechRec = rec;
+  }
+
+  function stopMic() {
+    if (chatSpeechRec) { try { chatSpeechRec.stop(); } catch(e) {} chatSpeechRec = null; }
+    chatMicListening = false;
+    const micBtn = document.getElementById('chat-mic-btn');
+    if (micBtn) { micBtn.classList.remove('listening'); micBtn.textContent = '🎤'; }
+  }
+
+  // ---- VOICE OUTPUT ----
+  function chatToggleSpeak(btn, text) {
+    if (chatSpeaking && btn.classList.contains('speaking')) {
+      window.speechSynthesis?.cancel();
+      chatSpeaking = false;
+      btn.classList.remove('speaking'); btn.textContent = '🔊';
+    } else {
+      chatSpeak(text, btn);
+    }
+  }
+
+  function chatSpeak(text, btn) {
+    if (!window.speechSynthesis) return;
+    speechSynthesis.cancel();
+    const clean = text.replace(/[#*_`>]/g,'').replace(/\n+/g,'. ').replace(/\s+/g,' ').trim();
+    const utt = new SpeechSynthesisUtterance(clean);
+    utt.lang = 'fr-FR'; utt.rate = 1.0; utt.pitch = 1.0; utt.volume = 1.0;
+    // Chercher la meilleure voix française
+    function trySpeak() {
+      const voices = speechSynthesis.getVoices();
+      const frVoice = voices.find(v=>v.lang==='fr-FR'&&v.localService) ||
+                      voices.find(v=>v.lang==='fr-FR') ||
+                      voices.find(v=>v.lang.startsWith('fr'));
+      if (frVoice) utt.voice = frVoice;
+      chatSpeaking = true;
+      if (btn) { btn.classList.add('speaking'); btn.textContent = '⏹'; }
+      utt.onend = function() { chatSpeaking=false; if(btn){btn.classList.remove('speaking');btn.textContent='🔊';} };
+      utt.onerror = function() { chatSpeaking=false; if(btn){btn.classList.remove('speaking');btn.textContent='🔊';} };
+      speechSynthesis.speak(utt);
+    }
+    if (speechSynthesis.getVoices().length === 0) {
+      speechSynthesis.onvoiceschanged = trySpeak;
+    } else {
+      trySpeak();
+    }
+  }
+
+  // ---- AUTH ----
+
+  function checkAuth() {
+    const token = localStorage.getItem('jrv_auth_token');
+    if (!token) return false;
+    try {
+      const parts = token.split('.');
+      if (parts.length !== 3) throw new Error('invalid');
+      // Décode le payload (base64url) pour vérifier l'expiration côté client
+      const b64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+      const payload = JSON.parse(atob(b64.padEnd(b64.length + (4 - b64.length % 4) % 4, '=')));
+      if (payload.exp < Math.floor(Date.now() / 1000)) {
+        localStorage.removeItem('jrv_auth_token');
+        return false;
+      }
+      return true;
+    } catch(e) {
+      localStorage.removeItem('jrv_auth_token');
+      return false;
+    }
+  }
+
+  function showLoginScreen() {
+    const ls = document.getElementById('login-screen');
+    const sb = document.getElementById('sidebar');
+    const mn = document.getElementById('main');
+    if (ls) ls.style.display = 'flex';
+    if (sb) sb.style.display = 'none';
+    if (mn) mn.style.display = 'none';
+    setTimeout(function() {
+      const inp = document.getElementById('login-password');
+      if (inp) inp.focus();
+    }, 80);
+  }
+
+  function hideLoginScreen() {
+    const ls = document.getElementById('login-screen');
+    const sb = document.getElementById('sidebar');
+    const mn = document.getElementById('main');
+    if (ls) ls.style.display = 'none';
+    if (sb) sb.style.display = '';
+    if (mn) mn.style.display = '';
+  }
+
+  async function doLogin(e) {
+    if (e) e.preventDefault();
+    const input = document.getElementById('login-password');
+    const btn = document.getElementById('login-btn');
+    const errEl = document.getElementById('login-error');
+    const box = document.getElementById('login-box');
+    const password = input ? input.value : '';
+    if (!password) return;
+
+    btn.disabled = true;
+    btn.textContent = '...';
+    if (errEl) errEl.textContent = '';
+
+    try {
+      const res = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password })
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(function() { return {}; });
+        throw new Error(data.error || 'Mot de passe incorrect');
+      }
+      const { token } = await res.json();
+      localStorage.setItem('jrv_auth_token', token);
+      if (input) input.value = '';
+      hideLoginScreen();
+      initApp();
+    } catch(err) {
+      if (errEl) errEl.textContent = err.message;
+      if (box) { box.classList.remove('login-shake'); void box.offsetWidth; box.classList.add('login-shake'); }
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Connexion';
+    }
+  }
+
+  function doLogout() {
+    localStorage.removeItem('jrv_auth_token');
+    _sbReady = false;
+    _sbCompanies = null;
+    showLoginScreen();
+  }
+
+  // ---- AGENTS IA ----
+
+  async function callAgent(agent, prompt, context) {
+    const token = localStorage.getItem('jrv_auth_token') || '';
+    const res = await fetch('/api/agent', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify({ agent, prompt, context: context || '' })
+    });
+    if (res.status === 401) {
+      doLogout();
+      throw new Error('Session expirée, reconnecte-toi');
+    }
+    if (!res.ok) {
+      const txt = await res.text();
+      throw new Error('Agent ' + res.status + ' : ' + txt);
+    }
+    const data = await res.json();
+    return data.result;
+  }
+
+  function showAgentStatus(agentId, msg, type) {
+    const el = document.getElementById('agent-' + agentId + '-status');
+    if (!el) return;
+    el.textContent = msg;
+    el.style.color = type === 'success' ? 'var(--accent2)' : type === 'error' ? 'var(--danger)' : 'var(--muted)';
+    el.style.display = 'block';
+    if (type === 'success') setTimeout(() => { if (el) el.style.display = 'none'; }, 5000);
+  }
+
+  async function runSourcingAgent() {
+    const input = document.getElementById('agent-sourcing-input');
+    const btn = document.getElementById('agent-sourcing-btn');
+    const spinner = document.getElementById('agent-sourcing-spinner');
+    const prompt = input ? input.value.trim() : '';
+    if (!prompt) { input && input.focus(); return; }
+
+    if (btn) btn.disabled = true;
+    if (spinner) spinner.style.display = 'inline-block';
+    if (input) input.disabled = true;
+    showAgentStatus('sourcing', 'Agent en train de sourcer...', 'info');
+
+    try {
+      const result = await callAgent('sourcing', prompt);
+      let companies;
+      try {
+        const jsonStr = result.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+        companies = JSON.parse(jsonStr);
+        if (!Array.isArray(companies)) companies = [companies];
+      } catch(e) { throw new Error('Réponse JSON invalide : ' + e.message); }
+
+      // Récupérer le max ID actuel
+      const rMax = await fetch(_SB_URL + '/rest/v1/companies?select=id&order=id.desc&limit=1', { headers: _SB_HDR });
+      const existing = rMax.ok ? await rMax.json() : [];
+      let maxId = existing.length > 0 ? existing[0].id : 200;
+
+      const rows = companies.map(function(c, i) {
+        return { id: maxId + i + 1, name: c.name, site: c.site || '', zone: c.zone || 'Autre',
+          priority: c.priority || c.p || 0, category: c.category || 'prod',
+          contact: '', poste: '', canal: 'LinkedIn', date: '', statut: 'a-contacter',
+          notes: c.notes || '', relance: '', updated_at: new Date().toISOString() };
+      });
+
+      const ins = await fetch(_SB_URL + '/rest/v1/companies', {
+        method: 'POST',
+        headers: Object.assign({}, _SB_HDR, { 'Prefer': 'resolution=merge-duplicates,return=representation' }),
+        body: JSON.stringify(rows)
+      });
+      if (!ins.ok) { const err = await ins.text(); throw new Error('Supabase : ' + err); }
+      const inserted = await ins.json();
+
+      // Mise à jour du cache local
+      const arr = getCRMCompanies();
+      inserted.forEach(function(row) {
+        arr.push({ id: row.id, name: row.name, site: row.site || '', zone: row.zone || '',
+          p: row.priority || 0, category: row.category || 'prod', contact: '', poste: '',
+          canal: 'LinkedIn', date: '', statut: 'a-contacter', notes: row.notes || '', relance: '' });
+      });
+      _sbCompanies = arr;
+      _lsSet('jrv_crm_v2', JSON.stringify(arr));
+
+      if (input) { input.value = ''; input.disabled = false; }
+      showAgentStatus('sourcing', '✓ ' + inserted.length + ' boîte(s) ajoutée(s) !', 'success');
+      showNote('crm', document.querySelector('[data-fixed="crm"]'));
+
+    } catch(e) {
+      showAgentStatus('sourcing', '✗ ' + e.message, 'error');
+      if (input) input.disabled = false;
+      console.error('Sourcing agent error:', e);
+    } finally {
+      if (btn) btn.disabled = false;
+      if (spinner) spinner.style.display = 'none';
+    }
+  }
+
+  async function runCopywriterAgent(companyId) {
+    const arr = getCRMCompanies();
+    const c = arr.find(x => x.id === companyId);
+    if (!c) return;
+
+    const panel = document.getElementById('agent-copy-panel');
+    const panelName = document.getElementById('agent-copy-name');
+    const panelBody = document.getElementById('agent-copy-body');
+    const panelSave = document.getElementById('agent-copy-save');
+    const panelCopy = document.getElementById('agent-copy-copybtn');
+    if (!panel) return;
+
+    if (panelName) panelName.textContent = c.name;
+    if (panelBody) panelBody.innerHTML = '<div style="display:flex;align-items:center;gap:10px;color:var(--muted);font-size:13px;padding:12px 0"><div class="agent-spin"></div> Rédaction en cours...</div>';
+    if (panelSave) panelSave.style.display = 'none';
+    if (panelCopy) { panelCopy.textContent = 'Copier'; panelCopy.disabled = true; }
+    panel.dataset.message = '';
+    panel.classList.add('open');
+
+    const catLabel = (CAT_CONFIG[c.category] || CAT_CONFIG['prod']).label;
+    const context = ['Boite : ' + c.name, 'Zone : ' + (c.zone || 'N/A'), 'Categorie : ' + catLabel,
+      c.site ? 'Site : ' + c.site : '', c.notes ? 'Notes : ' + c.notes : ''].filter(Boolean).join('\n');
+
+    try {
+      const result = await callAgent('copywriter', 'Génère un message LinkedIn de prospection personnalisé.', context);
+      if (panelBody) panelBody.innerHTML = '<div class="agent-msg-output">' + escHtml(result) + '</div>';
+      panel.dataset.message = result;
+      if (panelSave) { panelSave.style.display = ''; panelSave.onclick = function() { saveAgentMessage(companyId, result); }; }
+      if (panelCopy) panelCopy.disabled = false;
+    } catch(e) {
+      if (panelBody) panelBody.innerHTML = '<div style="color:var(--danger);font-size:13px;padding:8px 0">Erreur : ' + escHtml(e.message) + '</div>';
+    }
+  }
+
+  function closeAgentPanel() {
+    const panel = document.getElementById('agent-copy-panel');
+    if (panel) panel.classList.remove('open');
+  }
+
+  function copyAgentMessage() {
+    const panel = document.getElementById('agent-copy-panel');
+    const msg = panel ? panel.dataset.message : '';
+    if (!msg) return;
+    navigator.clipboard.writeText(msg).then(function() {
+      const btn = document.getElementById('agent-copy-copybtn');
+      if (btn) { btn.textContent = '✓ Copié !'; setTimeout(function() { btn.textContent = 'Copier'; }, 2000); }
+    });
+  }
+
+  function saveAgentMessage(companyId, message) {
+    const arr = getCRMCompanies();
+    const c = arr.find(x => x.id === companyId);
+    if (!c) return;
+    const sep = c.notes && c.notes.trim() ? '\n\n--- Message IA ---\n' : '--- Message IA ---\n';
+    c.notes = (c.notes || '') + sep + message;
+    saveCRMCompanies(arr, c);
+    const ta = document.querySelector('.crm-row[data-id="' + companyId + '"] .crm-notes-field');
+    if (ta) ta.value = c.notes;
+    const dot = document.querySelector('.crm-row[data-id="' + companyId + '"] .crm-has-notes');
+    if (dot) dot.style.opacity = '1';
+    closeAgentPanel();
+    showSaved();
+  }
+
+  async function runTrackerAgent() {
+    const btn = document.getElementById('tracker-run-btn');
+    const output = document.getElementById('tracker-output');
+    if (!btn || !output) return;
+    btn.disabled = true;
+    output.innerHTML = '<div style="display:flex;align-items:center;gap:8px;color:var(--muted);font-size:12px;margin-top:9px"><div class="agent-spin"></div> Analyse en cours...</div>';
+
+    const arr = getCRMCompanies();
+    const stats = {
+      total: arr.length,
+      aContacter: arr.filter(c => c.statut === 'a-contacter').length,
+      messageEnvoye: arr.filter(c => c.statut === 'message-envoye').length,
+      pasDeReponse: arr.filter(c => c.statut === 'pas-de-reponse').length,
+      interesse: arr.filter(c => c.statut === 'interesse').length,
+      rdvPris: arr.filter(c => c.statut === 'rdv-pris').length,
+      refuse: arr.filter(c => c.statut === 'refuse').length,
+      converti: arr.filter(c => c.statut === 'converti').length,
+      relancesUrgentes: arr.filter(c => c.relance && new Date(c.relance) <= new Date()).length,
+      tauxReponse: arr.filter(c => c.statut !== 'a-contacter').length > 0
+        ? Math.round(arr.filter(c => ['interesse','rdv-pris','converti'].includes(c.statut)).length
+            / arr.filter(c => c.statut !== 'a-contacter').length * 100) : 0
+    };
+
+    try {
+      const result = await callAgent('tracker', 'Analyse mes statistiques de prospection.', JSON.stringify(stats));
+      let parsed;
+      try {
+        parsed = JSON.parse(result.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim());
+      } catch(e) {
+        output.innerHTML = '<div style="font-size:12px;line-height:1.7;color:var(--text);margin-top:9px">' + escHtml(result) + '</div>';
+        btn.disabled = false; return;
+      }
+      let html = '<div style="margin-top:9px">';
+      if (parsed.urgences && parsed.urgences.length) {
+        parsed.urgences.forEach(function(u) {
+          html += '<div style="padding:6px 0;border-bottom:1px solid var(--border);font-size:12px;color:var(--danger);line-height:1.6">⚠ ' + escHtml(u) + '</div>';
+        });
+      }
+      if (parsed.insights && parsed.insights.length) {
+        parsed.insights.forEach(function(i) {
+          html += '<div style="padding:6px 0;border-bottom:1px solid var(--border);font-size:12px;line-height:1.6;color:var(--text2)">💡 ' + escHtml(i) + '</div>';
+        });
+      }
+      if (parsed.conseil) {
+        html += '<div style="margin-top:8px;padding:8px 11px;background:rgba(255,255,255,0.04);border-radius:6px;font-size:12px;color:var(--accent);border:1px solid var(--border2)">🎯 ' + escHtml(parsed.conseil) + '</div>';
+      }
+      html += '</div>';
+      output.innerHTML = html;
+    } catch(e) {
+      output.innerHTML = '<div style="color:var(--danger);font-size:12px;margin-top:8px">Erreur : ' + escHtml(e.message) + '</div>';
+    }
+    btn.disabled = false;
+  }
+
   document.addEventListener('keydown', e => {
-    if (e.key === 'Escape') closeAddCompany();
+    if (e.key === 'Escape') { closeAddCompany(); closeAgentPanel(); }
   });
 </script>
+
+<!-- PANEL COPYWRITER IA -->
+<div class="agent-panel" id="agent-copy-panel">
+  <div class="agent-panel-header">
+    <div class="agent-avatar">✍️</div>
+    <div>
+      <div style="font-size:13px;font-weight:700" id="agent-copy-name">Copywriter IA</div>
+      <div style="font-size:11px;color:var(--muted)">Message LinkedIn personnalisé</div>
+    </div>
+    <button class="agent-panel-close" onclick="closeAgentPanel()">×</button>
+  </div>
+  <div class="agent-panel-body" id="agent-copy-body">
+    <div style="color:var(--muted);font-size:13px;padding:8px 0">Clique sur ✍️ Message IA d'une boîte pour générer un message.</div>
+  </div>
+  <div class="agent-panel-footer">
+    <button class="agent-panel-btn" id="agent-copy-copybtn" onclick="copyAgentMessage()" disabled>Copier</button>
+    <button class="agent-panel-btn primary" id="agent-copy-save" style="display:none">Sauver dans Notes</button>
+  </div>
+</div>
 
 <div class="modal-overlay" id="modal-add-company" onclick="if(event.target===this)closeAddCompany()">
   <div class="modal-box">

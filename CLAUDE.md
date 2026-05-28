@@ -40,17 +40,34 @@ Objectif : trouver des boîtes de production audiovisuelle pour décrocher des m
 - Toujours tester en local (http://localhost:8080) avant de push
 - Le dossier s'appelle "JRV production " (avec espace à la fin)
 
-## Architecture Agents — Décisions techniques
+## Architecture Agents — Décisions techniques (V2 finale)
 
-### Principe : Claude Code EST l'agent
-Pas d'API Anthropic commerciale. Pas de frais supplémentaires.
-Claude Code (terminal) génère les données depuis ses connaissances et les insère directement dans Supabase via l'API REST.
+### Sécurité clé API
+- Clé Anthropic (`sk-ant-...`) → JAMAIS dans le JS front-end
+- Stockée dans `process.env.ANTHROPIC_API_KEY` (Vercel env vars)
+- Proxy sécurisé : `/api/agent.js` (Vercel Serverless Function)
+- Le front-end appelle `/api/agent` (même domaine, pas de fuite possible)
 
-### Workflow
-1. Jeremy demande dans le terminal : "Trouve-moi 20 boîtes événementielles à Lyon"
-2. Claude génère la liste JSON depuis ses connaissances
-3. Claude exécute `scripts/insert-companies.js` → insère dans Supabase
-4. Les données apparaissent immédiatement dans le CRM
+### Fichiers agents
+- `api/agent.js` — Serverless Vercel, proxy API Anthropic, 3 system prompts
+- `.env.example` — Template pour configurer la clé en local
+
+### Agents implémentés
+1. **🕵️ Sourcing** — Barre en haut du CRM, commande texte → JSON → Supabase (direct)
+2. **✍️ Copywriter** — Bouton sur chaque ligne, side panel, message LinkedIn personnalisé
+3. **📊 Tracker** — Carte dans le CRM, analyse stats → insights JSON
+
+### Pour tester les agents en local
+```
+npm i -g vercel
+vercel dev   # à la place de python3 -m http.server
+# Site sur http://localhost:3000
+```
+Créer `.env.local` avec `ANTHROPIC_API_KEY=sk-ant-...`
+
+### Mode terminal (sans clé API)
+Le script `scripts/insert-companies.js` reste utilisable directement depuis Claude Code terminal.
+Claude Code génère la liste JSON et l'insère sans passer par la clé API.
 
 ---
 
