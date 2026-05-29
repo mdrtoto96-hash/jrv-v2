@@ -56,25 +56,47 @@ Quand Jeremy demande une analyse ou des conseils sur sa prospection :
 5. RELANCES
 Quand Jeremy demande qui relancer : utilise les données du contexte pour lister les boîtes urgentes et propose un message de relance adapté au contexte (statut, date, échanges précédents).
 
-6. TOUT LE RESTE
+6. LOOKUP SITE/LINKEDIN D'UNE BOÎTE EXISTANTE
+Quand Jeremy demande le site ou le LinkedIn d'une boîte existante ET que des résultats web sont fournis dans le contexte :
+- Extrais l'URL exacte depuis les résultats web (site officiel ou profil LinkedIn)
+- Réponds UNIQUEMENT avec le JSON modify_crm pour mettre à jour le bon champ (field: "site" ou "linkedin")
+- Utilise l'id de la boîte dans le contexte CRM
+- Si les résultats ne contiennent pas l'info → utilise ta connaissance mais mentionne dans "summary" que l'URL est à vérifier
+
+7. TOUT LE RESTE
 Tu réponds à n'importe quelle question — général, conseils business, technique vidéo, stratégie LinkedIn, questions de vie. Tu es un assistant complet, pas limité au CRM.
 
 Réponds toujours en français. Sois direct, efficace, et utile.`
 };
 
-// Détecte si le message est une demande de sourcing
+// Détecte si le message est une demande de sourcing de nouvelles boîtes
 function isSourcingRequest(text) {
   return /\b(trouv|cherch|source|sourc|ajoute|rajoute|donne.moi|liste.moi)\b/i.test(text) &&
     /\b(boîte|boite|agence|studio|société|entreprise|production|prod|comm|communication|event|média|media)\b/i.test(text);
 }
 
-// Extrait une requête de recherche optimisée depuis le message utilisateur
+// Détecte si le message est une demande de lookup site/linkedin pour une boîte existante
+function isWebLookupRequest(text) {
+  return /\b(site|lien|url|web|linkedin|adresse)\b/i.test(text) &&
+    /\b(trouv|cherch|rajoute|ajoute|mets?|donne|quel est|c.est quoi)\b/i.test(text);
+}
+
+// Extrait une requête de recherche optimisée depuis le message utilisateur (sourcing)
 function buildSearchQuery(userMessage) {
-  // Nettoyage du message pour une bonne requête Google
   return userMessage
     .replace(/\b(trouve|trouves|trouver|cherche|chercher|ajoute|rajouter|donne.moi|liste.moi|nouveaux?|nouvelles?|boîtes?|boites?|dans mon crm|pour mon crm)\b/gi, '')
     .replace(/\s+/g, ' ')
     .trim();
+}
+
+// Construit une requête de recherche propre pour un lookup site/linkedin
+function buildLookupQuery(userMessage) {
+  // Extraire les noms propres (mots commençant par une majuscule)
+  const properNouns = userMessage.match(/\b[A-ZÀÂÄÉÈÊËÎÏÔÙÛÜ][a-zA-ZÀ-ÿ0-9]+(?:\s+[A-ZÀÂÄÉÈÊËÎÏÔÙÛÜ][a-zA-ZÀ-ÿ0-9]+)*/g) || [];
+  const companyName = properNouns.join(' ').trim();
+  const isLinkedin = /linkedin/i.test(userMessage);
+  const suffix = isLinkedin ? 'linkedin' : 'site web officiel';
+  return companyName ? `${companyName} ${suffix}` : userMessage;
 }
 
 // Appel Tavily Web Search
@@ -139,20 +161,28 @@ module.exports = async function handler(req, res) {
     ? String(messages[messages.length - 1]?.content || '')
     : String(prompt || '');
 
-  // --- TAVILY WEB SEARCH si demande de sourcing ---
+  // --- TAVILY WEB SEARCH ---
+  const needsSearch = tavilyKey && (isSourcingRequest(lastUserText) || isWebLookupRequest(lastUserText));
+  const isLookup = isWebLookupRequest(lastUserText) && !isSourcingRequest(lastUserText);
   let webSearchContext = '';
-  if (tavilyKey && isSourcingRequest(lastUserText)) {
+  if (needsSearch) {
     try {
-      const searchQuery = buildSearchQuery(lastUserText);
+      const searchQuery = isLookup ? buildLookupQuery(lastUserText) : buildSearchQuery(lastUserText);
       console.log('Tavily search query:', searchQuery);
       const results = await tavilySearch(searchQuery, tavilyKey);
       if (results.length > 0) {
-        webSearchContext = '\n\n[RÉSULTATS WEB RÉELS — utilise UNIQUEMENT ces sources pour le sourcing]\n' + formatSearchResults(results);
+        const label = isLookup
+          ? '[RÉSULTATS WEB RÉELS — extrais l\'URL exacte de la boîte pour mettre à jour le CRM via modify_crm]'
+          : '[RÉSULTATS WEB RÉELS — utilise UNIQUEMENT ces sources pour le sourcing]';
+        webSearchContext = '\n\n' + label + '\n' + formatSearchResults(results);
+      } else if (isLookup) {
+        webSearchContext = '\n\n[Recherche web sans résultat — utilise ta connaissance pour l\'URL, indique dans summary que c\'est à vérifier]';
       }
     } catch(e) {
       console.error('Tavily search failed:', e.message);
-      // On continue sans résultats web — Claude sera prévenu
-      webSearchContext = '\n\n[Recherche web indisponible — base-toi uniquement sur ta connaissance, confidence "low" obligatoire pour toutes les boîtes]';
+      webSearchContext = isLookup
+        ? '\n\n[Recherche web indisponible — utilise ta connaissance pour l\'URL, indique dans summary que c\'est à vérifier]'
+        : '\n\n[Recherche web indisponible — base-toi uniquement sur ta connaissance, confidence "low" obligatoire pour toutes les boîtes]';
     }
   }
 
