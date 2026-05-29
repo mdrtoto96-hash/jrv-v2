@@ -144,7 +144,7 @@ async function tavilySearch(query, tavilyKey) {
       api_key: tavilyKey,
       query: query,
       search_depth: 'basic',
-      max_results: 10,
+      max_results: 7,
       include_answer: false
     })
   });
@@ -160,7 +160,7 @@ async function tavilySearch(query, tavilyKey) {
 function formatSearchResults(results) {
   if (!results.length) return '';
   return results.map((r, i) =>
-    `[${i+1}] ${r.title}\nURL: ${r.url}\n${r.content ? r.content.slice(0, 300) : ''}`
+    `[${i+1}] ${r.title}\nURL: ${r.url}\n${r.content ? r.content.slice(0, 200) : ''}`
   ).join('\n\n');
 }
 
@@ -257,7 +257,7 @@ module.exports = async function handler(req, res) {
       },
       body: JSON.stringify({
         model: 'claude-opus-4-6',
-        max_tokens: 2048,
+        max_tokens: 1500,
         system: systemPrompt,
         messages: messagesPayload
       })
