@@ -1579,14 +1579,15 @@
       if (cat !== 'all' && count === 0) return '';
       const cfg = CAT_CONFIG[cat];
       const isActive = crmTypeFilter === cat;
-      return `<button class="crm-cat-chip${isActive?' active':''}" data-cat="${cat}" onclick="setCRMTypeFilter(${JSON.stringify(cat)})" style="${isActive?`background:${cfg.color};border-color:${cfg.color};color:#080808`:''}">${cfg.label} <span style="opacity:0.6">${count}</span></button>`;
+      return `<button class="crm-cat-chip${isActive?' active':''}" data-cat="${cat}" onclick="setCRMTypeFilter('${cat}')" style="${isActive?`background:${cfg.color};border-color:${cfg.color};color:#080808`:''}">${cfg.label} <span style="opacity:0.6">${count}</span></button>`;
     }).join('');
     // Catégories personnalisées (pas dans CAT_CONFIG)
+    // Note : les valeurs custom sont toujours en minuscules avec tirets (pas de quotes à risque)
     Object.keys(catCounts).forEach(cat => {
       if (!CAT_CONFIG[cat] && catCounts[cat] > 0) {
         const cfg = getCatCfg(cat);
         const isActive = crmTypeFilter === cat;
-        html += `<button class="crm-cat-chip${isActive?' active':''}" data-cat="${escAttr(cat)}" onclick="setCRMTypeFilter(${JSON.stringify(cat)})" style="${isActive?`background:${cfg.color};border-color:${cfg.color};color:#080808`:''}">${escHtml(cfg.label)} <span style="opacity:0.6">${catCounts[cat]}</span></button>`;
+        html += `<button class="crm-cat-chip${isActive?' active':''}" data-cat="${escAttr(cat)}" onclick="setCRMTypeFilter('${escAttr(cat)}')" style="${isActive?`background:${cfg.color};border-color:${cfg.color};color:#080808`:''}">${escHtml(cfg.label)} <span style="opacity:0.6">${catCounts[cat]}</span></button>`;
       }
     });
     strip.innerHTML = html;
