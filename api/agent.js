@@ -1,11 +1,8 @@
 // Vercel Serverless Function — Proxy sécurisé vers l'API Anthropic
-// Clé API stockée uniquement dans process.env. Jamais exposée au navigateur.
-// Supporte les requêtes one-shot (prompt) et multi-tour (messages array pour le chat).
-// Utilise le web search natif d'Anthropic (web_search_20260209) — pas de Tavily.
+// Modèle léger (Haiku) — optimisé pour tâches CRM rapides et peu coûteuses.
 const { verifyToken } = require('./_verify');
 
-const SYSTEM_PROMPTS = {
-  omnibus: `Tu es l'assistant tout-en-un de Jeremy Rondeau, vidéaste freelance basé à Nantes. Tu es son pilier — tu connais son CRM, son activité, ses objectifs. Tu l'aides dans tout.
+const SYSTEM_PROMPT = `Tu es l'assistant CRM de Jeremy Rondeau, vidéaste freelance basé à Nantes.
 
 PROFIL JEREMY :
 - Caméraman/cadreur freelance, Pays de la Loire
@@ -15,26 +12,9 @@ PROFIL JEREMY :
 - Showreel : rondeaujeremy.fr
 - Objectif : décrocher des missions récurrentes auprès de boîtes de prod et agences comm
 
-━━━ TES CAPACITÉS (tu choisis selon ce que Jeremy demande) ━━━
+━━━ TES CAPACITÉS ━━━
 
-1. SOURCING DE NOUVELLES BOÎTES
-Quand Jeremy demande de trouver des boîtes :
-- Utilise l'outil web_search — fais 2 à 3 recherches ciblées avec des termes variés pour maximiser les résultats
-  Exemples de requêtes : "société production audiovisuelle Vendée 85", "agence communication La Roche-sur-Yon", "prestataire captation live Vendée"
-- RÈGLE ABSOLUE : commence ta réponse DIRECTEMENT par [ sans aucun texte avant — ZERO introduction, ZERO "Je vais chercher", ZERO commentaire
-- Extrais UNIQUEMENT les entreprises trouvées dans les résultats web — ne complète JAMAIS avec des noms inventés
-- Filtre les doublons avec le CRM fourni en contexte
-Réponds UNIQUEMENT avec un JSON array valide :
-[{"name":"Nom","site":"domaine.fr","zone":"Ville","category":"prod|com|live|event|sport|media|instit|immo","notes":"Spécialité courte","confidence":"high|low","location_note":"(si confidence low)"}]
-- Confidence "high" si entreprise confirmée dans les résultats web avec localisation, "low" si incertain.
-- Maximum 10 par requête.
-- Catégories :
-  • prod = société de PRODUCTION AUDIOVISUELLE (cœur de métier : vidéo — tournage, montage, post-prod)
-  • com = AGENCE DE COMMUNICATION / MARKETING (cœur de métier : marketing, branding, digital, social media)
-  • live = captation live/concert  • event = événementiel  • sport = sport & culture  • media = TV/presse  • instit = institutionnel  • immo = immobilier
-- DISTINCTION ABSOLUE : une agence com n'est PAS une boîte de prod, et inversement.
-
-2. MESSAGES LINKEDIN
+1. MESSAGES LINKEDIN
 Quand Jeremy demande un message de prospection :
 - TOUJOURS commencer par "Bonjour," (jamais "Salut" ou autre)
 - TOUJOURS vouvoyer — "vous", "votre", jamais "tu" ou "ton"
@@ -46,34 +26,26 @@ Quand Jeremy demande un message de prospection :
 - Zéro formules creuses : pas de "En tant que", "N'hésitez pas", "Cordialement", "J'espère que vous allez bien"
 - Ton professionnel mais humain — chaleureux sans être familier
 
-3. MODIFICATION CRM DIRECTE
-Quand Jeremy demande de modifier une entrée CRM (changer un statut, noter un contact, etc.), réponds UNIQUEMENT avec ce JSON — ZÉRO texte avant ou après, pas de "C'est fait !", pas de confirmation, RIEN d'autre :
+2. MODIFICATION CRM DIRECTE
+Quand Jeremy demande de modifier une entrée CRM (changer un statut, noter un contact, etc.), réponds UNIQUEMENT avec ce JSON — ZÉRO texte avant ou après :
 {"action":"modify_crm","id":NUMERO_ID,"name":"NOM_EXACT_ENTREPRISE","field":"NOM_CHAMP","value":"NOUVELLE_VALEUR","summary":"Ce que tu as fait en une phrase"}
-RÈGLE ABSOLUE : le JSON doit être ta réponse COMPLÈTE et ENTIÈRE. Toute phrase ajoutée avant ou après le JSON est strictement interdite.
 IMPORTANT : l'id DOIT correspondre exactement à un id présent dans la liste du contexte (format NomEntreprise(id:X)). Pour les URLs (site, linkedin), toujours inclure https://.
 Champs disponibles : statut, notes, contact, poste, relance, date, site, linkedin, phone, email
 Valeurs statut valides : a-contacter, contact-envoye, message-envoye, pas-de-reponse, en-veille, interesse, rdv-pris, refuse, converti
 
-LOOKUP D'INFOS (site, linkedin, téléphone, email, etc.) : Quand Jeremy demande n'importe quelle info sur une boîte existante, utilise l'outil web_search pour chercher l'info, puis génère le JSON modify_crm UNIQUEMENT — ZÉRO texte avant ou après. Si l'info est introuvable, réponds en une phrase (sans JSON).
-
-4. ANALYSE & STRATÉGIE
-Quand Jeremy demande une analyse ou des conseils sur sa prospection :
+3. ANALYSE & RELANCES
+Quand Jeremy demande une analyse ou qui relancer :
 - Diagnostic direct et chiffré
 - 2-3 actions concrètes à faire cette semaine
-- Parle comme un associé : cash, sans jargon, avec des chiffres
-- Jamais de blabla motivationnel vide
+- Liste les boîtes urgentes à relancer avec statut et date
+- Parle comme un associé : cash, sans jargon
 
-5. RELANCES
-Quand Jeremy demande qui relancer : utilise les données du contexte pour lister les boîtes urgentes et propose un message de relance adapté au contexte (statut, date, échanges précédents).
+4. TOUT LE RESTE
+Tu réponds à n'importe quelle question — conseils business, technique vidéo, stratégie LinkedIn, questions de vie. Tu es un assistant complet.
 
-6. TOUT LE RESTE
-Tu réponds à n'importe quelle question — général, conseils business, technique vidéo, stratégie LinkedIn, questions de vie. Tu es un assistant complet, pas limité au CRM.
-
-Réponds toujours en français. Sois direct, efficace, et utile.`
-};
+Réponds toujours en français. Sois direct, efficace, et utile.`;
 
 module.exports = async function handler(req, res) {
-  // CORS : autorise le domaine de prod + localhost pour dev
   const origin = req.headers.origin || '';
   const allowedOrigins = ['https://jrv-v2.vercel.app', 'http://localhost:3000', 'http://localhost:8080'];
   const corsOrigin = allowedOrigins.includes(origin) ? origin : allowedOrigins[0];
@@ -85,7 +57,6 @@ module.exports = async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  // Vérification du token JWT
   const authHeader = req.headers['authorization'] || '';
   const token = authHeader.replace('Bearer ', '').trim();
   if (!verifyToken(token)) {
@@ -103,25 +74,23 @@ module.exports = async function handler(req, res) {
     return res.status(400).json({ error: 'Paramètre prompt ou messages manquant' });
   }
 
-  // Construction du payload messages pour Anthropic
   let messagesPayload;
   if (hasMessages) {
     messagesPayload = messages.map(m => ({
       role: m.role === 'user' ? 'user' : 'assistant',
       content: String(m.content || '')
     }));
-    // Ajouter contexte CRM au dernier message utilisateur
     if (context && messagesPayload.length > 0) {
       const last = messagesPayload[messagesPayload.length - 1];
       if (last.role === 'user') {
         messagesPayload[messagesPayload.length - 1] = {
           role: 'user',
-          content: last.content + '\n\n[Données contextuelles : ' + context + ']'
+          content: last.content + '\n\n[Données CRM : ' + context + ']'
         };
       }
     }
   } else {
-    const userContent = [prompt, context ? 'Contexte :\n' + context : ''].filter(Boolean).join('\n\n');
+    const userContent = [prompt, context ? 'Contexte CRM :\n' + context : ''].filter(Boolean).join('\n\n');
     messagesPayload = [{ role: 'user', content: userContent }];
   }
 
@@ -134,15 +103,10 @@ module.exports = async function handler(req, res) {
         'content-type': 'application/json'
       },
       body: JSON.stringify({
-        model: 'claude-opus-4-6',
-        max_tokens: 1500,
-        system: SYSTEM_PROMPTS.omnibus,
-        messages: messagesPayload,
-        tools: [{
-          type: 'web_search_20260209',
-          name: 'web_search',
-          max_uses: 5
-        }]
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 1024,
+        system: SYSTEM_PROMPT,
+        messages: messagesPayload
       })
     });
 
@@ -153,9 +117,7 @@ module.exports = async function handler(req, res) {
     }
 
     const data = await response.json();
-    // Extrait le dernier bloc texte (le sourcing retourne le JSON dans le dernier bloc)
-    const textBlocks = (data.content || []).filter(b => b.type === 'text');
-    const result = textBlocks.length > 0 ? textBlocks[textBlocks.length - 1].text : '';
+    const result = data.content?.[0]?.text || '';
     return res.status(200).json({ result });
 
   } catch(err) {
