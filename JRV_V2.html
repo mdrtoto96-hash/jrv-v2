@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>JRV V2</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23080808'/%3E%3Crect width='32' height='32' rx='7' fill='none' stroke='%23333' stroke-width='1'/%3E%3Ctext x='16' y='21.5' font-family='Arial Black,Arial,sans-serif' font-size='12' font-weight='900' fill='white' text-anchor='middle' letter-spacing='0.5'%3EJRV%3C/text%3E%3C/svg%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -114,9 +115,9 @@
     .crm-filter-btn { padding: 5px 13px; border-radius: 20px; border: 1px solid var(--border); background: transparent; color: var(--muted); font-size: 12px; cursor: pointer; transition: all 0.15s; font-family: inherit; }
     .crm-filter-btn:hover { border-color: var(--accent); color: var(--accent); }
     .crm-filter-btn.active { background: var(--accent); color: #080808; border-color: var(--accent); font-weight: 700; }
-    .crm-zone-filter-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+    .crm-zone-filter-row { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
     .crm-zone-filter-label { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); flex-shrink: 0; }
-    .crm-zone-select { background: var(--card2); border: 1px solid var(--border); border-radius: 6px; padding: 5px 10px; color: var(--text); font-size: 12px; font-family: inherit; cursor: pointer; outline: none; max-width: 220px; }
+    .crm-zone-select { background: var(--card2); border: 1px solid var(--border); border-radius: 6px; padding: 5px 10px; color: var(--text); font-size: 12px; font-family: inherit; cursor: pointer; outline: none; flex: 1; min-width: 140px; max-width: 260px; }
     .crm-zone-select:focus { border-color: var(--accent2); }
     .crm-cat-strip { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 6px; margin-bottom: 10px; scrollbar-width: none; }
     .crm-cat-strip::-webkit-scrollbar { display: none; }
@@ -263,7 +264,10 @@
     .crm-row.open { border-color: var(--accent); }
     .crm-row-header { display: flex; align-items: center; gap: 8px; padding: 8px 13px; cursor: pointer; user-select: none; }
     .crm-row-header:hover { background: rgba(255,255,255,0.02); }
-    .crm-priority { color: var(--accent); font-size: 11px; flex-shrink: 0; width: 12px; }
+    .crm-priority { font-size: 13px; flex-shrink: 0; width: 16px; }
+    .crm-priority-btn { cursor: pointer; transition: transform 0.1s, color 0.15s; color: var(--muted); }
+    .crm-priority-btn:hover { color: var(--accent); transform: scale(1.3); }
+    .crm-row[data-priority="1"] .crm-priority-btn { color: var(--accent); }
     .crm-copy-btn { background: none; border: none; color: var(--muted); font-size: 11px; cursor: pointer; padding: 1px 3px; border-radius: 3px; flex-shrink: 0; opacity: 0; transition: opacity 0.15s, color 0.15s; }
     .crm-row-header:hover .crm-copy-btn { opacity: 1; }
     .crm-copy-btn:hover { color: var(--accent); }
@@ -272,6 +276,8 @@
     .crm-contact-display { font-size: 11px; color: var(--accent2); flex-shrink: 0; max-width: 110px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .crm-zone-tag { font-size: 10px; color: var(--muted); background: var(--card2); padding: 2px 6px; border-radius: 3px; flex-shrink: 0; }
     .crm-badge { font-size: 10px; font-weight: 700; padding: 2px 9px; border-radius: 20px; flex-shrink: 0; white-space: nowrap; }
+    .crm-li-btn { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: 4px; background: #0a66c2; color: #fff; font-size: 11px; font-weight: 900; font-family: Arial,sans-serif; text-decoration: none; flex-shrink: 0; transition: opacity 0.15s; line-height: 1; }
+    .crm-li-btn:hover { opacity: 0.8; }
     .crm-badge-select { border: 1px solid transparent; cursor: pointer; font-family: inherit; appearance: none; -webkit-appearance: none; text-align: center; transition: border-color 0.15s; }
     .crm-badge-select:hover { border-color: currentColor !important; }
     .crm-badge-select:focus { outline: none; }
@@ -300,6 +306,15 @@
     .crm-select { background: var(--card2); border: 1px solid var(--border); border-radius: 5px; padding: 5px 9px; color: var(--text); font-size: 13px; outline: none; font-family: inherit; cursor: pointer; width: 100%; }
     .crm-notes-field { width: 100%; background: var(--card2); border: 1px solid var(--border); border-radius: 5px; padding: 7px 9px; color: var(--text); font-size: 13px; font-family: inherit; resize: vertical; min-height: 55px; outline: none; margin-bottom: 9px; transition: border-color 0.15s; }
     .crm-notes-field:focus { border-color: var(--accent); }
+    .crm-screenshots { margin-bottom: 10px; }
+    .crm-screenshots-label { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 6px; display: block; }
+    .crm-screenshots-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; min-height: 0; }
+    .crm-screenshot-thumb { position: relative; width: 90px; height: 68px; border-radius: 5px; overflow: hidden; border: 1px solid var(--border); cursor: pointer; flex-shrink: 0; }
+    .crm-screenshot-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .crm-screenshot-del { position: absolute; top: 3px; right: 3px; background: rgba(0,0,0,0.75); border: none; color: #fff; border-radius: 50%; width: 17px; height: 17px; font-size: 11px; cursor: pointer; display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.15s; line-height: 1; }
+    .crm-screenshot-thumb:hover .crm-screenshot-del { opacity: 1; }
+    .crm-screenshots-drop { border: 1px dashed var(--border2); border-radius: 6px; padding: 10px 14px; text-align: center; color: var(--muted); font-size: 12px; cursor: pointer; transition: all 0.15s; user-select: none; }
+    .crm-screenshots-drop:hover, .crm-screenshots-drop.drag-over { border-color: var(--accent); color: var(--accent); background: rgba(255,255,255,0.02); }
     .crm-actions { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
     /* MODAL ADD COMPANY */
     .modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:999; align-items:center; justify-content:center; }
@@ -494,14 +509,14 @@
 
     <div class="section-row"><div class="section-label">Prospection</div><button class="section-add-btn" onclick="showAddMenu(event,'prospection')" title="Ajouter une note">+</button></div>
     <div class="note-item" data-fixed="crm" onclick="showNote('crm',this)">
-      <div><div class="nt">CRM Boites de prod</div><div class="ns" id="sb-crm-sub">suivi complet</div></div>
+      <div><div class="nt">Entreprise</div><div class="ns" id="sb-crm-sub">suivi complet</div></div>
       <div class="note-dot" style="background:var(--blue)"></div>
     </div>
     <div id="section-prospection-custom"></div>
 
     <div class="section-row"><div class="section-label">Analytics</div></div>
     <div class="note-item" data-fixed="agents" onclick="showNote('agents',this)">
-      <div><div class="nt">Analyse CRM</div><div class="ns">Stats & performance</div></div>
+      <div><div class="nt">Analyse</div><div class="ns">Stats & performance</div></div>
       <div class="note-dot" style="background:var(--purple)"></div>
     </div>
 
@@ -605,7 +620,7 @@
     post: `Post LinkedIn : [Titre]\n\nDate cible : \n\n---\n\nTexte du post :\n\n\n\nHashtags : \n\nRappels apres publication :\n- Repondre aux commentaires dans les 2h\n- Tagger 2-3 personnes`,
     libre: ``
   };
-  const TITLE_MAP = { dashboard:'Dashboard', crm:'CRM Boites de prod', agents:'Analyse CRM', scripts:'LinkedIn & Prospection', wakeSurf:'Doc Wake Surf', mathis:'Call Mathis Faudrit', strategie:'Plan 8 Mois', showreel:'Post Showreel', docTech:'Faire un Doc Impactant', allNotes:'Toutes mes notes', alertes:'Alertes' };
+  const TITLE_MAP = { dashboard:'Dashboard', crm:'Entreprise', agents:'Analyse', scripts:'LinkedIn & Prospection', wakeSurf:'Doc Wake Surf', mathis:'Call Mathis Faudrit', strategie:'Plan 8 Mois', showreel:'Post Showreel', docTech:'Faire un Doc Impactant', allNotes:'Toutes mes notes', alertes:'Alertes' };
 
   // ---- MOBILE ----
   function toggleSidebar() {
@@ -1105,6 +1120,57 @@
     saveCRMCompanies(arr, c); showSaved();
   }
 
+  // ---- SCREENSHOTS ----
+  function renderSSGridHTML(cid, screenshots) {
+    return (screenshots||[]).map((url, i) =>
+      `<div class="crm-screenshot-thumb" onclick="window.open(this.dataset.url,'_blank')" data-url="${escAttr(url)}">
+        <img src="${escAttr(url)}" alt="capture">
+        <button class="crm-screenshot-del" onclick="event.stopPropagation();removeScreenshot(${cid},${i})" title="Supprimer">×</button>
+      </div>`
+    ).join('');
+  }
+  async function uploadScreenshot(companyId, file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = e => resolve(e.target.result);
+      reader.onerror = () => reject(new Error('Lecture fichier échouée'));
+      reader.readAsDataURL(file);
+    });
+  }
+  async function handleScreenshotDrop(companyId, files) {
+    if (!files || !files.length) return;
+    const drop = document.getElementById('ss-drop-' + companyId);
+    if (drop) { drop.textContent = 'Upload en cours...'; drop.style.pointerEvents = 'none'; }
+    const arr = getCRMCompanies();
+    const c = arr.find(x => x.id === companyId); if (!c) return;
+    if (!c.screenshots) c.screenshots = [];
+    try {
+      for (const file of Array.from(files)) {
+        const url = await uploadScreenshot(companyId, file);
+        c.screenshots.push(url);
+      }
+      saveCRMCompanies(arr, c);
+      const grid = document.getElementById('ss-grid-' + companyId);
+      if (grid) grid.innerHTML = renderSSGridHTML(companyId, c.screenshots);
+    } catch(e) {
+      console.error('Screenshot upload error:', e);
+      if (drop) drop.textContent = '✗ Erreur upload — ' + e.message.slice(0, 60);
+      setTimeout(() => { if (drop) { drop.textContent = '📎 Glisser une capture ou cliquer'; drop.style.pointerEvents = ''; } }, 3000);
+      return;
+    }
+    if (drop) { drop.textContent = '📎 Glisser une capture ou cliquer'; drop.style.pointerEvents = ''; }
+    const input = document.getElementById('ss-input-' + companyId);
+    if (input) input.value = '';
+  }
+  function removeScreenshot(companyId, idx) {
+    const arr = getCRMCompanies();
+    const c = arr.find(x => x.id === companyId); if (!c || !c.screenshots) return;
+    c.screenshots.splice(idx, 1);
+    saveCRMCompanies(arr, c); showSaved();
+    const grid = document.getElementById('ss-grid-' + companyId);
+    if (grid) grid.innerHTML = renderSSGridHTML(companyId, c.screenshots);
+  }
+
   // ---- CRM HELPERS ----
   function updateCompany(id, field, val) {
     const arr = getCRMCompanies();
@@ -1118,6 +1184,25 @@
       const el = document.querySelector(`.crm-row[data-id="${id}"] .crm-has-notes`);
       if (el) el.style.opacity = val ? '1' : '0';
     }
+    if (field === 'linkedin') {
+      const row = document.querySelector(`.crm-row[data-id="${id}"]`);
+      if (row) {
+        const existing = row.querySelector('.crm-li-btn');
+        if (val) {
+          if (existing) { existing.href = val; }
+          else {
+            const badge = row.querySelector('.crm-badge-select');
+            if (badge) {
+              const btn = document.createElement('a');
+              btn.href = val; btn.target = '_blank'; btn.className = 'crm-li-btn';
+              btn.title = 'Ouvrir LinkedIn'; btn.textContent = 'in';
+              btn.onclick = e => e.stopPropagation();
+              badge.parentNode.insertBefore(btn, badge);
+            }
+          }
+        } else if (existing) { existing.remove(); }
+      }
+    }
     updateCRMStatsBar();
   }
 
@@ -1128,6 +1213,20 @@
     const s = STATUS_CONFIG[status] || STATUS_CONFIG['a-contacter'];
     const badge = document.querySelector(`.crm-row[data-id="${id}"] .crm-badge-select`);
     if (badge) { badge.style.background = s.bg; badge.style.color = s.color; badge.style.borderColor = s.color+'40'; badge.value = status; }
+    updateCRMStatsBar();
+  }
+
+  function togglePriority(id) {
+    const arr = getCRMCompanies();
+    const c = arr.find(x => x.id === id); if (!c) return;
+    c.p = c.p ? 0 : 1;
+    saveCRMCompanies(arr, c); showSaved();
+    const row = document.querySelector(`.crm-row[data-id="${id}"]`);
+    if (row) {
+      row.dataset.priority = c.p ? '1' : '0';
+      const star = row.querySelector('.crm-priority-btn');
+      if (star) { star.textContent = c.p ? '★' : '☆'; star.title = c.p ? 'Retirer priorité' : 'Ajouter priorité'; }
+    }
     updateCRMStatsBar();
   }
 
@@ -1193,9 +1292,11 @@
         if (!data || data.length === 0) return;
         _sbCompanies = data.map(function(row) {
           return { id: row.id, name: row.name, site: row.site || '', zone: row.zone || '',
-            p: row.priority || 0, contact: row.contact || '', poste: row.poste || '',
+            p: row.priority || 0, category: row.category || 'prod', contact: row.contact || '', poste: row.poste || '',
             canal: row.canal || 'LinkedIn', date: row.date || '', statut: row.statut || 'a-contacter',
-            notes: row.notes || '', relance: row.relance || '', category: row.category || 'prod' };
+            notes: row.notes || '', relance: row.relance || '', linkedin: row.linkedin || '',
+            date_reponse: row.date_reponse || '', phone: row.phone || '', email: row.email || '',
+            contacts_extra: row.contacts_extra || [], screenshots: row.screenshots || [] };
         });
         var noteEditable = document.getElementById('note-editable');
         var crmItem = document.querySelector('[data-fixed="crm"]');
@@ -1281,18 +1382,17 @@
     const statutOpts = Object.entries(STATUS_CONFIG).map(([k,v]) => `<option value="${k}"${c.statut===k?' selected':''}>${v.label}</option>`).join('');
     const nameEl = escHtml(c.name);
     const contactEl = c.contact
-      ? (c.linkedin
-          ? `<a href="${escAttr(c.linkedin)}" target="_blank" onclick="event.stopPropagation()" style="color:var(--accent2);text-decoration:none;border-bottom:1px dotted rgba(74,158,255,0.4)" title="Ouvrir LinkedIn">${escHtml(c.contact)}</a> <span style="font-size:9px;color:var(--blue);opacity:0.8">in</span>`
-          : escHtml(c.contact))
+      ? `<span style="color:var(--accent2)">${escHtml(c.contact)}</span>`
       : '';
-    return `<div class="crm-row" data-id="${c.id}">
+    return `<div class="crm-row" data-id="${c.id}" data-priority="${c.p ? 1 : 0}">
       <div class="crm-row-header" onclick="toggleExpand(${c.id})">
-        <span class="crm-priority">${c.p ? '★' : ''}</span>
+        <span class="crm-priority crm-priority-btn" title="${c.p ? 'Retirer priorité' : 'Ajouter priorité'}" onclick="event.stopPropagation();togglePriority(${c.id})">${c.p ? '★' : '☆'}</span>
         <button class="crm-copy-btn" onclick="event.stopPropagation();copyCrmName(this,'${escHtml(c.name).replace(/'/g,"\\'")}')">⧉</button>
         <div style="flex:1;min-width:0;overflow:hidden">
           <div class="crm-name">${nameEl}</div>
           ${c.contact ? `<div style="font-size:10px;margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${contactEl}${c.poste ? ' · <span style="color:var(--muted)">' + escHtml(c.poste) + '</span>' : ''}</div>` : ''}
         </div>
+        ${c.linkedin ? `<a href="${escAttr(c.linkedin)}" target="_blank" onclick="event.stopPropagation()" title="Ouvrir LinkedIn" class="crm-li-btn">in</a>` : ''}
         <select class="crm-badge crm-badge-select" style="background:${s.bg};color:${s.color};border-color:${s.color}40" onclick="event.stopPropagation()" onchange="event.stopPropagation();updateCompanyStatus(${c.id},this.value)">
           ${Object.entries(STATUS_CONFIG).map(([k,v]) => `<option value="${k}"${c.statut===k?' selected':''} style="background:var(--card2);color:var(--text)">${v.label}</option>`).join('')}
         </select>
@@ -1321,11 +1421,27 @@
             <input class="crm-input" value="${escAttr(c.site)}" onblur="updateCompany(${c.id},'site',this.value)"></div>
           <div class="crm-field"><label>LinkedIn URL</label>
             <input class="crm-input" value="${escAttr(c.linkedin||'')}" placeholder="https://linkedin.com/in/..." onblur="updateCompany(${c.id},'linkedin',this.value)"></div>
+          <div class="crm-field"><label>Téléphone</label>
+            <input class="crm-input" value="${escAttr(c.phone||'')}" placeholder="Ex: 06 12 34 56 78" onblur="updateCompany(${c.id},'phone',this.value)"></div>
+          <div class="crm-field"><label>Email</label>
+            <input class="crm-input" type="email" value="${escAttr(c.email||'')}" placeholder="Ex: contact@boite.fr" onblur="updateCompany(${c.id},'email',this.value)"></div>
         </div>
         <div class="crm-extra-contacts" id="extra-contacts-${c.id}">${renderExtraContactsHTML(c)}</div>
         <button class="crm-btn-add-contact" onclick="addExtraContact(${c.id})">+ Ajouter un contact</button>
         <div class="crm-field" style="margin-bottom:9px"><label>Notes / Dernier echange</label>
           <textarea class="crm-notes-field" placeholder="Notes, contexte, suite a donner..." onblur="updateCompany(${c.id},'notes',this.value)">${escHtml(c.notes||'')}</textarea></div>
+        <div class="crm-screenshots">
+          <span class="crm-screenshots-label">Captures d'écran</span>
+          <div class="crm-screenshots-grid" id="ss-grid-${c.id}">${renderSSGridHTML(c.id, c.screenshots)}</div>
+          <div class="crm-screenshots-drop" id="ss-drop-${c.id}"
+            ondragover="event.preventDefault();this.classList.add('drag-over')"
+            ondragleave="this.classList.remove('drag-over')"
+            ondrop="event.preventDefault();this.classList.remove('drag-over');handleScreenshotDrop(${c.id},event.dataTransfer.files)"
+            onclick="document.getElementById('ss-input-${c.id}').click()">
+            📎 Glisser une capture ou cliquer
+            <input type="file" id="ss-input-${c.id}" accept="image/*" multiple style="display:none" onchange="handleScreenshotDrop(${c.id},this.files)">
+          </div>
+        </div>
         <div class="crm-actions">
           <button class="agent-copy-btn" onclick="runCopywriterAgent(${c.id})" title="Générer un message LinkedIn avec l'IA">✍️ Message IA</button>
           <button class="crm-action-btn" onclick="quickStatus(${c.id},'contact-envoye')">Contact envoyé</button>
@@ -1596,26 +1712,6 @@
     const enCours = arr.filter(c => ['contact-envoye','message-envoye','pas-de-reponse','en-veille'].includes(c.statut)).length;
 
     return `
-      <div class="agent-sourcing-bar">
-        <div class="agent-avatar">🕵️</div>
-        <input type="text" class="agent-sourcing-input" id="agent-sourcing-input"
-          placeholder="Ex : Trouve 15 boîtes événementielles à Lyon..."
-          onkeydown="if(event.key==='Enter')runSourcingAgent()">
-        <div class="agent-spin" id="agent-sourcing-spinner" style="display:none"></div>
-        <button class="agent-sourcing-btn" id="agent-sourcing-btn" onclick="runSourcingAgent()">Sourcer →</button>
-      </div>
-      <div style="font-size:11px;margin:-2px 0 8px 12px;display:none" id="agent-sourcing-status"></div>
-      <div class="agent-tracker-card">
-        <div style="display:flex;align-items:center;gap:9px">
-          <div class="agent-avatar">📊</div>
-          <div style="flex:1">
-            <div style="font-size:12px;font-weight:700">Analyste IA</div>
-            <div style="font-size:10px;color:var(--muted);margin-top:1px">Insights & priorités de prospection</div>
-          </div>
-          <button class="agent-tracker-btn" id="tracker-run-btn" onclick="runTrackerAgent()">Analyser →</button>
-        </div>
-        <div id="tracker-output"></div>
-      </div>
       <div class="crm-stats">
         <div class="crm-stat"><div class="n" id="cst-total">${arr.length}</div><div class="l">Total</div></div>
         <div class="crm-stat"><div class="n" id="cst-contacted" style="color:var(--blue)">${contacted}</div><div class="l">Contactees</div></div>
@@ -1625,20 +1721,19 @@
       </div>
       <div class="crm-cat-strip">${catChips}</div>
       <div class="crm-zone-filter-row">
-        <span class="crm-zone-filter-label">Ville</span>
+        <select class="crm-zone-select" onchange="setCRMFilter(this.value)">
+          <option value="all"${crmFilter==='all'?' selected':''}>Tous les statuts (${arr.length})</option>
+          <option value="priorite"${crmFilter==='priorite'?' selected':''}>Priorités ★ (${priorites})</option>
+          <option value="a-contacter"${crmFilter==='a-contacter'?' selected':''}>A contacter (${aContacter})</option>
+          <option value="en-cours"${crmFilter==='en-cours'?' selected':''}>En cours (${enCours})</option>
+          <option value="positif"${crmFilter==='positif'?' selected':''}>Réponse+ (${reponses})</option>
+          <option value="contactees"${crmFilter==='contactees'?' selected':''}>Contactées (${contacted})</option>
+        </select>
         <select class="crm-zone-select" onchange="setCRMZoneFilter(this.value)">
           <option value="all"${crmZoneFilter==='all'?' selected':''}>Toutes les villes</option>
           ${[...new Set(arr.map(c => c.zone || 'Autre').filter(z => z && !z.includes('—') && !['Agences Evenementielles','Web & Digital','Institutionnels','Immobilier','Sport & Culture','Medias','Captation Live Concert'].includes(z)).sort())].map(z => `<option value="${escAttr(z)}"${crmZoneFilter===z?' selected':''}>${escHtml(z)}</option>`).join('')}
         </select>
-      </div>
-      <div class="crm-filters">
-        <button class="crm-filter-btn ${crmFilter==='all'?'active':''}" data-filter="all" onclick="setCRMFilter('all')">Toutes (${arr.length})</button>
-        <button class="crm-filter-btn ${crmFilter==='priorite'?'active':''}" data-filter="priorite" onclick="setCRMFilter('priorite')">Priorites ★ (${priorites})</button>
-        <button class="crm-filter-btn ${crmFilter==='a-contacter'?'active':''}" data-filter="a-contacter" onclick="setCRMFilter('a-contacter')">A contacter (${aContacter})</button>
-        <button class="crm-filter-btn ${crmFilter==='en-cours'?'active':''}" data-filter="en-cours" onclick="setCRMFilter('en-cours')">En cours (${enCours})</button>
-        <button class="crm-filter-btn ${crmFilter==='positif'?'active':''}" data-filter="positif" onclick="setCRMFilter('positif')">Reponse+ (${reponses})</button>
-        <button class="crm-filter-btn ${crmFilter==='contactees'?'active':''}" data-filter="contactees" onclick="setCRMFilter('contactees')">Contactees (${contacted})</button>
-        <button onclick="openAddCompany()" style="margin-left:auto;padding:5px 13px;border-radius:20px;border:1px solid var(--accent);background:rgba(255,255,255,0.1);color:var(--accent);font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">+ Ajouter</button>
+        <button onclick="openAddCompany()" style="margin-left:auto;padding:5px 13px;border-radius:6px;border:1px solid var(--accent);background:rgba(255,255,255,0.08);color:var(--accent);font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap">+ Ajouter</button>
       </div>
       <input class="crm-search" placeholder="Rechercher une boite, un contact, une zone..." id="crm-search-input" value="${escAttr(crmSearch)}" oninput="setCRMSearch(this.value)">
       <div id="crm-list">${buildCRMListHTML()}</div>`;
@@ -2107,7 +2202,10 @@ https://www.rondeaujeremy.fr/
       body: JSON.stringify({ id: c.id, name: c.name, site: c.site || '', zone: c.zone || '',
         priority: c.p || 0, category: c.category || 'prod', contact: c.contact || '', poste: c.poste || '',
         canal: c.canal || 'LinkedIn', date: c.date || '', statut: c.statut || 'a-contacter',
-        notes: c.notes || '', relance: c.relance || '', updated_at: new Date().toISOString() })
+        notes: c.notes || '', relance: c.relance || '', linkedin: c.linkedin || '',
+        date_reponse: c.date_reponse || '', phone: c.phone || '', email: c.email || '',
+        contacts_extra: c.contacts_extra || [], screenshots: c.screenshots || [],
+        updated_at: new Date().toISOString() })
     }).then(function(r) { if (!r.ok) r.text().then(function(t) { console.warn('SB company err:', r.status, t); }); });
   }
 
@@ -2202,9 +2300,11 @@ https://www.rondeaujeremy.fr/
         // Supabase a des donnees → charger dans localStorage
         var arr = data.map(function(row) {
           return { id: row.id, name: row.name, site: row.site || '', zone: row.zone || '',
-            p: row.priority || 0, contact: row.contact || '', poste: row.poste || '',
+            p: row.priority || 0, category: row.category || 'prod', contact: row.contact || '', poste: row.poste || '',
             canal: row.canal || 'LinkedIn', date: row.date || '', statut: row.statut || 'a-contacter',
-            notes: row.notes || '', relance: row.relance || '' };
+            notes: row.notes || '', relance: row.relance || '', linkedin: row.linkedin || '',
+            date_reponse: row.date_reponse || '', phone: row.phone || '', email: row.email || '',
+            contacts_extra: row.contacts_extra || [], screenshots: row.screenshots || [] };
         });
         _lsSet('jrv_crm_v2', JSON.stringify(arr));
         console.log('Supabase: ' + arr.length + ' boites chargees');
@@ -2312,7 +2412,18 @@ https://www.rondeaujeremy.fr/
     ];
 
     return `
-    <div style="font-size:18px;font-weight:800;margin-bottom:16px">Analyse CRM</div>
+    <div style="font-size:18px;font-weight:800;margin-bottom:16px">Analyse</div>
+
+    <div class="block" style="margin-bottom:16px;border-color:rgba(255,255,255,0.15)">
+      <div style="display:flex;align-items:center;gap:12px">
+        <div style="flex:1">
+          <div style="font-size:13px;font-weight:700;margin-bottom:2px">Analyse IA poussée</div>
+          <div style="font-size:11px;color:var(--muted)">Diagnostic complet, urgences, conseil stratégique basé sur toutes tes données</div>
+        </div>
+        <button class="agent-tracker-btn" id="tracker-run-btn" onclick="runTrackerAgent()" style="padding:7px 18px;font-size:12px;font-weight:700">Analyser →</button>
+      </div>
+      <div id="tracker-output"></div>
+    </div>
 
     <div class="anal-kpi-grid">
       ${[
@@ -2679,6 +2790,7 @@ https://www.rondeaujeremy.fr/
           statut:'a-contacter', notes:row.notes||'', relance:'' });
       });
       _sbCompanies = arr; _lsSet('jrv_crm_v2', JSON.stringify(arr));
+      refreshCRMList();
       btn.textContent = '✓ ' + inserted.length + ' boîtes ajoutées !';
       btn.classList.add('done');
       // Confirmation message
