@@ -219,6 +219,10 @@
     .chat-msg.agent .chat-bubble { background: var(--card2); border: 1px solid var(--border); color: var(--text); border-radius: 2px 12px 12px 12px; }
     .chat-msg.system .chat-bubble { background: rgba(229,57,53,0.1); border: 1px solid rgba(229,57,53,0.3); color: var(--danger); font-size: 12px; border-radius: 8px; width: 100%; padding: 10px 14px; }
     .chat-msg.info .chat-bubble { background: rgba(74,158,255,0.08); border: 1px solid rgba(74,158,255,0.25); color: var(--blue); font-size: 12px; border-radius: 8px; }
+    .chat-copy-btn { opacity: 0; background: none; border: none; color: var(--muted); font-size: 13px; cursor: pointer; padding: 2px 4px; border-radius: 4px; transition: opacity 0.15s, color 0.15s; flex-shrink: 0; align-self: flex-end; margin-bottom: 2px; }
+    .chat-msg:hover .chat-copy-btn { opacity: 1; }
+    .chat-copy-btn:hover { color: var(--accent); }
+    .chat-copy-btn.copied { color: var(--accent2); opacity: 1; }
     .chat-time { font-size: 10px; color: var(--muted); margin: 0 3px 2px; flex-shrink: 0; white-space: nowrap; }
     .speak-btn { background: none; border: none; cursor: pointer; opacity: 0.35; font-size: 14px; transition: opacity 0.15s; padding: 1px; flex-shrink: 0; margin-bottom: 4px; line-height: 1; }
     .speak-btn:hover, .speak-btn.speaking { opacity: 1; }
@@ -2562,6 +2566,7 @@ https://www.rondeaujeremy.fr/
     }
     if (msg.role === 'user') {
       return `<div class="chat-msg user">
+        <button class="chat-copy-btn" onclick="chatCopy(this,${JSON.stringify(msg.content)})" title="Copier">⧉</button>
         <div class="chat-bubble">${escHtml(msg.content)}</div>
         <div class="chat-time">${t}</div>
       </div>`;
@@ -2599,6 +2604,7 @@ https://www.rondeaujeremy.fr/
         <div class="chat-bubble">${escapedContent}${extra ? '<div>'+extra+'</div>' : ''}</div>
         <div class="chat-time">${t}</div>
       </div>
+      <button class="chat-copy-btn" onclick="chatCopy(this,${JSON.stringify(msg.content)})" title="Copier">⧉</button>
     </div>`;
   }
 
@@ -2744,20 +2750,26 @@ https://www.rondeaujeremy.fr/
     btn.disabled = true; btn.textContent = 'Application...';
     const allowedFields = ['statut','notes','contact','poste','relance','date','site','linkedin','priority','p'];
     if (!allowedFields.includes(action.field)) { btn.textContent = '✗ Champ non autorisé'; return; }
+    // Normalise les URLs (ajoute https:// si manquant)
+    if ((action.field === 'site' || action.field === 'linkedin') && action.value && !action.value.startsWith('http')) {
+      action.value = 'https://' + action.value;
+    }
     const arr = getCRMCompanies();
-    const c = arr.find(x => x.id === action.id);
+    const c = arr.find(x => x.id === action.id)
+      || (action.name ? arr.find(x => x.name && x.name.toLowerCase() === action.name.toLowerCase()) : null)
+      || (action.name ? arr.find(x => x.name && x.name.toLowerCase().includes(action.name.toLowerCase())) : null);
     if (!c) { btn.textContent = '✗ Entreprise introuvable'; return; }
     c[action.field] = action.value;
     try {
       const patch = {}; patch[action.field] = action.value;
-      await fetch(_SB_URL + '/rest/v1/companies?id=eq.' + action.id, {
+      await fetch(_SB_URL + '/rest/v1/companies?id=eq.' + c.id, {
         method: 'PATCH',
         headers: Object.assign({}, _SB_HDR, { 'Prefer': 'return=minimal' }),
         body: JSON.stringify(patch)
       });
     } catch(e) { console.warn('Supabase patch failed:', e); }
     saveCRMCompanies(arr, c);
-    if (action.field === 'statut') updateCompanyStatus(action.id, action.value);
+    if (action.field === 'statut') updateCompanyStatus(c.id, action.value);
     btn.textContent = '✓ Appliqué';
     btn.style.background = '#27ae60';
     showSaved();
@@ -2881,6 +2893,14 @@ https://www.rondeaujeremy.fr/
   }
 
   // ---- VOICE OUTPUT ----
+  function chatCopy(btn, text) {
+    navigator.clipboard.writeText(text).then(() => {
+      const prev = btn.textContent;
+      btn.textContent = '✓'; btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = prev; btn.classList.remove('copied'); }, 1500);
+    });
+  }
+
   function chatToggleSpeak(btn, text) {
     if (chatSpeaking && btn.classList.contains('speaking')) {
       window.speechSynthesis?.cancel();
