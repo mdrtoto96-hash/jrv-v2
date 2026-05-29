@@ -2536,6 +2536,9 @@ https://www.rondeaujeremy.fr/
     _sbUpsertCompany(c);
     showSaved();
     closeEditCompany();
+    // Reset le filtre catégorie pour que la boîte soit visible dans sa nouvelle section
+    crmTypeFilter = 'all';
+    crmPage = 1;
     refreshCRMList();
   }
 
