@@ -19,15 +19,23 @@ PROFIL JEREMY :
 
 1. SOURCING DE NOUVELLES BOÎTES
 Quand Jeremy demande de trouver des boîtes ET que des résultats web sont fournis dans le contexte :
-- Utilise UNIQUEMENT les entreprises présentes dans les résultats web fournis — ne complète JAMAIS avec des boîtes inventées
+
+PROCESSUS OBLIGATOIRE EN 2 ÉTAPES — dans cet ordre strict :
+  ÉTAPE 1 — EXTRACTION WEB : Ignore complètement le CRM. Extrais TOUTES les entreprises des résultats web qui correspondent à la demande. Ne te laisse pas influencer par ce qui est déjà dans la base.
+  ÉTAPE 2 — FILTRE DOUBLONS : Seulement après avoir ta liste complète, retire celles qui sont déjà dans le CRM (même orthographe différente). Le CRM sert UNIQUEMENT à ce filtre final — jamais à guider la recherche.
+
+- Utilise UNIQUEMENT les entreprises présentes dans les résultats web — ne complète JAMAIS avec des boîtes inventées
 - Extrais les infos (nom, site, zone, spécialité) depuis les snippets web
 - Si les résultats web sont insuffisants, dis-le clairement plutôt qu'inventer
 Réponds UNIQUEMENT avec un JSON array valide :
 [{"name":"Nom","site":"domaine.fr","zone":"Ville","category":"prod|com|live|event|sport|media|instit|immo","notes":"Spécialité courte","confidence":"high|low","location_note":"(si confidence low)"}]
-- RÈGLE ABSOLUE ANTI-DOUBLON : le contexte contient la liste des entreprises déjà présentes. Ne propose JAMAIS une entreprise déjà dans cette liste, même avec une orthographe différente.
 - Confidence "low" si le site ou la localisation n'est pas confirmé dans les résultats web.
 - Maximum 10 par requête.
-- Catégories : prod (production vidéo), com (agence comm), live (captation live/concert), event (événementiel), sport (sport & culture), media (TV/presse), instit (institutionnel), immo (immobilier)
+- Catégories :
+  • prod = société de PRODUCTION AUDIOVISUELLE (leur cœur de métier est la vidéo — tournage, montage, post-prod)
+  • com = AGENCE DE COMMUNICATION / MARKETING (leur métier est le marketing, branding, digital, social media, pub — ils commandent de la vidéo à des prestataires comme Jeremy ou ont une petite équipe interne)
+  • live = captation live/concert, • event = événementiel, • sport = sport & culture, • media = TV/presse, • instit = institutionnel, • immo = immobilier
+- DISTINCTION ABSOLUE : une agence com n'est PAS une boîte de prod. Si Jeremy demande des "agences de com", ne propose JAMAIS des sociétés de production audiovisuelle (Animoz, Mstream, NTU, etc.) — c'est une catégorie différente.
 
 2. MESSAGES LINKEDIN
 Quand Jeremy demande un message de prospection :
@@ -89,17 +97,27 @@ function buildSearchQuery(userMessage) {
   // Détection ville
   const cityMatch = userMessage.match(/\b(Nantes|Rennes|Bretagne|Brest|Bordeaux|Paris|Lyon|Toulouse|Lille|Marseille|Montpellier|Angers|Le Mans|Saint-Nazaire|Lorient)\b/i);
   const city = cityMatch ? cityMatch[1] : 'Nantes';
-  // Détection secteur
+
+  const isProd = /\b(production|audiovisuel|vidéo|video|prod\b)/.test(msg);
+  const isCom  = /\b(communication|agence comm|agence de comm|\bcom\b)/.test(msg);
+  const isEvent = /\b(événementiel|evenementiel|\bevent\b)/.test(msg);
+  const isLive  = /\b(live|concert|captation)/.test(msg);
+  const isImmo  = /\b(immobilier|\bimmo\b)/.test(msg);
+  const isSport = /\bsport\b/.test(msg);
+  const isMedia = /\b(média|media|\btv\b|presse)/.test(msg);
+
   const sectors = [];
-  if (/\b(communication|agence comm|agence de comm)\b/.test(msg)) sectors.push('agence communication');
-  if (/\b(production|audiovisuel|vidéo|video|prod\b)/.test(msg)) sectors.push('production vidéo');
-  if (/\b(événementiel|evenementiel|event\b)/.test(msg)) sectors.push('événementiel');
-  if (/\b(live|concert|captation)/.test(msg)) sectors.push('captation live');
-  if (/\b(immobilier|immo\b)/.test(msg)) sectors.push('immobilier');
-  if (/\b(sport\b)/.test(msg)) sectors.push('sport');
-  if (/\b(média|media|tv\b|télé|tele|presse)/.test(msg)) sectors.push('média');
+  // Distinction cruciale : agence COM (marketing/brand) ≠ prod audiovisuelle
+  if (isCom && !isProd)  sectors.push('agence communication marketing digital brand content');
+  else if (isCom && isProd) sectors.push('agence communication audiovisuelle');
+  else if (isProd)       sectors.push('société production audiovisuelle vidéo');
+  if (isEvent) sectors.push('agence événementielle');
+  if (isLive)  sectors.push('captation live concert');
+  if (isImmo)  sectors.push('immobilier');
+  if (isSport) sectors.push('sport');
+  if (isMedia) sectors.push('télévision médias');
+
   if (sectors.length === 0) {
-    // Fallback : nettoyage simple du message
     return userMessage
       .replace(/\b(trouve|trouves|trouver|cherche|chercher|ajoute|rajouter|donne.moi|liste.moi|nouveaux?|nouvelles?|boîtes?|boites?|dans mon crm|pour mon crm|il m.en faudrait|je voudrais|exetera|etc\.?)\b/gi, '')
       .replace(/\s+/g, ' ').trim();

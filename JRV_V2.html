@@ -234,13 +234,20 @@
     @keyframes tybounce { 0%,100%{opacity:0.3;transform:translateY(0)} 50%{opacity:1;transform:translateY(-4px)} }
     /* Inject card */
     .inject-card { background: rgba(74,158,255,0.07); border: 1px solid rgba(74,158,255,0.25); border-radius: 9px; padding: 11px 13px; margin-top: 8px; }
-    .inject-title { font-size: 11px; font-weight: 700; color: var(--blue); margin-bottom: 5px; }
-    .inject-preview { font-size: 10px; color: var(--muted); margin-bottom: 8px; line-height: 1.5; }
+    .inject-title { font-size: 11px; font-weight: 700; color: var(--blue); margin-bottom: 7px; }
+    .inject-company-list { display: flex; flex-direction: column; gap: 3px; margin-bottom: 10px; }
+    .inject-company-row { display: flex; align-items: center; gap: 6px; padding: 5px 8px; background: rgba(255,255,255,0.04); border-radius: 6px; }
+    .inject-company-name { font-size: 11.5px; font-weight: 600; color: var(--text); flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .inject-tag { font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.4px; flex-shrink: 0; }
+    .inject-tag-cat { background: rgba(74,158,255,0.18); color: #6bb8ff; }
+    .inject-tag-zone { background: rgba(255,255,255,0.07); color: var(--muted); }
     .inject-btn { padding: 5px 14px; border-radius: 6px; border: none; background: var(--blue); color: #080808; font-size: 11px; font-weight: 700; cursor: pointer; font-family: inherit; transition: all 0.15s; }
     .inject-btn:hover:not(.done) { background: #5aaeff; }
     .inject-btn.done { background: var(--accent2); cursor: default; }
-    .inject-warning { background: rgba(231,176,60,0.07); border: 1px solid rgba(231,176,60,0.28); border-radius: 7px; padding: 9px 12px; margin-top: 8px; font-size: 11px; color: #e8b84b; line-height: 1.55; }
-    .inject-warning-title { font-weight: 700; margin-bottom: 4px; }
+    .inject-warning { background: rgba(231,176,60,0.07); border: 1px solid rgba(231,176,60,0.28); border-radius: 7px; padding: 9px 12px; margin-top: 8px; }
+    .inject-warning-title { font-size: 11px; font-weight: 700; color: #e8b84b; margin-bottom: 5px; }
+    .inject-flagged-list { display: flex; flex-direction: column; gap: 2px; }
+    .inject-flagged-row { font-size: 11px; color: #c9973a; padding: 3px 6px; background: rgba(231,176,60,0.05); border-radius: 5px; }
     .crm-modify-card { background: rgba(76,175,80,0.07); border: 1px solid rgba(76,175,80,0.25); border-radius: 9px; padding: 11px 13px; margin-top: 8px; }
     .crm-modify-title { font-size: 11px; font-weight: 700; color: var(--accent2); margin-bottom: 5px; }
     .crm-modify-summary { font-size: 12px; color: var(--text); margin-bottom: 8px; }
@@ -259,7 +266,7 @@
     .chat-send-btn { width: 36px; height: 36px; border-radius: 50%; border: none; background: var(--accent); color: #080808; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.15s; font-weight: 700; }
     .chat-send-btn:hover:not(:disabled) { background: #e0e0e0; transform: scale(1.05); }
     .chat-send-btn:disabled { opacity: 0.35; cursor: default; transform: none; }
-    @media (max-width: 768px) { .agent-cards-grid { grid-template-columns: 1fr; } .chat-page { height: calc(100vh - 130px); } #chat-bubble-panel { left: 8px !important; top: 8px !important; width: calc(100vw - 16px) !important; max-width: none !important; height: calc(100vh - 80px) !important; } }
+    @media (max-width: 768px) { .agent-cards-grid { grid-template-columns: 1fr; } .chat-page { height: calc(100vh - 130px); } #chat-bubble-panel { left: 8px !important; top: 8px !important; width: calc(100vw - 16px) !important; height: calc(100vh - 80px) !important; } }
     .crm-search { width: 100%; padding: 8px 13px; background: var(--card); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-size: 13px; outline: none; font-family: inherit; margin-bottom: 12px; transition: border-color 0.15s; }
     .crm-search:focus { border-color: var(--accent); }
     .crm-search::placeholder { color: var(--muted); }
@@ -378,7 +385,9 @@
     #chat-bubble-btn:hover { transform: scale(1.07); }
     #chat-bubble-btn.open { background: var(--card2); color: var(--text2); }
     #chat-bubble-badge { position: absolute; top: -3px; right: -3px; width: 18px; height: 18px; border-radius: 50%; background: var(--danger); color: #fff; font-size: 10px; font-weight: 800; display: none; align-items: center; justify-content: center; }
-    #chat-bubble-panel { position: fixed; top: 24px; left: 272px; width: 420px; max-width: calc(100vw - 296px); height: 580px; max-height: calc(100vh - 48px); background: var(--sidebar); border: 1px solid var(--border2); border-radius: 16px; z-index: 899; display: flex; flex-direction: column; box-shadow: 0 12px 48px rgba(0,0,0,0.75); transform: scale(0.95) translateY(-10px); opacity: 0; pointer-events: none; transition: transform 0.22s cubic-bezier(0.4,0,0.2,1), opacity 0.22s; transform-origin: top left; overflow: hidden; }
+    #chat-bubble-panel { position: fixed; top: 0; left: 0; width: 420px; height: 580px; background: var(--sidebar); border: 1px solid var(--border2); border-radius: 16px; z-index: 899; display: flex; flex-direction: column; box-shadow: 0 12px 48px rgba(0,0,0,0.75); transform: scale(0.95) translateY(10px); opacity: 0; pointer-events: none; transition: transform 0.22s cubic-bezier(0.4,0,0.2,1), opacity 0.22s; transform-origin: bottom right; overflow: hidden; }
+    #bubble-header { cursor: grab; }
+    #bubble-header:active { cursor: grabbing; }
     #chat-resize-handle { position: absolute; bottom: 0; right: 0; width: 22px; height: 22px; cursor: nwse-resize; z-index: 10; border-radius: 0 0 16px 0; background: linear-gradient(135deg, transparent 50%, rgba(255,255,255,0.10) 50%); }
     #chat-resize-handle:hover, #chat-resize-handle.dragging { background: linear-gradient(135deg, transparent 50%, rgba(255,255,255,0.22) 50%); }
     #chat-bubble-panel.open { transform: scale(1) translateY(0); opacity: 1; pointer-events: auto; }
@@ -2577,18 +2586,27 @@ https://www.rondeaujeremy.fr/
     let extra = '';
     if (msg.injectId && injectCache[msg.injectId]) {
       const companies = injectCache[msg.injectId];
-      const preview = companies.slice(0,3).map(c=>c.name).join(', ') + (companies.length>3?' ...':'');
+      const catLabels = { prod:'Prod', com:'Com', live:'Live', event:'Event', sport:'Sport', media:'Média', instit:'Instit', immo:'Immo' };
+      const rows = companies.map(c =>
+        `<div class="inject-company-row">
+          <span class="inject-company-name">${escHtml(c.name)}</span>
+          <span class="inject-tag inject-tag-cat">${catLabels[c.category] || escHtml(c.category||'')}</span>
+          <span class="inject-tag inject-tag-zone">${escHtml(c.zone||'Nantes')}</span>
+        </div>`
+      ).join('');
       extra += `<div class="inject-card">
-        <div class="inject-title">📦 ${companies.length} boîte(s) vérifiées</div>
-        <div class="inject-preview">${escHtml(preview)}</div>
+        <div class="inject-title">▣ ${companies.length} boîte${companies.length>1?'s':''} prête${companies.length>1?'s':''} à injecter</div>
+        <div class="inject-company-list">${rows}</div>
         <button class="inject-btn" id="inj-${msg.injectId}" onclick="chatInject('${msg.injectId}',this)">Injecter dans le CRM →</button>
       </div>`;
     }
     if (msg.flagged && msg.flagged.length > 0) {
-      const flagLines = msg.flagged.map(f => `• ${escHtml(f.name)}${f.location_note ? ' — '+escHtml(f.location_note) : ''}`).join('<br>');
+      const flagRows = msg.flagged.map(f =>
+        `<div class="inject-flagged-row">⚠ ${escHtml(f.name)}${f.location_note ? ' — '+escHtml(f.location_note) : ''}</div>`
+      ).join('');
       extra += `<div class="inject-warning">
-        <div class="inject-warning-title">⚠️ Écartées (localisation incertaine)</div>
-        ${flagLines}
+        <div class="inject-warning-title">Écartées — localisation incertaine</div>
+        <div class="inject-flagged-list">${flagRows}</div>
       </div>`;
     }
     if (msg.modifyAction) {
@@ -2705,7 +2723,8 @@ https://www.rondeaujeremy.fr/
       // Sourcing: detect JSON array → offer inject (with confidence)
       let agentMsg;
       if ((agentId === 'sourcing' || agentId === 'omnibus') && !modifyAction) {
-        let companies = null, flagged = [];
+        let companies = null, flagged = [], textContent = '';
+        // Tentative 1 : réponse JSON pure
         try {
           const clean = result.replace(/```json\n?/g,'').replace(/```\n?/g,'').trim();
           if (clean.startsWith('[')) {
@@ -2713,17 +2732,31 @@ https://www.rondeaujeremy.fr/
             if (Array.isArray(parsed) && parsed[0]?.name) {
               companies = parsed.filter(c => c.confidence !== 'low');
               flagged = parsed.filter(c => c.confidence === 'low');
+              textContent = '';
             }
           }
         } catch(e) {}
+        // Tentative 2 : JSON array dans un code block au milieu du texte
+        if (!companies) {
+          try {
+            const m = result.match(/```(?:json)?\s*(\[[\s\S]*?\])\s*```/);
+            if (m) {
+              const parsed = JSON.parse(m[1]);
+              if (Array.isArray(parsed) && parsed[0]?.name) {
+                companies = parsed.filter(c => c.confidence !== 'low');
+                flagged = parsed.filter(c => c.confidence === 'low');
+                textContent = result.replace(/```(?:json)?\s*\[[\s\S]*?\]\s*```/g,'').replace(/\n{3,}/g,'\n\n').trim();
+              }
+            }
+          } catch(e) {}
+        }
         if (companies && companies.length > 0) {
           const iid = 'inj' + Date.now();
           injectCache[iid] = companies;
-          const summaryParts = [`J'ai trouvé ${companies.length} boîte(s) vérifiées pour ta demande.`];
-          if (flagged.length > 0) summaryParts.push(`⚠️ ${flagged.length} boîte(s) écartées (localisation incertaine).`);
-          agentMsg = { role: 'agent', content: summaryParts.join('\n'), injectId: iid, flagged, time: new Date() };
+          const content = textContent || `${companies.length} boîte${companies.length>1?'s':''} vérifiée${companies.length>1?'s':''} pour ta demande.`;
+          agentMsg = { role: 'agent', content, injectId: iid, flagged, time: new Date() };
         } else if (flagged.length > 0) {
-          agentMsg = { role: 'agent', content: `Aucune boîte validée pour cette zone. ${flagged.length} écartée(s) pour localisation incertaine.`, flagged, time: new Date() };
+          agentMsg = { role: 'agent', content: `Aucune boîte validée. ${flagged.length} écartée(s) — localisation incertaine.`, flagged, time: new Date() };
         } else {
           agentMsg = { role: 'agent', content: result, time: new Date() };
         }
@@ -3388,6 +3421,45 @@ https://www.rondeaujeremy.fr/
   }
 
   // ---- BUBBLE CHAT ----
+  // ---- CHAT PANEL POSITION & DRAG ----
+  (function() {
+    const panel = document.getElementById('chat-bubble-panel');
+    const header = document.getElementById('bubble-header');
+    if (!panel || !header) return;
+
+    // Position initiale : coin bas-droite au-dessus du bouton
+    function setInitialPos() {
+      const w = panel.offsetWidth || 420;
+      const h = panel.offsetHeight || 580;
+      panel.style.left = Math.max(0, window.innerWidth  - w - 24) + 'px';
+      panel.style.top  = Math.max(0, window.innerHeight - h - 88) + 'px';
+    }
+    setInitialPos();
+
+    // Drag par le header
+    header.addEventListener('mousedown', function(e) {
+      if (e.target.closest('button')) return;
+      e.preventDefault();
+      const startX = e.clientX, startY = e.clientY;
+      const startLeft = parseInt(panel.style.left) || 0;
+      const startTop  = parseInt(panel.style.top)  || 0;
+      header.style.cursor = 'grabbing';
+      function onMove(e) {
+        const newLeft = Math.max(0, Math.min(window.innerWidth  - panel.offsetWidth,  startLeft + e.clientX - startX));
+        const newTop  = Math.max(0, Math.min(window.innerHeight - 60,                 startTop  + e.clientY - startY));
+        panel.style.left = newLeft + 'px';
+        panel.style.top  = newTop  + 'px';
+      }
+      function onUp() {
+        header.style.cursor = 'grab';
+        document.removeEventListener('mousemove', onMove);
+        document.removeEventListener('mouseup', onUp);
+      }
+      document.addEventListener('mousemove', onMove);
+      document.addEventListener('mouseup', onUp);
+    });
+  })();
+
   // ---- CHAT PANEL RESIZE (coin bas-droite) ----
   (function() {
     const handle = document.getElementById('chat-resize-handle');
@@ -3403,9 +3475,9 @@ https://www.rondeaujeremy.fr/
       document.addEventListener('mouseup', onUp);
     });
     function onMove(e) {
-      const newW = Math.max(320, Math.min(window.innerWidth - 296, startW + (e.clientX - startX)));
-      const newH = Math.max(300, Math.min(window.innerHeight - 48, startH + (e.clientY - startY)));
-      panel.style.width = newW + 'px';
+      const newW = Math.max(320, Math.min(window.innerWidth  - parseInt(panel.style.left||0) - 8, startW + (e.clientX - startX)));
+      const newH = Math.max(300, Math.min(window.innerHeight - parseInt(panel.style.top||0)  - 8, startH + (e.clientY - startY)));
+      panel.style.width  = newW + 'px';
       panel.style.height = newH + 'px';
     }
     function onUp() {
