@@ -1280,15 +1280,19 @@
     const canalOpts = canaux.map(x => `<option value="${x}"${c.canal===x?' selected':''}>${x}</option>`).join('');
     const statutOpts = Object.entries(STATUS_CONFIG).map(([k,v]) => `<option value="${k}"${c.statut===k?' selected':''}>${v.label}</option>`).join('');
     const nameEl = c.linkedin
-      ? `<a href="${escAttr(c.linkedin)}" target="_blank" onclick="event.stopPropagation()" style="color:inherit;text-decoration:none;border-bottom:1px dotted rgba(74,158,255,0.5)" title="Ouvrir LinkedIn">${escHtml(c.name)}</a>`
       : escHtml(c.name);
+    const contactEl = c.contact
+      ? (c.linkedin
+          ? `<a href="${escAttr(c.linkedin)}" target="_blank" onclick="event.stopPropagation()" style="color:var(--accent2);text-decoration:none;border-bottom:1px dotted rgba(74,158,255,0.4)" title="Ouvrir LinkedIn">${escHtml(c.contact)}</a> <span style="font-size:9px;color:var(--blue);opacity:0.8">in</span>`
+          : escHtml(c.contact))
+      : '';
     return `<div class="crm-row" data-id="${c.id}">
       <div class="crm-row-header" onclick="toggleExpand(${c.id})">
         <span class="crm-priority">${c.p ? '★' : ''}</span>
         <button class="crm-copy-btn" onclick="event.stopPropagation();copyCrmName(this,'${escHtml(c.name).replace(/'/g,"\\'")}')">⧉</button>
         <div style="flex:1;min-width:0;overflow:hidden">
-          <div class="crm-name">${nameEl}${c.linkedin ? ' <span style="font-size:9px;color:var(--blue);opacity:0.7">in</span>' : ''}</div>
-          ${c.contact ? `<div style="font-size:10px;color:var(--accent2);margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escHtml(c.contact)}${c.poste ? ' · <span style="color:var(--muted)">' + escHtml(c.poste) + '</span>' : ''}</div>` : ''}
+          <div class="crm-name">${nameEl}</div>
+          ${c.contact ? `<div style="font-size:10px;margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${contactEl}${c.poste ? ' · <span style="color:var(--muted)">' + escHtml(c.poste) + '</span>' : ''}</div>` : ''}
         </div>
         <select class="crm-badge crm-badge-select" style="background:${s.bg};color:${s.color};border-color:${s.color}40" onclick="event.stopPropagation()" onchange="event.stopPropagation();updateCompanyStatus(${c.id},this.value)">
           ${Object.entries(STATUS_CONFIG).map(([k,v]) => `<option value="${k}"${c.statut===k?' selected':''} style="background:var(--card2);color:var(--text)">${v.label}</option>`).join('')}
@@ -2523,11 +2527,12 @@ https://www.rondeaujeremy.fr/
       // Inject full CRM context for omnibus agent
       let extraContext = '';
       const crmArr = getCRMCompanies();
-      const crmNames = crmArr.map(c => c.name).filter(Boolean);
       const nowCtx = new Date();
       const todayCtx = nowCtx.toISOString().split('T')[0];
       const relancesUrgentes = crmArr.filter(c => c.relance && c.relance <= todayCtx).map(c => ({id:c.id,name:c.name,statut:c.statut,relance:c.relance,contact:c.contact||''}));
-      extraContext = `CRM JRV — ${crmNames.length} entreprises (ANTI-DOUBLON OBLIGATOIRE pour tout sourcing) :\n${crmNames.join(', ')}\n\nStats actuelles : ${JSON.stringify({
+      // Envoie nom+id pour que l'agent puisse utiliser le bon id dans modify_crm
+      const crmNameIds = crmArr.map(c => `${c.name}(id:${c.id})`).filter(Boolean);
+      extraContext = `CRM JRV — ${crmArr.length} entreprises (ANTI-DOUBLON OBLIGATOIRE pour tout sourcing) :\n${crmNameIds.join(', ')}\n\nStats actuelles : ${JSON.stringify({
         total: crmArr.length,
         aContacter: crmArr.filter(c=>c.statut==='a-contacter').length,
         contactEnvoye: crmArr.filter(c=>c.statut==='contact-envoye').length,
@@ -2563,7 +2568,7 @@ https://www.rondeaujeremy.fr/
       let modifyAction = null;
       try {
         const clean = result.replace(/```json\n?/g,'').replace(/```\n?/g,'').trim();
-        if (clean.startsWith('{') && clean.includes('"action":"modify_crm"')) {
+        if (clean.startsWith('{') && /"action"\s*:\s*"modify_crm"/.test(clean)) {
           const parsed = JSON.parse(clean);
           if (parsed.action === 'modify_crm' && parsed.id && parsed.field) modifyAction = parsed;
         }
