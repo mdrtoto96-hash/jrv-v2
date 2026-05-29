@@ -2757,7 +2757,8 @@ https://www.rondeaujeremy.fr/
     const arr = getCRMCompanies();
     const c = arr.find(x => x.id === action.id)
       || (action.name ? arr.find(x => x.name && x.name.toLowerCase() === action.name.toLowerCase()) : null)
-      || (action.name ? arr.find(x => x.name && x.name.toLowerCase().includes(action.name.toLowerCase())) : null);
+      || (action.name ? arr.find(x => x.name && x.name.toLowerCase().includes(action.name.toLowerCase())) : null)
+      || arr.find(x => x.name && action.summary && action.summary.toLowerCase().includes(x.name.toLowerCase()));
     if (!c) { btn.textContent = '✗ Entreprise introuvable'; return; }
     c[action.field] = action.value;
     try {
