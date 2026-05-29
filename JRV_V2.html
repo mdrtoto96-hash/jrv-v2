@@ -676,6 +676,11 @@
     'instit': { label: 'Institutionnels',  color: '#adb5bd'       },
     'immo':   { label: 'Immobilier',       color: '#a8836e'       },
   };
+  // Retourne la config d'une catégorie — gère les cats personnalisées
+  function getCatCfg(cat) {
+    if (!cat) return CAT_CONFIG['prod'];
+    return CAT_CONFIG[cat] || { label: cat.charAt(0).toUpperCase() + cat.slice(1).replace(/-/g, ' '), color: 'var(--text2)' };
+  }
   let expandedIds = new Set();
   let searchDebounce = null;
   let isEditMode = false;
@@ -1569,13 +1574,22 @@
     const arr = getCRMCompanies();
     const catCounts = {};
     arr.forEach(c => { const cat = c.category || 'prod'; catCounts[cat] = (catCounts[cat]||0)+1; });
-    strip.innerHTML = Object.keys(CAT_CONFIG).map(cat => {
+    let html = Object.keys(CAT_CONFIG).map(cat => {
       const count = cat === 'all' ? arr.length : (catCounts[cat]||0);
       if (cat !== 'all' && count === 0) return '';
       const cfg = CAT_CONFIG[cat];
       const isActive = crmTypeFilter === cat;
-      return `<button class="crm-cat-chip${isActive?' active':''}" data-cat="${cat}" onclick="setCRMTypeFilter('${cat}')" style="${isActive?`background:${cfg.color};border-color:${cfg.color};color:#080808`:''}">${cfg.label} <span style="opacity:0.6">${count}</span></button>`;
+      return `<button class="crm-cat-chip${isActive?' active':''}" data-cat="${cat}" onclick="setCRMTypeFilter(${JSON.stringify(cat)})" style="${isActive?`background:${cfg.color};border-color:${cfg.color};color:#080808`:''}">${cfg.label} <span style="opacity:0.6">${count}</span></button>`;
     }).join('');
+    // Catégories personnalisées (pas dans CAT_CONFIG)
+    Object.keys(catCounts).forEach(cat => {
+      if (!CAT_CONFIG[cat] && catCounts[cat] > 0) {
+        const cfg = getCatCfg(cat);
+        const isActive = crmTypeFilter === cat;
+        html += `<button class="crm-cat-chip${isActive?' active':''}" data-cat="${escAttr(cat)}" onclick="setCRMTypeFilter(${JSON.stringify(cat)})" style="${isActive?`background:${cfg.color};border-color:${cfg.color};color:#080808`:''}">${escHtml(cfg.label)} <span style="opacity:0.6">${catCounts[cat]}</span></button>`;
+      }
+    });
+    strip.innerHTML = html;
   }
 
   function refreshCRMList() {
@@ -2451,10 +2465,15 @@ https://www.rondeaujeremy.fr/
     document.getElementById('modal-add-company').classList.add('open');
     document.getElementById('new-company-name').focus();
   }
+  function toggleCustomCat(val) {
+    const el = document.getElementById('new-company-cat-custom');
+    if (el) { el.style.display = val === 'autre' ? '' : 'none'; if (val === 'autre') el.focus(); }
+  }
   function closeAddCompany() {
     document.getElementById('modal-add-company').classList.remove('open');
-    ['new-company-name','new-company-zone','new-company-site','new-company-notes'].forEach(id => { document.getElementById(id).value = ''; });
+    ['new-company-name','new-company-zone','new-company-site','new-company-notes','new-company-cat-custom'].forEach(id => { document.getElementById(id).value = ''; });
     document.getElementById('new-company-cat').value = 'prod';
+    document.getElementById('new-company-cat-custom').style.display = 'none';
   }
   async function saveNewCompany() {
     const name = document.getElementById('new-company-name').value.trim();
@@ -2464,7 +2483,7 @@ https://www.rondeaujeremy.fr/
     const newC = {
       id: newId,
       name,
-      category: document.getElementById('new-company-cat').value || 'prod',
+      category: (() => { const sel = document.getElementById('new-company-cat').value; if (sel === 'autre') { const c = document.getElementById('new-company-cat-custom').value.trim().toLowerCase().replace(/\s+/g,'-'); return c || 'autre'; } return sel || 'prod'; })(),
       site: document.getElementById('new-company-site').value.trim(),
       zone: document.getElementById('new-company-zone').value.trim() || 'Nantes',
       p: 0, contact: '', poste: '', canal: 'LinkedIn', date: '',
@@ -2660,7 +2679,7 @@ https://www.rondeaujeremy.fr/
       <h3>Par catégorie</h3>
       <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
         ${Object.entries(cats).sort((a,b) => b[1].total-a[1].total).map(([cat, c]) => {
-          const cfg = CAT_CONFIG[cat] || CAT_CONFIG['prod'];
+          const cfg = getCatCfg(cat);
           const pct = c.total > 0 ? Math.round(c.contacts / c.total * 100) : 0;
           return `<div class="anal-cat-card">
             <div style="font-size:11px;font-weight:700;color:${cfg.color};margin-bottom:5px">${escHtml(cfg.label)}</div>
@@ -3326,7 +3345,7 @@ https://www.rondeaujeremy.fr/
     panel.dataset.message = '';
     panel.classList.add('open');
 
-    const catLabel = (CAT_CONFIG[c.category] || CAT_CONFIG['prod']).label;
+    const catLabel = getCatCfg(c.category).label;
     const context = ['Boite : ' + c.name, 'Zone : ' + (c.zone || 'N/A'), 'Categorie : ' + catLabel,
       c.site ? 'Site : ' + c.site : '', c.notes ? 'Notes : ' + c.notes : ''].filter(Boolean).join('\n');
 
@@ -3672,7 +3691,7 @@ https://www.rondeaujeremy.fr/
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
       <div>
         <label>Type de boîte *</label>
-        <select id="new-company-cat">
+        <select id="new-company-cat" onchange="toggleCustomCat(this.value)">
           <option value="prod">Prod vidéo</option>
           <option value="com">Agence com</option>
           <option value="live">Captation live</option>
@@ -3681,7 +3700,9 @@ https://www.rondeaujeremy.fr/
           <option value="media">Média / TV</option>
           <option value="instit">Institutionnel</option>
           <option value="immo">Immobilier</option>
+          <option value="autre">Autre (préciser)...</option>
         </select>
+        <input id="new-company-cat-custom" placeholder="Ex: Studio photo, Drone, Architecture..." style="display:none;margin-top:6px">
       </div>
       <div>
         <label>Zone / Ville</label>

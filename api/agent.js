@@ -102,34 +102,44 @@ function buildSearchQuery(userMessage, recentMessages) {
     : userMessage;
   const msg = contextText.toLowerCase();
   // Détection ville
-  const cityMatch = contextText.match(/\b(Nantes|Rennes|Bretagne|Brest|Bordeaux|Paris|Lyon|Toulouse|Lille|Marseille|Montpellier|Angers|Le Mans|Saint-Nazaire|Lorient)\b/i);
+  const cityMatch = contextText.match(/\b(Nantes|Rennes|Bretagne|Brest|Bordeaux|Paris|Lyon|Toulouse|Lille|Marseille|Montpellier|Angers|Le Mans|Saint-Nazaire|Lorient|Vannes|Saint-Brieuc|Caen|Rouen|Tours|Strasbourg|Bordeaux|Clermont)\b/i);
   const city = cityMatch ? cityMatch[1] : 'Nantes';
 
-  const isProd = /\b(production|audiovisuel|vidéo|video|prod\b)/.test(msg);
-  const isCom  = /\b(communication|agence comm|agence de comm|\bcom\b)/.test(msg);
-  const isEvent = /\b(événementiel|evenementiel|\bevent\b)/.test(msg);
-  const isLive  = /\b(live|concert|captation)/.test(msg);
+  const isProd  = /\b(production|audiovisuel|vidéo|video|prod\b)/.test(msg);
+  const isCom   = /\b(communication|agence comm|agence de comm|\bcom\b|marketing|brand|digital)/.test(msg);
+  const isEvent = /\b(événementiel|evenementiel|\bevent\b|séminaire|seminaire|congrès)/.test(msg);
+  const isLive  = /\b(live|concert|captation|festival|spectacle)/.test(msg);
   const isImmo  = /\b(immobilier|\bimmo\b)/.test(msg);
   const isSport = /\bsport\b/.test(msg);
-  const isMedia = /\b(média|media|\btv\b|presse)/.test(msg);
+  const isMedia = /\b(média|media|\btv\b|presse|télévision|radio)/.test(msg);
+  const isDrone = /\bdrone\b/.test(msg);
+  const isDoc   = /\b(documentaire|\bdoc\b|reportage)/.test(msg);
 
   const sectors = [];
   // Distinction cruciale : agence COM (marketing/brand) ≠ prod audiovisuelle
-  if (isCom && !isProd)  sectors.push('agence communication marketing digital brand content');
-  else if (isCom && isProd) sectors.push('agence communication audiovisuelle');
-  else if (isProd)       sectors.push('société production audiovisuelle vidéo');
-  if (isEvent) sectors.push('agence événementielle');
-  if (isLive)  sectors.push('captation live concert');
-  if (isImmo)  sectors.push('immobilier');
-  if (isSport) sectors.push('sport');
-  if (isMedia) sectors.push('télévision médias');
+  if (isCom && !isProd)   sectors.push(`agence communication marketing digital brand social media ${city}`);
+  else if (isCom && isProd) sectors.push(`agence communication production audiovisuelle vidéo ${city}`);
+  else if (isProd)         sectors.push(`société production audiovisuelle vidéo corporate tournage prestataire ${city}`);
+  if (isEvent)  sectors.push(`agence événementielle séminaires organisation événements ${city}`);
+  if (isLive)   sectors.push(`captation live concert festival prestataire audiovisuel ${city}`);
+  if (isImmo)   sectors.push(`agence immobilière visites virtuelles vidéo drone ${city}`);
+  if (isSport)  sectors.push(`association sportive club prestataire vidéo ${city}`);
+  if (isMedia)  sectors.push(`télévision presse régionale médias ${city}`);
+  if (isDrone)  sectors.push(`prestataire drone aérien vidéo inspection ${city}`);
+  if (isDoc)    sectors.push(`production documentaire reportage vidéo ${city}`);
 
   if (sectors.length === 0) {
-    return userMessage
+    const cleaned = userMessage
       .replace(/\b(trouve|trouves|trouver|cherche|chercher|ajoute|rajouter|donne.moi|liste.moi|nouveaux?|nouvelles?|boîtes?|boites?|dans mon crm|pour mon crm|il m.en faudrait|je voudrais|exetera|etc\.?)\b/gi, '')
       .replace(/\s+/g, ' ').trim();
+    return cleaned ? `${cleaned} ${city}` : `société production audiovisuelle vidéo ${city}`;
   }
-  return `${sectors.join(' ')} ${city}`;
+  return sectors.join(' ');
+}
+
+// Requête alternative (annuaire/liste) pour enrichir les résultats de sourcing
+function buildDirectoryQuery(mainQuery) {
+  return `liste annuaire entreprises ${mainQuery}`;
 }
 
 // Construit une requête de recherche propre pour un lookup site/linkedin
@@ -142,37 +152,58 @@ function buildLookupQuery(userMessage) {
   return companyName ? `${companyName} ${suffix}` : userMessage;
 }
 
-// Appel Tavily Web Search
-async function tavilySearch(query, tavilyKey) {
-  const response = await fetch('https://api.tavily.com/search', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      api_key: tavilyKey,
-      query: query,
-      search_depth: 'basic',
-      max_results: 7,
-      include_answer: false
-    })
-  });
-  if (!response.ok) {
-    console.error('Tavily error:', response.status, await response.text());
-    return [];
+// Appel Tavily Web Search (optionnellement double recherche pour le sourcing)
+async function tavilySearch(query, tavilyKey, secondQuery) {
+  async function singleSearch(q) {
+    const response = await fetch('https://api.tavily.com/search', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        api_key: tavilyKey,
+        query: q,
+        search_depth: 'advanced',
+        max_results: 8,
+        include_answer: false
+      })
+    });
+    if (!response.ok) {
+      console.error('Tavily error:', response.status, await response.text());
+      return [];
+    }
+    const data = await response.json();
+    return data.results || [];
   }
-  const data = await response.json();
-  return data.results || [];
+
+  const results1 = await singleSearch(query);
+  if (!secondQuery) return results1;
+
+  // Double recherche : merge et déduplique par URL pour maximiser la couverture
+  try {
+    const results2 = await singleSearch(secondQuery);
+    const seenUrls = new Set(results1.map(r => r.url));
+    const unique2 = results2.filter(r => !seenUrls.has(r.url));
+    return [...results1, ...unique2].slice(0, 14);
+  } catch(e) {
+    console.warn('Second Tavily search failed:', e.message);
+    return results1;
+  }
 }
 
 // Formate les résultats Tavily en contexte lisible pour Claude
 function formatSearchResults(results) {
   if (!results.length) return '';
   return results.map((r, i) =>
-    `[${i+1}] ${r.title}\nURL: ${r.url}\n${r.content ? r.content.slice(0, 200) : ''}`
+    `[${i+1}] ${r.title}\nURL: ${r.url}\n${r.content ? r.content.slice(0, 400) : ''}`
   ).join('\n\n');
 }
 
 module.exports = async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
+  // CORS : autorise le domaine de prod + localhost pour dev
+  const origin = req.headers.origin || '';
+  const allowedOrigins = ['https://jrv-v2.vercel.app', 'http://localhost:3000', 'http://localhost:8080'];
+  const corsOrigin = allowedOrigins.includes(origin) ? origin : allowedOrigins[0];
+  res.setHeader('Access-Control-Allow-Origin', corsOrigin);
+  res.setHeader('Vary', 'Origin');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 
@@ -211,8 +242,9 @@ module.exports = async function handler(req, res) {
   if (needsSearch) {
     try {
       const searchQuery = isLookup ? buildLookupQuery(lastUserText) : buildSearchQuery(lastUserText, hasMessages ? messages : null);
-      console.log('Tavily search query:', searchQuery);
-      const results = await tavilySearch(searchQuery, tavilyKey);
+      const secondQuery = !isLookup ? buildDirectoryQuery(searchQuery) : null;
+      console.log('Tavily search query:', searchQuery, '| second:', secondQuery);
+      const results = await tavilySearch(searchQuery, tavilyKey, secondQuery);
       if (results.length > 0) {
         const label = isLookup
           ? '[RÉSULTATS WEB RÉELS — extrais l\'URL exacte de la boîte pour mettre à jour le CRM via modify_crm]'
