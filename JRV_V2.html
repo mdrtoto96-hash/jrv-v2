@@ -1477,6 +1477,17 @@
     </div>`;
   }
 
+  function refreshZoneDropdown() {
+    const sel = document.querySelector('.crm-zone-select[onchange*="ZoneFilter"]');
+    if (!sel) return;
+    const arr = getCRMCompanies();
+    const zones = [...new Set(arr.map(c => c.zone || 'Autre').filter(z => z && !z.includes('—') && !['Agences Evenementielles','Web & Digital','Institutionnels','Immobilier','Sport & Culture','Medias','Captation Live Concert'].includes(z)).sort())];
+    // Si la ville filtrée n'existe plus, reset
+    if (crmZoneFilter !== 'all' && !zones.includes(crmZoneFilter)) crmZoneFilter = 'all';
+    sel.innerHTML = `<option value="all"${crmZoneFilter==='all'?' selected':''}>Toutes les villes</option>`
+      + zones.map(z => `<option value="${escAttr(z)}"${crmZoneFilter===z?' selected':''}>${escHtml(z)}</option>`).join('');
+  }
+
   function refreshCatChips() {
     const strip = document.querySelector('.crm-cat-strip');
     if (!strip) return;
@@ -1502,6 +1513,7 @@
     });
     updateCRMStatsBar();
     refreshCatChips();
+    refreshZoneDropdown();
   }
 
   // ---- SHOW NOTE ----
