@@ -1279,8 +1279,7 @@
     const canaux = ['LinkedIn','Email','Telephone','Physique','Instagram'];
     const canalOpts = canaux.map(x => `<option value="${x}"${c.canal===x?' selected':''}>${x}</option>`).join('');
     const statutOpts = Object.entries(STATUS_CONFIG).map(([k,v]) => `<option value="${k}"${c.statut===k?' selected':''}>${v.label}</option>`).join('');
-    const nameEl = c.linkedin
-      : escHtml(c.name);
+    const nameEl = escHtml(c.name);
     const contactEl = c.contact
       ? (c.linkedin
           ? `<a href="${escAttr(c.linkedin)}" target="_blank" onclick="event.stopPropagation()" style="color:var(--accent2);text-decoration:none;border-bottom:1px dotted rgba(74,158,255,0.4)" title="Ouvrir LinkedIn">${escHtml(c.contact)}</a> <span style="font-size:9px;color:var(--blue);opacity:0.8">in</span>`
