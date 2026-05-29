@@ -81,8 +81,11 @@ Réponds toujours en français. Sois direct, efficace, et utile.`
 
 // Détecte si le message est une demande de sourcing de nouvelles boîtes
 function isSourcingRequest(text) {
-  return /\b(trouv|cherch|source|sourc|ajoute|rajoute|donne.moi|liste.moi)\b/i.test(text) &&
-    /\b(boîte|boite|agence|studio|société|entreprise|production|prod|comm|communication|event|média|media)\b/i.test(text);
+  const hasAction = /\b(trouv|cherch|source|sourc|ajoute|rajoute|donne.moi|liste.moi)\b/i.test(text);
+  const hasTarget = /\b(boîte|boite|agence|studio|société|entreprise|production|prod|comm|communication|event|événementiel|média|media|live|sport|immobilier|immo)\b/i.test(text);
+  // Suivi de conversation : "trouve en une autre", "encore une", "une de plus", etc.
+  const isFollowUp = hasAction && /\b(une autre|d.autres|encore une|une de plus|quelques autres|de plus|encore|d'autres)\b/i.test(text);
+  return (hasAction && hasTarget) || isFollowUp;
 }
 
 // Détecte si le message est une demande de lookup d'infos sur une boîte existante
@@ -92,10 +95,14 @@ function isWebLookupRequest(text) {
 }
 
 // Extrait une requête de recherche optimisée depuis le message utilisateur (sourcing)
-function buildSearchQuery(userMessage) {
-  const msg = userMessage.toLowerCase();
+function buildSearchQuery(userMessage, recentMessages) {
+  // Si le message est vague (suivi de conv), enrichit avec le contexte des derniers messages
+  const contextText = (recentMessages && recentMessages.length > 0)
+    ? recentMessages.slice(-4).map(m => String(m.content || '')).join(' ') + ' ' + userMessage
+    : userMessage;
+  const msg = contextText.toLowerCase();
   // Détection ville
-  const cityMatch = userMessage.match(/\b(Nantes|Rennes|Bretagne|Brest|Bordeaux|Paris|Lyon|Toulouse|Lille|Marseille|Montpellier|Angers|Le Mans|Saint-Nazaire|Lorient)\b/i);
+  const cityMatch = contextText.match(/\b(Nantes|Rennes|Bretagne|Brest|Bordeaux|Paris|Lyon|Toulouse|Lille|Marseille|Montpellier|Angers|Le Mans|Saint-Nazaire|Lorient)\b/i);
   const city = cityMatch ? cityMatch[1] : 'Nantes';
 
   const isProd = /\b(production|audiovisuel|vidéo|video|prod\b)/.test(msg);
@@ -203,7 +210,7 @@ module.exports = async function handler(req, res) {
   let webSearchContext = '';
   if (needsSearch) {
     try {
-      const searchQuery = isLookup ? buildLookupQuery(lastUserText) : buildSearchQuery(lastUserText);
+      const searchQuery = isLookup ? buildLookupQuery(lastUserText) : buildSearchQuery(lastUserText, hasMessages ? messages : null);
       console.log('Tavily search query:', searchQuery);
       const results = await tavilySearch(searchQuery, tavilyKey);
       if (results.length > 0) {

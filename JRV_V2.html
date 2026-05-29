@@ -1361,6 +1361,7 @@
       const mf = crmFilter === 'all' ||
         (crmFilter === 'priorite' && c.p) ||
         (crmFilter === 'a-contacter' && c.statut === 'a-contacter') ||
+        (crmFilter === 'message-envoye' && c.statut === 'message-envoye') ||
         (crmFilter === 'en-cours' && ['contact-envoye','message-envoye','pas-de-reponse','en-veille'].includes(c.statut)) ||
         (crmFilter === 'positif' && ['interesse','rdv-pris','converti'].includes(c.statut)) ||
         (crmFilter === 'contactees' && c.statut !== 'a-contacter');
@@ -1368,6 +1369,8 @@
       const mz = crmZoneFilter === 'all' || (c.zone || '') === crmZoneFilter;
       return ms && mf && mt && mz;
     });
+    // Étoiles en premier
+    filtered.sort((a, b) => (b.p || 0) - (a.p || 0));
     if (filtered.length === 0) return '<div style="padding:20px;color:var(--muted);text-align:center;font-size:13px;">Aucune boite trouvee</div>';
     const totalPages = Math.max(1, Math.ceil(filtered.length / CRM_PAGE_SIZE));
     if (crmPage > totalPages) crmPage = 1;
@@ -1755,6 +1758,7 @@
           <option value="all"${crmFilter==='all'?' selected':''}>Tous les statuts (${arr.length})</option>
           <option value="priorite"${crmFilter==='priorite'?' selected':''}>Priorités ★ (${priorites})</option>
           <option value="a-contacter"${crmFilter==='a-contacter'?' selected':''}>A contacter (${aContacter})</option>
+          <option value="message-envoye"${crmFilter==='message-envoye'?' selected':''}>Message envoyé (${arr.filter(c=>c.statut==='message-envoye').length})</option>
           <option value="en-cours"${crmFilter==='en-cours'?' selected':''}>En cours (${enCours})</option>
           <option value="positif"${crmFilter==='positif'?' selected':''}>Réponse+ (${reponses})</option>
           <option value="contactees"${crmFilter==='contactees'?' selected':''}>Contactées (${contacted})</option>
