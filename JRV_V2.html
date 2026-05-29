@@ -236,10 +236,11 @@
     .inject-card { background: rgba(74,158,255,0.07); border: 1px solid rgba(74,158,255,0.25); border-radius: 9px; padding: 11px 13px; margin-top: 8px; }
     .inject-title { font-size: 11px; font-weight: 700; color: var(--blue); margin-bottom: 7px; }
     .inject-company-list { display: flex; flex-direction: column; gap: 3px; margin-bottom: 10px; }
-    .inject-company-row { display: flex; align-items: center; gap: 6px; padding: 5px 8px; background: rgba(255,255,255,0.04); border-radius: 6px; }
-    .inject-company-name { font-size: 11.5px; font-weight: 600; color: var(--text); flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .inject-company-row { display: flex; align-items: center; gap: 5px; padding: 4px 6px; background: rgba(255,255,255,0.04); border-radius: 6px; }
+    .inject-name-input { flex: 1; min-width: 0; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; color: var(--text); font-size: 11.5px; font-weight: 600; font-family: inherit; padding: 3px 6px; outline: none; }
+    .inject-name-input:focus { border-color: rgba(255,255,255,0.3); }
+    .inject-cat-select { background: rgba(74,158,255,0.15); border: 1px solid rgba(74,158,255,0.3); border-radius: 4px; color: #6bb8ff; font-size: 9px; font-weight: 700; font-family: inherit; padding: 2px 4px; cursor: pointer; outline: none; text-transform: uppercase; flex-shrink: 0; }
     .inject-tag { font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.4px; flex-shrink: 0; }
-    .inject-tag-cat { background: rgba(74,158,255,0.18); color: #6bb8ff; }
     .inject-tag-zone { background: rgba(255,255,255,0.07); color: var(--muted); }
     .inject-btn { padding: 5px 14px; border-radius: 6px; border: none; background: var(--blue); color: #080808; font-size: 11px; font-weight: 700; cursor: pointer; font-family: inherit; transition: all 0.15s; }
     .inject-btn:hover:not(.done) { background: #5aaeff; }
@@ -385,11 +386,9 @@
     #chat-bubble-btn:hover { transform: scale(1.07); }
     #chat-bubble-btn.open { background: var(--card2); color: var(--text2); }
     #chat-bubble-badge { position: absolute; top: -3px; right: -3px; width: 18px; height: 18px; border-radius: 50%; background: var(--danger); color: #fff; font-size: 10px; font-weight: 800; display: none; align-items: center; justify-content: center; }
-    #chat-bubble-panel { position: fixed; bottom: 88px; right: 24px; width: 420px; height: 580px; background: var(--sidebar); border: 1px solid var(--border2); border-radius: 16px; z-index: 899; display: flex; flex-direction: column; box-shadow: 0 12px 48px rgba(0,0,0,0.75); transform: scale(0.95) translateY(10px); opacity: 0; pointer-events: none; transition: transform 0.22s cubic-bezier(0.4,0,0.2,1), opacity 0.22s; transform-origin: bottom right; overflow: hidden; }
-    #bubble-header { cursor: grab; user-select: none; }
-    #bubble-header.dragging { cursor: grabbing; }
-    #chat-resize-handle { position: absolute; bottom: 0; right: 0; width: 22px; height: 22px; cursor: nwse-resize; z-index: 10; border-radius: 0 0 16px 0; background: linear-gradient(135deg, transparent 50%, rgba(255,255,255,0.10) 50%); }
-    #chat-resize-handle:hover, #chat-resize-handle.dragging { background: linear-gradient(135deg, transparent 50%, rgba(255,255,255,0.22) 50%); }
+    #chat-bubble-panel { position: fixed; bottom: 88px; right: 24px; width: 420px; height: 580px; background: var(--sidebar); border: 1px solid var(--border2); border-radius: 16px; z-index: 899; display: flex; flex-direction: column; box-shadow: 0 12px 48px rgba(0,0,0,0.75); transform: scale(0.95) translateY(10px); opacity: 0; pointer-events: none; transition: all 0.22s cubic-bezier(0.4,0,0.2,1); transform-origin: bottom right; overflow: hidden; }
+    #chat-bubble-panel.fullscreen { bottom: 0 !important; right: 0 !important; left: 0 !important; top: 0 !important; width: 100vw !important; height: 100vh !important; border-radius: 0; }
+    #chat-resize-handle { display: none; }
     #chat-bubble-panel.open { transform: scale(1) translateY(0); opacity: 1; pointer-events: auto; }
     #bubble-header { padding: 12px 14px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 9px; flex-shrink: 0; background: var(--card); }
     #bubble-header .bh-name { font-size: 13px; font-weight: 800; flex: 1; }
@@ -1475,6 +1474,21 @@
     </div>`;
   }
 
+  function refreshCatChips() {
+    const strip = document.querySelector('.crm-cat-strip');
+    if (!strip) return;
+    const arr = getCRMCompanies();
+    const catCounts = {};
+    arr.forEach(c => { const cat = c.category || 'prod'; catCounts[cat] = (catCounts[cat]||0)+1; });
+    strip.innerHTML = Object.keys(CAT_CONFIG).map(cat => {
+      const count = cat === 'all' ? arr.length : (catCounts[cat]||0);
+      if (cat !== 'all' && count === 0) return '';
+      const cfg = CAT_CONFIG[cat];
+      const isActive = crmTypeFilter === cat;
+      return `<button class="crm-cat-chip${isActive?' active':''}" data-cat="${cat}" onclick="setCRMTypeFilter('${cat}')" style="${isActive?`background:${cfg.color};border-color:${cfg.color};color:#080808`:''}">${cfg.label} <span style="opacity:0.6">${count}</span></button>`;
+    }).join('');
+  }
+
   function refreshCRMList() {
     const el = document.getElementById('crm-list');
     if (!el) return;
@@ -1484,6 +1498,7 @@
       if (row) row.classList.add('open');
     });
     updateCRMStatsBar();
+    refreshCatChips();
   }
 
   // ---- SHOW NOTE ----
@@ -2347,30 +2362,32 @@ https://www.rondeaujeremy.fr/
   }
   function closeAddCompany() {
     document.getElementById('modal-add-company').classList.remove('open');
-    document.getElementById('new-company-name').value = '';
-    document.getElementById('new-company-zone').value = '';
-    document.getElementById('new-company-site').value = '';
-    document.getElementById('new-company-notes').value = '';
+    ['new-company-name','new-company-zone','new-company-site','new-company-notes'].forEach(id => { document.getElementById(id).value = ''; });
+    document.getElementById('new-company-cat').value = 'prod';
   }
-  function saveNewCompany() {
+  async function saveNewCompany() {
     const name = document.getElementById('new-company-name').value.trim();
     if (!name) { document.getElementById('new-company-name').focus(); return; }
     const arr = getCRMCompanies();
-    const newId = Math.max(...arr.map(c => c.id)) + 1;
-    arr.push({
+    const newId = Math.max(0, ...arr.map(c => c.id)) + 1;
+    const newC = {
       id: newId,
       name,
+      category: document.getElementById('new-company-cat').value || 'prod',
       site: document.getElementById('new-company-site').value.trim(),
-      zone: document.getElementById('new-company-zone').value.trim() || 'Autre',
+      zone: document.getElementById('new-company-zone').value.trim() || 'Nantes',
       p: 0, contact: '', poste: '', canal: 'LinkedIn', date: '',
       statut: 'a-contacter',
       notes: document.getElementById('new-company-notes').value.trim(),
-      relance: '', msg: false
-    });
-    var newC = arr[arr.length - 1];
-    saveCRMCompanies(arr, newC); showSaved();
+      relance: '', linkedin: '', phone: '', email: ''
+    };
+    arr.push(newC);
+    _sbCompanies = arr;
+    _lsSet('jrv_crm_v2', JSON.stringify(arr));
+    _sbUpsertCompany(newC);
+    showSaved();
     closeAddCompany();
-    showNote('crm', document.querySelector('[data-fixed="crm"]'));
+    refreshCRMList();
   }
   // ---- AGENT HUB & CHAT ----
 
@@ -2586,17 +2603,18 @@ https://www.rondeaujeremy.fr/
     let extra = '';
     if (msg.injectId && injectCache[msg.injectId]) {
       const companies = injectCache[msg.injectId];
-      const catLabels = { prod:'Prod', com:'Com', live:'Live', event:'Event', sport:'Sport', media:'Média', instit:'Instit', immo:'Immo' };
-      const rows = companies.map(c =>
-        `<div class="inject-company-row">
-          <span class="inject-company-name">${escHtml(c.name)}</span>
-          <span class="inject-tag inject-tag-cat">${catLabels[c.category] || escHtml(c.category||'')}</span>
+      const catOpts = [['prod','Prod vidéo'],['com','Agence com'],['live','Live/Concert'],['event','Événementiel'],['sport','Sport'],['media','Média'],['instit','Instit'],['immo','Immo']];
+      const rows = companies.map((c, i) => {
+        const opts = catOpts.map(([v,l]) => `<option value="${v}"${(c.category||'prod')===v?' selected':''}>${l}</option>`).join('');
+        return `<div class="inject-company-row">
+          <input class="inject-name-input" value="${escAttr(c.name)}" placeholder="Nom">
+          <select class="inject-cat-select">${opts}</select>
           <span class="inject-tag inject-tag-zone">${escHtml(c.zone||'Nantes')}</span>
-        </div>`
-      ).join('');
+        </div>`;
+      }).join('');
       extra += `<div class="inject-card">
-        <div class="inject-title">▣ ${companies.length} boîte${companies.length>1?'s':''} prête${companies.length>1?'s':''} à injecter</div>
-        <div class="inject-company-list">${rows}</div>
+        <div class="inject-title">▣ ${companies.length} boîte${companies.length>1?'s':''} — modifie si besoin, puis injecte</div>
+        <div class="inject-company-list" id="inj-list-${msg.injectId}">${rows}</div>
         <button class="inject-btn" id="inj-${msg.injectId}" onclick="chatInject('${msg.injectId}',this)">Injecter dans le CRM →</button>
       </div>`;
     }
@@ -2844,6 +2862,17 @@ https://www.rondeaujeremy.fr/
   async function chatInject(injectId, btn) {
     const companies = injectCache[injectId];
     if (!companies) return;
+    // Lire les valeurs éditées depuis le DOM
+    const listEl = document.getElementById('inj-list-' + injectId);
+    if (listEl) {
+      listEl.querySelectorAll('.inject-company-row').forEach((row, i) => {
+        if (!companies[i]) return;
+        const nameEl = row.querySelector('.inject-name-input');
+        const catEl  = row.querySelector('.inject-cat-select');
+        if (nameEl && nameEl.value.trim()) companies[i].name = nameEl.value.trim();
+        if (catEl)  companies[i].category = catEl.value;
+      });
+    }
     btn.disabled = true; btn.textContent = 'Injection...';
     try {
       const rMax = await fetch(_SB_URL + '/rest/v1/companies?select=id&order=id.desc&limit=1', { headers: _SB_HDR });
@@ -3436,68 +3465,15 @@ https://www.rondeaujeremy.fr/
   }
 
   // ---- BUBBLE CHAT ----
-  // ---- CHAT PANEL DRAG + RESIZE ----
-  (function() {
-    const panel  = document.getElementById('chat-bubble-panel');
-    const header = document.getElementById('bubble-header');
-    const handle = document.getElementById('chat-resize-handle');
-    if (!panel || !header || !handle) return;
-
-    // Convertit le panel de CSS bottom/right vers top/left pour permettre le drag
-    function ensureTopLeft() {
-      const rect = panel.getBoundingClientRect();
-      panel.style.left   = rect.left + 'px';
-      panel.style.top    = rect.top  + 'px';
-      panel.style.right  = 'auto';
-      panel.style.bottom = 'auto';
-    }
-
-    // DRAG par le header
-    header.addEventListener('mousedown', function(e) {
-      if (e.target.closest('button')) return;
-      e.preventDefault();
-      ensureTopLeft();
-      const startX = e.clientX, startY = e.clientY;
-      const startLeft = parseFloat(panel.style.left), startTop = parseFloat(panel.style.top);
-      header.classList.add('dragging');
-      document.body.style.userSelect = 'none';
-      function onMove(e) {
-        panel.style.left = Math.max(0, Math.min(window.innerWidth  - panel.offsetWidth,  startLeft + e.clientX - startX)) + 'px';
-        panel.style.top  = Math.max(0, Math.min(window.innerHeight - 60,                 startTop  + e.clientY - startY)) + 'px';
-      }
-      function onUp() {
-        header.classList.remove('dragging');
-        document.body.style.userSelect = '';
-        document.removeEventListener('mousemove', onMove);
-        document.removeEventListener('mouseup', onUp);
-      }
-      document.addEventListener('mousemove', onMove);
-      document.addEventListener('mouseup', onUp);
-    });
-
-    // RESIZE par coin bas-droite
-    handle.addEventListener('mousedown', function(e) {
-      e.preventDefault();
-      ensureTopLeft();
-      const startX = e.clientX, startY = e.clientY;
-      const startW = panel.offsetWidth, startH = panel.offsetHeight;
-      const panelLeft = parseFloat(panel.style.left), panelTop = parseFloat(panel.style.top);
-      handle.classList.add('dragging');
-      document.body.style.userSelect = 'none';
-      function onMove(e) {
-        panel.style.width  = Math.max(320, Math.min(window.innerWidth  - panelLeft - 8, startW + e.clientX - startX)) + 'px';
-        panel.style.height = Math.max(300, Math.min(window.innerHeight - panelTop  - 8, startH + e.clientY - startY)) + 'px';
-      }
-      function onUp() {
-        handle.classList.remove('dragging');
-        document.body.style.userSelect = '';
-        document.removeEventListener('mousemove', onMove);
-        document.removeEventListener('mouseup', onUp);
-      }
-      document.addEventListener('mousemove', onMove);
-      document.addEventListener('mouseup', onUp);
-    });
-  })();
+  // ---- CHAT PANEL FULLSCREEN ----
+  function toggleChatFullscreen() {
+    const panel = document.getElementById('chat-bubble-panel');
+    const btn   = document.getElementById('chat-fullscreen-btn');
+    if (!panel) return;
+    const isFull = panel.classList.toggle('fullscreen');
+    if (btn) btn.textContent = isFull ? '⊡' : '⊞';
+    if (btn) btn.title = isFull ? 'Réduire' : 'Plein écran';
+  }
 
   function toggleChatBubble() {
     bubbleChatOpen = !bubbleChatOpen;
@@ -3572,6 +3548,7 @@ https://www.rondeaujeremy.fr/
       <span id="chat-stext" style="font-size:10px">Prêt</span>
     </div>
     <button id="bubble-hist-btn" onclick="toggleConvPanel()" title="Historique des conversations">☰</button>
+    <button id="chat-fullscreen-btn" onclick="toggleChatFullscreen()" title="Plein écran" style="background:none;border:none;color:var(--muted);font-size:15px;cursor:pointer;padding:2px 5px;border-radius:3px;line-height:1;transition:color 0.15s;">⊞</button>
     <button id="bubble-close" onclick="toggleChatBubble()">×</button>
   </div>
   <!-- Conversation history overlay -->
@@ -3599,21 +3576,36 @@ https://www.rondeaujeremy.fr/
     <h3>+ Ajouter une boîte</h3>
     <div>
       <label>Nom de la boîte *</label>
-      <input id="new-company-name" placeholder="Ex: Studio Nantes Prod" onkeydown="if(event.key==='Enter')saveNewCompany()">
+      <input id="new-company-name" placeholder="Ex: Agence Truc" onkeydown="if(event.key==='Enter')saveNewCompany()">
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div>
+        <label>Type de boîte *</label>
+        <select id="new-company-cat">
+          <option value="prod">Prod vidéo</option>
+          <option value="com">Agence com</option>
+          <option value="live">Captation live</option>
+          <option value="event">Événementiel</option>
+          <option value="sport">Sport & Culture</option>
+          <option value="media">Média / TV</option>
+          <option value="instit">Institutionnel</option>
+          <option value="immo">Immobilier</option>
+        </select>
+      </div>
       <div>
         <label>Zone / Ville</label>
         <input id="new-company-zone" placeholder="Ex: Nantes">
       </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
       <div>
         <label>Site web</label>
-        <input id="new-company-site" placeholder="Ex: studio.fr">
+        <input id="new-company-site" placeholder="Ex: agence.fr">
       </div>
-    </div>
-    <div>
-      <label>Notes</label>
-      <textarea id="new-company-notes" rows="3" placeholder="Type d'activité, contexte..."></textarea>
+      <div>
+        <label>Notes</label>
+        <input id="new-company-notes" placeholder="Spécialité, contexte...">
+      </div>
     </div>
     <div class="modal-btns">
       <button class="modal-btn-cancel" onclick="closeAddCompany()">Annuler</button>
