@@ -105,7 +105,7 @@ function buildSearchQuery(userMessage, recentMessages) {
     : userMessage;
   const msg = contextText.toLowerCase();
   // Détection ville
-  const cityMatch = contextText.match(/\b(Nantes|Rennes|Bretagne|Brest|Bordeaux|Paris|Lyon|Toulouse|Lille|Marseille|Montpellier|Angers|Le Mans|Saint-Nazaire|Lorient|Vannes|Saint-Brieuc|Caen|Rouen|Tours|Strasbourg|Bordeaux|Clermont)\b/i);
+  const cityMatch = contextText.match(/\b(Nantes|Rennes|Bretagne|Brest|Bordeaux|Paris|Lyon|Toulouse|Lille|Marseille|Montpellier|Angers|Le Mans|Saint-Nazaire|Lorient|Vannes|Saint-Brieuc|Caen|Rouen|Tours|Strasbourg|Clermont|Vendée|Vendee|La Roche-sur-Yon|Loire-Atlantique|Pays de la Loire|Cholet|Saint-Herblain|Rezé|Laval|Poitiers|La Rochelle|Niort)\b/i);
   const city = cityMatch ? cityMatch[1] : 'Nantes';
 
   const isProd  = /\b(production|audiovisuel|vidéo|video|prod\b)/.test(msg);
@@ -164,8 +164,8 @@ async function tavilySearch(query, tavilyKey, secondQuery) {
       body: JSON.stringify({
         api_key: tavilyKey,
         query: q,
-        search_depth: 'advanced',
-        max_results: 8,
+        search_depth: 'basic',
+        max_results: 9,
         include_answer: false
       })
     });
@@ -255,6 +255,9 @@ module.exports = async function handler(req, res) {
         webSearchContext = '\n\n' + label + '\n' + formatSearchResults(results);
       } else if (isLookup) {
         webSearchContext = '\n\n[Recherche web sans résultat — utilise ta connaissance pour l\'URL, indique dans summary que c\'est à vérifier]';
+      } else {
+        // Sourcing : 0 résultats → fallback connaissance avec confidence low
+        webSearchContext = '\n\n[Aucun résultat web trouvé pour cette recherche — utilise ta connaissance générale, confidence "low" obligatoire pour toutes les boîtes proposées]';
       }
     } catch(e) {
       console.error('Tavily search failed:', e.message);
