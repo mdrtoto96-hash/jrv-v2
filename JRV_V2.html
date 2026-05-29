@@ -378,7 +378,9 @@
     #chat-bubble-btn:hover { transform: scale(1.07); }
     #chat-bubble-btn.open { background: var(--card2); color: var(--text2); }
     #chat-bubble-badge { position: absolute; top: -3px; right: -3px; width: 18px; height: 18px; border-radius: 50%; background: var(--danger); color: #fff; font-size: 10px; font-weight: 800; display: none; align-items: center; justify-content: center; }
-    #chat-bubble-panel { position: fixed; bottom: 88px; right: 24px; width: 390px; max-width: calc(100vw - 32px); height: 540px; max-height: calc(100vh - 110px); background: var(--sidebar); border: 1px solid var(--border2); border-radius: 16px; z-index: 899; display: flex; flex-direction: column; box-shadow: 0 12px 48px rgba(0,0,0,0.75); transform: scale(0.9) translateY(20px); opacity: 0; pointer-events: none; transition: all 0.22s cubic-bezier(0.4,0,0.2,1); transform-origin: bottom right; overflow: hidden; }
+    #chat-bubble-panel { position: fixed; bottom: 88px; right: 24px; width: 390px; max-width: calc(100vw - 32px); height: 540px; max-height: calc(100vh - 110px); background: var(--sidebar); border: 1px solid var(--border2); border-radius: 16px; z-index: 899; display: flex; flex-direction: column; box-shadow: 0 12px 48px rgba(0,0,0,0.75); transform: scale(0.9) translateY(20px); opacity: 0; pointer-events: none; transition: transform 0.22s cubic-bezier(0.4,0,0.2,1), opacity 0.22s; transform-origin: bottom right; overflow: hidden; }
+    #chat-resize-handle { position: absolute; left: 0; top: 0; bottom: 0; width: 6px; cursor: ew-resize; z-index: 10; border-radius: 16px 0 0 16px; }
+    #chat-resize-handle:hover, #chat-resize-handle.dragging { background: rgba(255,255,255,0.08); }
     #chat-bubble-panel.open { transform: scale(1) translateY(0); opacity: 1; pointer-events: auto; }
     #bubble-header { padding: 12px 14px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 9px; flex-shrink: 0; background: var(--card); }
     #bubble-header .bh-name { font-size: 13px; font-weight: 800; flex: 1; }
@@ -2680,15 +2682,25 @@ https://www.rondeaujeremy.fr/
       // Remove typing indicator
       document.getElementById('chat-typing')?.remove();
 
-      // Detect modify_crm action (all agents)
+      // Detect modify_crm action — tentative 1 : JSON pur (avec ou sans texte après)
       let modifyAction = null;
       try {
         const clean = result.replace(/```json\n?/g,'').replace(/```\n?/g,'').trim();
-        if (clean.startsWith('{') && /"action"\s*:\s*"modify_crm"/.test(clean)) {
-          const parsed = JSON.parse(clean);
-          if (parsed.action === 'modify_crm' && parsed.id && parsed.field) modifyAction = parsed;
+        if (/"action"\s*:\s*"modify_crm"/.test(clean)) {
+          const j1 = clean.indexOf('{'), j2 = clean.lastIndexOf('}');
+          if (j1 !== -1 && j2 !== -1) {
+            const p = JSON.parse(clean.substring(j1, j2 + 1));
+            if (p.action === 'modify_crm' && p.id && p.field) modifyAction = p;
+          }
         }
       } catch(e) {}
+      // Tentative 2 : JSON dans un code block au milieu d'un texte
+      if (!modifyAction) {
+        try {
+          const m = result.match(/```(?:json)?\s*(\{[\s\S]*?"action"\s*:\s*"modify_crm"[\s\S]*?\})\s*```/);
+          if (m) { const p = JSON.parse(m[1]); if (p.action === 'modify_crm' && p.id && p.field) modifyAction = p; }
+        } catch(e) {}
+      }
 
       // Sourcing: detect JSON array → offer inject (with confidence)
       let agentMsg;
@@ -2716,7 +2728,12 @@ https://www.rondeaujeremy.fr/
           agentMsg = { role: 'agent', content: result, time: new Date() };
         }
       } else if (modifyAction) {
-        agentMsg = { role: 'agent', content: modifyAction.summary || 'Modification CRM demandée.', modifyAction, time: new Date() };
+        // Si JSON pur → affiche le summary. Si JSON dans texte → affiche le texte complet sans le bloc JSON
+        const isPureJson = result.replace(/```json\n?/g,'').replace(/```\n?/g,'').trim().startsWith('{');
+        const displayContent = isPureJson
+          ? (modifyAction.summary || 'Modification CRM demandée.')
+          : result.replace(/```json[\s\S]*?```/g, '').replace(/```[\s\S]*?```/g, '').trim();
+        agentMsg = { role: 'agent', content: displayContent, modifyAction, time: new Date() };
       } else {
         agentMsg = { role: 'agent', content: result, time: new Date() };
       }
@@ -3371,6 +3388,30 @@ https://www.rondeaujeremy.fr/
   }
 
   // ---- BUBBLE CHAT ----
+  // ---- CHAT PANEL RESIZE ----
+  (function() {
+    const handle = document.getElementById('chat-resize-handle');
+    const panel = document.getElementById('chat-bubble-panel');
+    if (!handle || !panel) return;
+    let startX, startW;
+    handle.addEventListener('mousedown', function(e) {
+      e.preventDefault();
+      startX = e.clientX; startW = panel.offsetWidth;
+      handle.classList.add('dragging');
+      document.addEventListener('mousemove', onMove);
+      document.addEventListener('mouseup', onUp);
+    });
+    function onMove(e) {
+      const newW = Math.max(300, Math.min(window.innerWidth - 32, startW + (startX - e.clientX)));
+      panel.style.width = newW + 'px';
+    }
+    function onUp() {
+      handle.classList.remove('dragging');
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+    }
+  })();
+
   function toggleChatBubble() {
     bubbleChatOpen = !bubbleChatOpen;
     const panel = document.getElementById('chat-bubble-panel');
@@ -3432,6 +3473,7 @@ https://www.rondeaujeremy.fr/
   <span id="chat-bubble-badge">1</span>
 </button>
 <div id="chat-bubble-panel">
+  <div id="chat-resize-handle"></div>
   <div id="bubble-header">
     <div style="width:30px;height:30px;border-radius:50%;background:var(--card2);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0">✦</div>
     <div style="flex:1;min-width:0">

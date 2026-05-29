@@ -39,13 +39,14 @@ Quand Jeremy demande un message de prospection :
 - Ton humain, direct, jamais corporate
 
 3. MODIFICATION CRM DIRECTE
-Quand Jeremy demande de modifier une entrée CRM (changer un statut, noter un contact, etc.), réponds UNIQUEMENT avec ce JSON — rien d'autre avant ou après :
+Quand Jeremy demande de modifier une entrée CRM (changer un statut, noter un contact, etc.), réponds UNIQUEMENT avec ce JSON — ZÉRO texte avant ou après, pas de "C'est fait !", pas de confirmation, RIEN d'autre :
 {"action":"modify_crm","id":NUMERO_ID,"name":"NOM_EXACT_ENTREPRISE","field":"NOM_CHAMP","value":"NOUVELLE_VALEUR","summary":"Ce que tu as fait en une phrase"}
+RÈGLE ABSOLUE : le JSON doit être ta réponse COMPLÈTE et ENTIÈRE. Toute phrase ajoutée avant ou après le JSON est strictement interdite.
 IMPORTANT : l'id DOIT correspondre exactement à un id présent dans la liste du contexte (format NomEntreprise(id:X)). Pour les URLs (site, linkedin), toujours inclure https://.
 Champs disponibles : statut, notes, contact, poste, relance, date, site, linkedin, phone, email
 Valeurs statut valides : a-contacter, contact-envoye, message-envoye, pas-de-reponse, en-veille, interesse, rdv-pris, refuse, converti
 
-LOOKUP D'INFOS (site, linkedin, téléphone, email, etc.) : Quand Jeremy demande n'importe quelle info sur une boîte existante ET que des résultats web sont fournis dans le contexte, extrais l'info directement depuis ces résultats et génère le JSON modify_crm. Ne demande JAMAIS à Jeremy de chercher lui-même — utilise TOUJOURS les résultats web fournis. Si l'info n'est pas dans les résultats web, dis-le clairement en une phrase.
+LOOKUP D'INFOS (site, linkedin, téléphone, email, etc.) : Quand Jeremy demande n'importe quelle info sur une boîte existante ET que des résultats web sont fournis dans le contexte, extrais l'info directement depuis ces résultats et génère le JSON modify_crm UNIQUEMENT (pas de texte autour). Ne demande JAMAIS à Jeremy de chercher lui-même — utilise TOUJOURS les résultats web fournis. Si l'info n'est pas dans les résultats web, dis-le clairement en une phrase (sans JSON).
 
 4. ANALYSE & STRATÉGIE
 Quand Jeremy demande une analyse ou des conseils sur sa prospection :
@@ -60,7 +61,7 @@ Quand Jeremy demande qui relancer : utilise les données du contexte pour lister
 6. LOOKUP SITE/LINKEDIN D'UNE BOÎTE EXISTANTE
 Quand Jeremy demande le site ou le LinkedIn d'une boîte existante ET que des résultats web sont fournis dans le contexte :
 - Extrais l'URL exacte depuis les résultats web (site officiel ou profil LinkedIn)
-- Réponds UNIQUEMENT avec le JSON modify_crm pour mettre à jour le bon champ (field: "site" ou "linkedin")
+- Réponds UNIQUEMENT avec le JSON modify_crm — ZÉRO texte avant ou après, pas de "C'est fait !", rien
 - Utilise l'id de la boîte dans le contexte CRM
 - Si les résultats ne contiennent pas l'info → utilise ta connaissance mais mentionne dans "summary" que l'URL est à vérifier
 
@@ -84,10 +85,26 @@ function isWebLookupRequest(text) {
 
 // Extrait une requête de recherche optimisée depuis le message utilisateur (sourcing)
 function buildSearchQuery(userMessage) {
-  return userMessage
-    .replace(/\b(trouve|trouves|trouver|cherche|chercher|ajoute|rajouter|donne.moi|liste.moi|nouveaux?|nouvelles?|boîtes?|boites?|dans mon crm|pour mon crm)\b/gi, '')
-    .replace(/\s+/g, ' ')
-    .trim();
+  const msg = userMessage.toLowerCase();
+  // Détection ville
+  const cityMatch = userMessage.match(/\b(Nantes|Rennes|Bretagne|Brest|Bordeaux|Paris|Lyon|Toulouse|Lille|Marseille|Montpellier|Angers|Le Mans|Saint-Nazaire|Lorient)\b/i);
+  const city = cityMatch ? cityMatch[1] : 'Nantes';
+  // Détection secteur
+  const sectors = [];
+  if (/\b(communication|agence comm|agence de comm)\b/.test(msg)) sectors.push('agence communication');
+  if (/\b(production|audiovisuel|vidéo|video|prod\b)/.test(msg)) sectors.push('production vidéo');
+  if (/\b(événementiel|evenementiel|event\b)/.test(msg)) sectors.push('événementiel');
+  if (/\b(live|concert|captation)/.test(msg)) sectors.push('captation live');
+  if (/\b(immobilier|immo\b)/.test(msg)) sectors.push('immobilier');
+  if (/\b(sport\b)/.test(msg)) sectors.push('sport');
+  if (/\b(média|media|tv\b|télé|tele|presse)/.test(msg)) sectors.push('média');
+  if (sectors.length === 0) {
+    // Fallback : nettoyage simple du message
+    return userMessage
+      .replace(/\b(trouve|trouves|trouver|cherche|chercher|ajoute|rajouter|donne.moi|liste.moi|nouveaux?|nouvelles?|boîtes?|boites?|dans mon crm|pour mon crm|il m.en faudrait|je voudrais|exetera|etc\.?)\b/gi, '')
+      .replace(/\s+/g, ' ').trim();
+  }
+  return `${sectors.join(' ')} ${city}`;
 }
 
 // Construit une requête de recherche propre pour un lookup site/linkedin
@@ -221,7 +238,7 @@ module.exports = async function handler(req, res) {
         'content-type': 'application/json'
       },
       body: JSON.stringify({
-        model: 'claude-haiku-4-5-20251001',
+        model: 'claude-opus-4-6',
         max_tokens: 2048,
         system: systemPrompt,
         messages: messagesPayload
