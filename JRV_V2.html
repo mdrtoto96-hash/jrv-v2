@@ -313,6 +313,9 @@
     .crm-delete-btn { background: none; border: none; color: transparent; font-size: 16px; line-height: 1; cursor: pointer; padding: 1px 4px; border-radius: 3px; flex-shrink: 0; transition: color 0.15s, background 0.15s; }
     .crm-row-header:hover .crm-delete-btn { color: #c0392b; }
     .crm-delete-btn:hover { color: #e74c3c !important; background: rgba(231,76,60,0.1); }
+    .crm-edit-btn { background: none; border: none; color: transparent; font-size: 13px; line-height: 1; cursor: pointer; padding: 2px 5px; border-radius: 3px; flex-shrink: 0; transition: color 0.15s; }
+    .crm-row-header:hover .crm-edit-btn { color: var(--muted); }
+    .crm-edit-btn:hover { color: var(--accent) !important; }
     .crm-detail { display: none; padding: 13px 15px; border-top: 1px solid var(--border); background: rgba(0,0,0,0.25); }
     .crm-row.open .crm-detail { display: block; }
     .crm-detail-grid { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 9px; margin-bottom: 10px; }
@@ -494,6 +497,7 @@
       /* Touch targets: minimum 44px */
       .crm-priority-btn { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; }
       .crm-delete-btn { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color: rgba(192,57,43,0.5) !important; }
+      .crm-edit-btn { color: rgba(255,255,255,0.3) !important; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; }
       .crm-msg-check { width: 28px; height: 28px; }
       .crm-copy-btn { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; opacity: 1 !important; }
       .crm-li-btn { width: 32px; height: 32px; font-size: 13px; }
@@ -1506,6 +1510,7 @@
         </select>
         <span class="crm-has-notes" style="opacity:${hasNotes?1:0}">●</span>
         <button class="crm-msg-check${c.msg?' sent':''}" title="Message envoyé" onclick="event.stopPropagation();toggleMsg(${c.id})">✓</button>
+        <button class="crm-edit-btn" onclick="event.stopPropagation();openEditCompany(${c.id})" title="Modifier la fiche">⚙</button>
         <button class="crm-delete-btn" onclick="event.stopPropagation();deleteCompany(${c.id})" title="Supprimer ce lead">×</button>
         <span class="crm-chevron">▼</span>
       </div>
@@ -2470,6 +2475,68 @@ https://www.rondeaujeremy.fr/
     initApp();
   } else {
     showLoginScreen();
+  }
+
+  // ---- EDIT COMPANY MODAL ----
+  function openEditCompany(id) {
+    const arr = getCRMCompanies();
+    const c = arr.find(x => x.id === id);
+    if (!c) return;
+    const modal = document.getElementById('modal-edit-company');
+    if (!modal) return;
+    modal.dataset.id = id;
+    document.getElementById('edit-company-name').value = c.name || '';
+    document.getElementById('edit-company-zone').value = c.zone || '';
+    document.getElementById('edit-company-site').value = c.site || '';
+    // Catégorie
+    const catSel = document.getElementById('edit-company-cat');
+    const catCustom = document.getElementById('edit-company-cat-custom');
+    if (CAT_CONFIG[c.category] || !c.category) {
+      catSel.value = c.category || 'prod';
+      catCustom.style.display = 'none';
+      catCustom.value = '';
+    } else {
+      catSel.value = 'autre';
+      catCustom.style.display = '';
+      catCustom.value = c.category;
+    }
+    modal.classList.add('open');
+    document.getElementById('edit-company-name').focus();
+  }
+  function closeEditCompany() {
+    const modal = document.getElementById('modal-edit-company');
+    if (modal) modal.classList.remove('open');
+  }
+  function toggleEditCustomCat(val) {
+    const el = document.getElementById('edit-company-cat-custom');
+    if (el) { el.style.display = val === 'autre' ? '' : 'none'; if (val === 'autre') el.focus(); }
+  }
+  function saveEditCompany() {
+    const modal = document.getElementById('modal-edit-company');
+    if (!modal) return;
+    const id = parseInt(modal.dataset.id);
+    const arr = getCRMCompanies();
+    const c = arr.find(x => x.id === id);
+    if (!c) return;
+    const name = document.getElementById('edit-company-name').value.trim();
+    if (!name) { document.getElementById('edit-company-name').focus(); return; }
+    const catSel = document.getElementById('edit-company-cat').value;
+    let category;
+    if (catSel === 'autre') {
+      const custom = document.getElementById('edit-company-cat-custom').value.trim().toLowerCase().replace(/\s+/g, '-');
+      category = custom || 'autre';
+    } else {
+      category = catSel || 'prod';
+    }
+    c.name = name;
+    c.category = category;
+    c.zone = document.getElementById('edit-company-zone').value.trim() || c.zone;
+    c.site = document.getElementById('edit-company-site').value.trim();
+    saveCRMCompanies(arr, c);
+    _sbUpsertCompany(c);
+    showSaved();
+    closeEditCompany();
+    refreshCRMList();
   }
 
   // ---- ADD COMPANY MODAL ----
@@ -3754,7 +3821,7 @@ https://www.rondeaujeremy.fr/
   }
 
   document.addEventListener('keydown', e => {
-    if (e.key === 'Escape') { closeAddCompany(); closeAgentPanel(); if (bubbleChatOpen) toggleChatBubble(); }
+    if (e.key === 'Escape') { closeEditCompany(); closeAddCompany(); closeAgentPanel(); if (bubbleChatOpen) toggleChatBubble(); }
   });
 </script>
 
@@ -3835,6 +3902,46 @@ https://www.rondeaujeremy.fr/
       onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();chatSend();}"
       oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,100)+'px'"></textarea>
     <button class="chat-send-btn" id="chat-send-btn" onclick="chatSend()" title="Envoyer">↑</button>
+  </div>
+</div>
+
+<!-- MODAL MODIFIER UNE BOITE -->
+<div class="modal-overlay" id="modal-edit-company" onclick="if(event.target===this)closeEditCompany()">
+  <div class="modal-box">
+    <h3>⚙ Modifier la fiche</h3>
+    <div>
+      <label>Nom de la boîte *</label>
+      <input id="edit-company-name" onkeydown="if(event.key==='Enter')saveEditCompany()">
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div>
+        <label>Catégorie *</label>
+        <select id="edit-company-cat" onchange="toggleEditCustomCat(this.value)">
+          <option value="prod">Prod vidéo</option>
+          <option value="com">Agence com</option>
+          <option value="live">Captation live</option>
+          <option value="event">Événementiel</option>
+          <option value="sport">Sport & Culture</option>
+          <option value="media">Média / TV</option>
+          <option value="instit">Institutionnel</option>
+          <option value="immo">Immobilier</option>
+          <option value="autre">Autre (préciser)...</option>
+        </select>
+        <input id="edit-company-cat-custom" placeholder="Ex: Studio photo, Drone..." style="display:none;margin-top:6px">
+      </div>
+      <div>
+        <label>Zone / Ville</label>
+        <input id="edit-company-zone">
+      </div>
+    </div>
+    <div>
+      <label>Site web</label>
+      <input id="edit-company-site" placeholder="Ex: agence.fr">
+    </div>
+    <div class="modal-btns">
+      <button class="modal-btn-cancel" onclick="closeEditCompany()">Annuler</button>
+      <button class="modal-btn-save" onclick="saveEditCompany()">Enregistrer</button>
+    </div>
   </div>
 </div>
 
