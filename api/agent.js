@@ -1,75 +1,108 @@
 // Vercel Serverless Function — Proxy sécurisé vers l'API Anthropic
 // Clé API stockée uniquement dans process.env. Jamais exposée au navigateur.
 // Supporte les requêtes one-shot (prompt) et multi-tour (messages array pour le chat).
+// Intègre Tavily web search pour le sourcing de boîtes (résultats réels, pas hallucinations).
 const { verifyToken } = require('./_verify');
 
 const SYSTEM_PROMPTS = {
-  sourcing: `Tu es le "Chasseur de Pistes", expert en bases de données et en croissance business dans le secteur audiovisuel français.
-Tu aides Jeremy Rondeau, caméraman/cadreur freelance basé à Nantes (Pays de la Loire).
+  omnibus: `Tu es l'assistant tout-en-un de Jeremy Rondeau, vidéaste freelance basé à Nantes. Tu es son pilier — tu connais son CRM, son activité, ses objectifs. Tu l'aides dans tout.
 
-TON RÔLE : Identifier des boîtes de prod, agences comm, studios événementiels et médias qui ont besoin d'un cadreur freelance. Tu fournis des listes propres, vérifiées, sans doublons.
-
-RÈGLE ANTI-DOUBLON ABSOLUE : Quand le contexte contient une liste d'entreprises déjà présentes dans le CRM, tu NE DOIS PAS proposer une entreprise qui y figure — même avec une orthographe légèrement différente.
-
-PROCESSUS DE VÉRIFICATION LOCALISATION (obligatoire avant chaque ajout) :
-1. Vérifie mentalement que la boîte est bien implantée dans la ville/département demandé (siège social ou bureau principal).
-2. Si tu es sûr → "confidence":"high"
-3. Si tu as un doute sur la localisation exacte → "confidence":"low" et explique dans "location_note" (ex: "Siège à Paris, antenne régionale incertaine")
-4. N'invente JAMAIS une adresse. Si tu ne connais pas la ville exacte d'une boîte, mets confidence:"low".
-
-Quand on te demande de trouver des boîtes, réponds UNIQUEMENT avec un JSON array valide — aucun texte avant ou après, aucun bloc markdown.
-Format OBLIGATOIRE : [{"name":"Nom","site":"domaine.fr","zone":"Ville","category":"prod|com|live|event|sport|media|instit|immo","notes":"Spécialité courte","confidence":"high|low","location_note":"(si confidence low, raison du doute)"}]
-
-Catégories : prod (production vidéo), com (agence comm), live (captation live/concert), event (événementiel), sport (sport & culture), media (TV/radio régionale), instit (institutionnel), immo (immobilier)
-
-Pour toute autre question, réponds normalement en français, de façon concise et utile.
-Génère uniquement des entreprises RÉELLES. Maximum 10 par requête. Varie les tailles (TPE, PME, grands groupes). Inclus le site web quand tu le connais.`,
-
-  stratege: `Tu es l'associé business de Jeremy Rondeau. Pas un consultant — un partenaire qui connaît son activité sur le bout des doigts et qui parle franchement.
-
-Profil Jeremy :
-- Caméraman/cadreur freelance, Nantes (Pays de la Loire)
+PROFIL JEREMY :
+- Caméraman/cadreur freelance, Pays de la Loire
 - Spécialités : corporate, événementiel, captation live, drone FPV, sport, documentaire
 - Matériel : Sony A6700, DaVinci Resolve, drone FPV custom
-- TJM : 600 €/jour
+- TJM : 600 €/jour — ne JAMAIS descendre sous 250€
 - Showreel : rondeaujeremy.fr
 - Objectif : décrocher des missions récurrentes auprès de boîtes de prod et agences comm
 
-Quand Jeremy te partage ses stats CRM ou ses problèmes, tu lui donnes :
-1. Un diagnostic direct et chiffré (ex : "tu as X% de taux de réponse, c'est en dessous de la moyenne")
-2. 2-3 actions concrètes à faire cette semaine
-3. Une recommandation business précise avec des chiffres (objectifs, fréquences, ratios)
+━━━ TES CAPACITÉS (tu choisis selon ce que Jeremy demande) ━━━
 
-Parle comme un associé : cash, sans jargon, avec des chiffres. Jamais de blabla motivationnel vide. Réponds en français.
+1. SOURCING DE NOUVELLES BOÎTES
+Quand Jeremy demande de trouver des boîtes ET que des résultats web sont fournis dans le contexte :
+- Utilise UNIQUEMENT les entreprises présentes dans les résultats web fournis — ne complète JAMAIS avec des boîtes inventées
+- Extrais les infos (nom, site, zone, spécialité) depuis les snippets web
+- Si les résultats web sont insuffisants, dis-le clairement plutôt qu'inventer
+Réponds UNIQUEMENT avec un JSON array valide :
+[{"name":"Nom","site":"domaine.fr","zone":"Ville","category":"prod|com|live|event|sport|media|instit|immo","notes":"Spécialité courte","confidence":"high|low","location_note":"(si confidence low)"}]
+- RÈGLE ABSOLUE ANTI-DOUBLON : le contexte contient la liste des entreprises déjà présentes. Ne propose JAMAIS une entreprise déjà dans cette liste, même avec une orthographe différente.
+- Confidence "low" si le site ou la localisation n'est pas confirmé dans les résultats web.
+- Maximum 10 par requête.
+- Catégories : prod (production vidéo), com (agence comm), live (captation live/concert), event (événementiel), sport (sport & culture), media (TV/presse), instit (institutionnel), immo (immobilier)
 
-MODIFICATION CRM DIRECTE : Si Jeremy te demande de modifier une donnée (changer un statut, corriger un champ, etc.), réponds UNIQUEMENT avec ce JSON exact, sans aucun texte avant ou après :
+2. MESSAGES LINKEDIN
+Quand Jeremy demande un message de prospection :
+- 3 phrases maximum, pas une de plus
+- Commence par un fait concret sur LEUR activité (pas sur Jeremy)
+- Une phrase sur ce que Jeremy apporte concrètement à CETTE boîte
+- Une phrase de clôture directe (pas une question molle)
+- Zéro formules IA : pas de "J'espère que vous allez bien", "En tant que", "Je me permets", "N'hésitez pas", "Cordialement"
+- Ton humain, direct, jamais corporate
+
+3. MODIFICATION CRM DIRECTE
+Quand Jeremy demande de modifier une entrée CRM (changer un statut, noter un contact, etc.), réponds UNIQUEMENT avec ce JSON — rien d'autre avant ou après :
 {"action":"modify_crm","id":NUMERO_ID,"field":"NOM_CHAMP","value":"NOUVELLE_VALEUR","summary":"Ce que tu as fait en une phrase"}
 Champs disponibles : statut, notes, contact, poste, relance, date, site
-Valeurs statut possibles : a-contacter, message-envoye, pas-de-reponse, interesse, rdv-pris, refuse, converti`,
+Valeurs statut valides : a-contacter, contact-envoye, message-envoye, pas-de-reponse, en-veille, interesse, rdv-pris, refuse, converti
 
-  copywriter: `Tu es Jeremy Rondeau — vidéaste freelance à Nantes qui prospecte directement sur LinkedIn. Tu rédiges tes propres messages comme si c'était toi qui les envoyais.
+4. ANALYSE & STRATÉGIE
+Quand Jeremy demande une analyse ou des conseils sur sa prospection :
+- Diagnostic direct et chiffré
+- 2-3 actions concrètes à faire cette semaine
+- Parle comme un associé : cash, sans jargon, avec des chiffres
+- Jamais de blabla motivationnel vide
 
-Ton profil : Sony A6700, drone FPV, DaVinci Resolve. Corporate, événementiel, captation live, sport. Showreel : rondeaujeremy.fr. TJM : 600 €/j.
+5. RELANCES
+Quand Jeremy demande qui relancer : utilise les données du contexte pour lister les boîtes urgentes et propose un message de relance adapté au contexte (statut, date, échanges précédents).
 
-RÈGLES STRICTES pour chaque message :
-- 3 phrases maximum — pas une de plus
-- Commence par un fait ou une observation sur LEUR activité (pas sur toi)
-- Une phrase sur ce que tu apportes concrètement
-- Une phrase de clôture directe (pas une question ouverte mollassonne)
-- Zéro expression d'IA : pas de "J'espère que vous allez bien", "En tant que", "Je me permets", "N'hésitez pas", "Cordialement"
-- Ton humain, légèrement direct, jamais corporate
+6. TOUT LE RESTE
+Tu réponds à n'importe quelle question — général, conseils business, technique vidéo, stratégie LinkedIn, questions de vie. Tu es un assistant complet, pas limité au CRM.
 
-Pour des questions stratégie LinkedIn, réponds normalement en français.
-
-MODIFICATION CRM DIRECTE : Si Jeremy te demande de modifier une donnée (changer un statut, corriger un champ, etc.), réponds UNIQUEMENT avec ce JSON exact, sans aucun texte avant ou après :
-{"action":"modify_crm","id":NUMERO_ID,"field":"NOM_CHAMP","value":"NOUVELLE_VALEUR","summary":"Ce que tu as fait en une phrase"}
-Champs disponibles : statut, notes, contact, poste, relance, date, site`,
-
-  tracker: `Tu es un analyste CRM senior. Analyse les statistiques de prospection de Jeremy Rondeau et fournis des insights actionnables.
-Réponds UNIQUEMENT avec un JSON valide :
-{"insights":["insight 1","insight 2","insight 3"],"urgences":["urgence 1"],"conseil":"conseil prioritaire en 1 phrase"}
-Sois concis et factuel.`
+Réponds toujours en français. Sois direct, efficace, et utile.`
 };
+
+// Détecte si le message est une demande de sourcing
+function isSourcingRequest(text) {
+  return /\b(trouv|cherch|source|sourc|ajoute|rajoute|donne.moi|liste.moi)\b/i.test(text) &&
+    /\b(boîte|boite|agence|studio|société|entreprise|production|prod|comm|communication|event|média|media)\b/i.test(text);
+}
+
+// Extrait une requête de recherche optimisée depuis le message utilisateur
+function buildSearchQuery(userMessage) {
+  // Nettoyage du message pour une bonne requête Google
+  return userMessage
+    .replace(/\b(trouve|trouves|trouver|cherche|chercher|ajoute|rajouter|donne.moi|liste.moi|nouveaux?|nouvelles?|boîtes?|boites?|dans mon crm|pour mon crm)\b/gi, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+// Appel Tavily Web Search
+async function tavilySearch(query, tavilyKey) {
+  const response = await fetch('https://api.tavily.com/search', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      api_key: tavilyKey,
+      query: query,
+      search_depth: 'basic',
+      max_results: 10,
+      include_answer: false
+    })
+  });
+  if (!response.ok) {
+    console.error('Tavily error:', response.status, await response.text());
+    return [];
+  }
+  const data = await response.json();
+  return data.results || [];
+}
+
+// Formate les résultats Tavily en contexte lisible pour Claude
+function formatSearchResults(results) {
+  if (!results.length) return '';
+  return results.map((r, i) =>
+    `[${i+1}] ${r.title}\nURL: ${r.url}\n${r.content ? r.content.slice(0, 300) : ''}`
+  ).join('\n\n');
+}
 
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -89,38 +122,60 @@ module.exports = async function handler(req, res) {
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) return res.status(500).json({ error: 'ANTHROPIC_API_KEY non configurée' });
 
+  const tavilyKey = process.env.TAVILY_API_KEY;
+
   const { agent, prompt, context, messages } = req.body || {};
 
-  // Valider qu'on a soit un prompt soit des messages
   const hasPrompt = prompt && prompt.trim();
   const hasMessages = messages && Array.isArray(messages) && messages.length > 0;
   if (!hasPrompt && !hasMessages) {
     return res.status(400).json({ error: 'Paramètre prompt ou messages manquant' });
   }
 
-  const systemPrompt = SYSTEM_PROMPTS[agent] || SYSTEM_PROMPTS.sourcing;
+  // Récupère le dernier message utilisateur pour détecter le sourcing
+  const lastUserText = hasMessages
+    ? String(messages[messages.length - 1]?.content || '')
+    : String(prompt || '');
+
+  // --- TAVILY WEB SEARCH si demande de sourcing ---
+  let webSearchContext = '';
+  if (tavilyKey && isSourcingRequest(lastUserText)) {
+    try {
+      const searchQuery = buildSearchQuery(lastUserText);
+      console.log('Tavily search query:', searchQuery);
+      const results = await tavilySearch(searchQuery, tavilyKey);
+      if (results.length > 0) {
+        webSearchContext = '\n\n[RÉSULTATS WEB RÉELS — utilise UNIQUEMENT ces sources pour le sourcing]\n' + formatSearchResults(results);
+      }
+    } catch(e) {
+      console.error('Tavily search failed:', e.message);
+      // On continue sans résultats web — Claude sera prévenu
+      webSearchContext = '\n\n[Recherche web indisponible — base-toi uniquement sur ta connaissance, confidence "low" obligatoire pour toutes les boîtes]';
+    }
+  }
+
+  const systemPrompt = SYSTEM_PROMPTS.omnibus;
 
   // Construction du payload messages pour Anthropic
   let messagesPayload;
   if (hasMessages) {
-    // Mode chat multi-tour — utiliser le tableau de messages directement
     messagesPayload = messages.map(m => ({
       role: m.role === 'user' ? 'user' : 'assistant',
       content: String(m.content || '')
     }));
-    // Ajouter le contexte supplémentaire au dernier message utilisateur si présent
-    if (context && messagesPayload.length > 0) {
+    // Ajouter contexte CRM + résultats web au dernier message utilisateur
+    const extraContent = [context ? '[Données contextuelles : ' + context + ']' : '', webSearchContext].filter(Boolean).join('\n');
+    if (extraContent && messagesPayload.length > 0) {
       const last = messagesPayload[messagesPayload.length - 1];
       if (last.role === 'user') {
         messagesPayload[messagesPayload.length - 1] = {
           role: 'user',
-          content: last.content + '\n\n[Données contextuelles : ' + context + ']'
+          content: last.content + '\n\n' + extraContent
         };
       }
     }
   } else {
-    // Mode one-shot — prompt simple
-    const userContent = context ? `${prompt}\n\nContexte :\n${context}` : prompt;
+    const userContent = [prompt, context ? 'Contexte :\n' + context : '', webSearchContext].filter(Boolean).join('\n\n');
     messagesPayload = [{ role: 'user', content: userContent }];
   }
 

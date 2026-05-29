@@ -114,6 +114,10 @@
     .crm-filter-btn { padding: 5px 13px; border-radius: 20px; border: 1px solid var(--border); background: transparent; color: var(--muted); font-size: 12px; cursor: pointer; transition: all 0.15s; font-family: inherit; }
     .crm-filter-btn:hover { border-color: var(--accent); color: var(--accent); }
     .crm-filter-btn.active { background: var(--accent); color: #080808; border-color: var(--accent); font-weight: 700; }
+    .crm-zone-filter-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+    .crm-zone-filter-label { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); flex-shrink: 0; }
+    .crm-zone-select { background: var(--card2); border: 1px solid var(--border); border-radius: 6px; padding: 5px 10px; color: var(--text); font-size: 12px; font-family: inherit; cursor: pointer; outline: none; max-width: 220px; }
+    .crm-zone-select:focus { border-color: var(--accent2); }
     .crm-cat-strip { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 6px; margin-bottom: 10px; scrollbar-width: none; }
     .crm-cat-strip::-webkit-scrollbar { display: none; }
     .crm-cat-chip { flex-shrink: 0; padding: 5px 14px; border-radius: 20px; border: 1px solid var(--border); background: var(--card); cursor: pointer; font-size: 12px; font-family: inherit; white-space: nowrap; transition: all 0.15s; color: var(--muted); }
@@ -268,6 +272,9 @@
     .crm-contact-display { font-size: 11px; color: var(--accent2); flex-shrink: 0; max-width: 110px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .crm-zone-tag { font-size: 10px; color: var(--muted); background: var(--card2); padding: 2px 6px; border-radius: 3px; flex-shrink: 0; }
     .crm-badge { font-size: 10px; font-weight: 700; padding: 2px 9px; border-radius: 20px; flex-shrink: 0; white-space: nowrap; }
+    .crm-badge-select { border: 1px solid transparent; cursor: pointer; font-family: inherit; appearance: none; -webkit-appearance: none; text-align: center; transition: border-color 0.15s; }
+    .crm-badge-select:hover { border-color: currentColor !important; }
+    .crm-badge-select:focus { outline: none; }
     .crm-has-notes { font-size: 8px; flex-shrink: 0; color: var(--accent2); }
     .crm-msg-check { font-size: 11px; flex-shrink: 0; cursor: pointer; background: none; border: 1px solid var(--border2); border-radius: 3px; width: 16px; height: 16px; display: flex; align-items: center; justify-content: center; color: transparent; transition: all 0.15s; padding: 0; }
     .crm-msg-check.sent { border-color: var(--blue); background: rgba(74,158,255,0.15); color: var(--blue); }
@@ -280,6 +287,12 @@
     .crm-detail { display: none; padding: 13px 15px; border-top: 1px solid var(--border); background: rgba(0,0,0,0.25); }
     .crm-row.open .crm-detail { display: block; }
     .crm-detail-grid { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 9px; margin-bottom: 10px; }
+    .crm-extra-contacts { margin-bottom: 10px; }
+    .crm-extra-contact-row { display: grid; grid-template-columns: 1fr 1fr auto; gap: 8px; align-items: end; margin-bottom: 6px; }
+    .crm-btn-add-contact { background: none; border: 1px dashed var(--border2); color: var(--muted); border-radius: 5px; padding: 4px 10px; font-size: 11px; cursor: pointer; transition: all 0.15s; margin-bottom: 10px; }
+    .crm-btn-add-contact:hover { border-color: var(--accent); color: var(--accent); }
+    .crm-btn-rm-contact { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 18px; padding: 0 4px; border-radius: 3px; line-height: 1; margin-bottom: 2px; }
+    .crm-btn-rm-contact:hover { color: var(--danger); }
     .crm-field { display: flex; flex-direction: column; gap: 3px; }
     .crm-field label { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); }
     .crm-input { background: var(--card2); border: 1px solid var(--border); border-radius: 5px; padding: 5px 9px; color: var(--text); font-size: 13px; outline: none; font-family: inherit; transition: border-color 0.15s; width: 100%; }
@@ -340,6 +353,58 @@
 
     /* ALERTES */
     .alerte-badge { display: inline-block; background: var(--danger); color: #fff; font-size: 10px; font-weight: 800; padding: 1px 6px; border-radius: 8px; margin-left: 5px; vertical-align: middle; line-height: 1.5; }
+
+    /* FLOATING CHAT BUBBLE */
+    #chat-bubble-btn { position: fixed; bottom: 24px; right: 24px; width: 52px; height: 52px; border-radius: 50%; background: var(--accent); color: #080808; font-size: 20px; font-weight: 800; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 900; box-shadow: 0 4px 24px rgba(0,0,0,0.6); border: none; transition: transform 0.2s, background 0.2s; }
+    #chat-bubble-btn:hover { transform: scale(1.07); }
+    #chat-bubble-btn.open { background: var(--card2); color: var(--text2); }
+    #chat-bubble-badge { position: absolute; top: -3px; right: -3px; width: 18px; height: 18px; border-radius: 50%; background: var(--danger); color: #fff; font-size: 10px; font-weight: 800; display: none; align-items: center; justify-content: center; }
+    #chat-bubble-panel { position: fixed; bottom: 88px; right: 24px; width: 390px; max-width: calc(100vw - 32px); height: 540px; max-height: calc(100vh - 110px); background: var(--sidebar); border: 1px solid var(--border2); border-radius: 16px; z-index: 899; display: flex; flex-direction: column; box-shadow: 0 12px 48px rgba(0,0,0,0.75); transform: scale(0.9) translateY(20px); opacity: 0; pointer-events: none; transition: all 0.22s cubic-bezier(0.4,0,0.2,1); transform-origin: bottom right; overflow: hidden; }
+    #chat-bubble-panel.open { transform: scale(1) translateY(0); opacity: 1; pointer-events: auto; }
+    #bubble-header { padding: 12px 14px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 9px; flex-shrink: 0; background: var(--card); }
+    #bubble-header .bh-name { font-size: 13px; font-weight: 800; flex: 1; }
+    #bubble-header .bh-spec { font-size: 10px; color: var(--muted); margin-top: 1px; }
+    #bubble-close { background: none; border: none; color: var(--muted); font-size: 20px; cursor: pointer; padding: 0 4px; line-height: 1; border-radius: 3px; }
+    #bubble-close:hover { color: var(--accent); }
+    #chat-bubble-panel .chat-messages { flex: 1; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 9px; }
+    #chat-bubble-panel .chat-input-bar { padding: 10px 12px; border-top: 1px solid var(--border); flex-shrink: 0; }
+
+    /* CONVERSATION HISTORY PANEL */
+    #conv-list-panel { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: var(--sidebar); z-index: 10; flex-direction: column; display: none; border-radius: 16px; overflow: hidden; }
+    #conv-list-panel .clp-header { padding: 12px 14px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px; flex-shrink: 0; background: var(--card); }
+    #conv-list-panel .clp-title { font-size: 13px; font-weight: 700; flex: 1; }
+    #conv-list-panel .clp-new { background: var(--accent); color: #080808; border: none; border-radius: 6px; padding: 5px 10px; font-size: 11px; font-weight: 700; cursor: pointer; white-space: nowrap; }
+    #conv-list-panel .clp-new:hover { opacity: 0.85; }
+    #conv-list-panel .clp-close { background: none; border: none; color: var(--muted); font-size: 20px; cursor: pointer; line-height: 1; padding: 0 2px; }
+    #conv-list-panel .clp-close:hover { color: var(--accent); }
+    #conv-list-items { flex: 1; overflow-y: auto; padding: 6px; }
+    .conv-item { display: flex; align-items: center; gap: 8px; padding: 9px 10px; border-radius: 8px; cursor: pointer; transition: background 0.15s; }
+    .conv-item:hover { background: var(--card); }
+    .conv-item.active { background: var(--card2); }
+    .conv-item-body { flex: 1; min-width: 0; }
+    .conv-item-name { font-size: 12px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .conv-item-preview { font-size: 10px; color: var(--muted); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .conv-item-meta { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; flex-shrink: 0; }
+    .conv-item-date { font-size: 9px; color: var(--muted); }
+    .conv-item-acts { display: flex; gap: 2px; }
+    .conv-item-acts button { background: none; border: none; cursor: pointer; font-size: 12px; color: var(--muted); padding: 1px 4px; border-radius: 3px; line-height: 1.4; }
+    .conv-item-acts button:hover { background: var(--card2); color: var(--text); }
+    #bubble-hist-btn { background: none; border: none; color: var(--muted); font-size: 15px; cursor: pointer; padding: 3px 6px; border-radius: 4px; line-height: 1; transition: color 0.15s; }
+    #bubble-hist-btn:hover, #bubble-hist-btn.active { color: var(--accent); }
+    #bubble-conv-title { font-size: 10px; color: var(--muted); max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: block; margin-top: 1px; }
+
+    /* ANALYTICS */
+    .anal-kpi-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 9px; margin-bottom: 18px; }
+    .anal-funnel-row { display: grid; grid-template-columns: 115px 1fr 50px 42px; align-items: center; gap: 10px; margin-bottom: 7px; }
+    .anal-funnel-label { font-size: 12px; color: var(--text2); }
+    .anal-funnel-bar { background: var(--card2); border-radius: 3px; height: 8px; overflow: hidden; }
+    .anal-funnel-fill { height: 100%; border-radius: 3px; transition: width 0.5s ease; }
+    .anal-zone-tbl { width: 100%; border-collapse: collapse; font-size: 12px; }
+    .anal-zone-tbl th { text-align: left; padding: 5px 8px; color: var(--muted); font-size: 10px; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid var(--border); }
+    .anal-zone-tbl td { padding: 7px 8px; border-bottom: 1px solid var(--border); }
+    .anal-zone-tbl tbody tr:last-child td { border-bottom: none; }
+    .anal-cat-card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 10px 13px; }
+    .anal-stat-card { background: var(--card2); border-radius: 8px; padding: 10px 12px; border: 1px solid transparent; }
 
     /* UTILS */
     .r { color: var(--danger); } .g { color: var(--accent2); } .y { color: var(--accent); } .b { color: var(--blue); }
@@ -434,9 +499,9 @@
     </div>
     <div id="section-prospection-custom"></div>
 
-    <div class="section-row"><div class="section-label">Agents IA</div></div>
+    <div class="section-row"><div class="section-label">Analytics</div></div>
     <div class="note-item" data-fixed="agents" onclick="showNote('agents',this)">
-      <div><div class="nt">Centre des Agents</div><div class="ns">Hub IA, voix & chat</div></div>
+      <div><div class="nt">Analyse CRM</div><div class="ns">Stats & performance</div></div>
       <div class="note-dot" style="background:var(--purple)"></div>
     </div>
 
@@ -486,6 +551,7 @@
   let saveTimer = null;
   let crmFilter = 'all';
   let crmTypeFilter = 'all';
+  let crmZoneFilter = 'all';
   let crmSearch = '';
   let crmPage = 1;
   const CRM_PAGE_SIZE = 20;
@@ -510,29 +576,23 @@
   // ---- CHAT STATE ----
   const chatHistories = {};
   const injectCache = {};
-  let chatCurrentAgent = null;
+  let chatCurrentAgent = 'omnibus';
+  let bubbleChatOpen = false;
   let chatSpeechRec = null;
   let chatMicListening = false;
   let chatSpeaking = false;
+  let micBaseText = '';
+  // Conversation history
+  let convList = [];
+  let currentConvId = null;
+  let convPanelOpen = false;
 
   const AGENT_DEFS = {
-    sourcing: {
-      emoji: '🕵️', name: 'Chasseur de Pistes',
-      specialty: 'Trouve des boîtes de prod, agences comm, event, live...',
-      color: '#4a9eff', colorBg: 'rgba(74,158,255,0.07)',
-      hint: '"Trouve 15 boîtes événementielles à Bordeaux"'
-    },
-    stratege: {
-      emoji: '🧠', name: 'Stratège Business',
-      specialty: 'Analyse tes stats CRM et dicte des plans d\'action',
-      color: '#9b59b6', colorBg: 'rgba(155,89,182,0.07)',
-      hint: '"Analyse mes stats et donne-moi un plan pour cette semaine"'
-    },
-    copywriter: {
-      emoji: '✍️', name: 'Copywriter Pro',
-      specialty: 'Rédige tes messages LinkedIn prêts à envoyer',
-      color: '#4caf50', colorBg: 'rgba(76,175,80,0.07)',
-      hint: '"Génère un message pour Iconik Productions"'
+    omnibus: {
+      emoji: '✦', name: 'Assistant JRV',
+      specialty: 'Sourcing, messages, CRM, analyses, relances, ou n\'importe quelle question',
+      color: '#ffffff', colorBg: 'rgba(255,255,255,0.07)',
+      hint: '"Qui dois-je relancer aujourd\'hui ?"'
     }
   };
 
@@ -545,7 +605,7 @@
     post: `Post LinkedIn : [Titre]\n\nDate cible : \n\n---\n\nTexte du post :\n\n\n\nHashtags : \n\nRappels apres publication :\n- Repondre aux commentaires dans les 2h\n- Tagger 2-3 personnes`,
     libre: ``
   };
-  const TITLE_MAP = { dashboard:'Dashboard', crm:'CRM Boites de prod', agents:'Centre des Agents', scripts:'LinkedIn & Prospection', wakeSurf:'Doc Wake Surf', mathis:'Call Mathis Faudrit', strategie:'Plan 8 Mois', showreel:'Post Showreel', docTech:'Faire un Doc Impactant', allNotes:'Toutes mes notes', alertes:'Alertes' };
+  const TITLE_MAP = { dashboard:'Dashboard', crm:'CRM Boites de prod', agents:'Analyse CRM', scripts:'LinkedIn & Prospection', wakeSurf:'Doc Wake Surf', mathis:'Call Mathis Faudrit', strategie:'Plan 8 Mois', showreel:'Post Showreel', docTech:'Faire un Doc Impactant', allNotes:'Toutes mes notes', alertes:'Alertes' };
 
   // ---- MOBILE ----
   function toggleSidebar() {
@@ -793,13 +853,15 @@
 
   // ---- CRM DATA ----
   const STATUS_CONFIG = {
-    'a-contacter':    { label:'A contacter',    bg:'#1a1a1a', color:'#666' },
-    'message-envoye': { label:'Message envoyé', bg:'#0a1a2e', color:'#4a9eff' },
-    'pas-de-reponse': { label:'Pas de réponse', bg:'#252525', color:'#ffffff' },
-    'interesse':      { label:'Intéressé',      bg:'#0a1f10', color:'#4caf50' },
-    'rdv-pris':       { label:'RDV pris',        bg:'#003318', color:'#00c853' },
-    'refuse':         { label:'Refus',           bg:'#2a0000', color:'#e53935' },
-    'converti':       { label:'Converti ✓',     bg:'#180a2e', color:'#9b59b6' },
+    'a-contacter':    { label:'A contacter',     bg:'#1a1a1a', color:'#666' },
+    'contact-envoye': { label:'Contact envoyé',  bg:'#0a1e1e', color:'#26c6da' },
+    'message-envoye': { label:'Message envoyé',  bg:'#0a1a2e', color:'#4a9eff' },
+    'pas-de-reponse': { label:'Pas de réponse',  bg:'#252525', color:'#ffffff' },
+    'en-veille':      { label:'En veille',        bg:'#1e1600', color:'#ffc107' },
+    'interesse':      { label:'Intéressé',       bg:'#0a1f10', color:'#4caf50' },
+    'rdv-pris':       { label:'RDV pris',         bg:'#003318', color:'#00c853' },
+    'refuse':         { label:'Refus',            bg:'#2a0000', color:'#e53935' },
+    'converti':       { label:'Converti ✓',      bg:'#180a2e', color:'#9b59b6' },
   };
 
   const COMPANIES_DEFAULT = [
@@ -939,6 +1001,7 @@
 
   function getCRMCompanies() {
     if (_sbCompanies !== null) return _sbCompanies;
+    migrateCRMZones();
     const stored = localStorage.getItem('jrv_crm_v2');
     if (!stored) return COMPANIES_DEFAULT.filter(c => !DELETED_IDS.includes(c.id));
     return JSON.parse(stored).filter(c => !DELETED_IDS.includes(c.id));
@@ -954,6 +1017,92 @@
       }
       _sbUpsertCompany(changed);
     }
+  }
+
+  // ---- MIGRATION ZONES / CATEGORIES ----
+  // Corrige les anciennes données où zone servait aussi de catégorie
+  function migrateCRMZones() {
+    const migKey = 'jrv_crm_zones_v1';
+    if (localStorage.getItem(migKey)) return;
+    const stored = localStorage.getItem('jrv_crm_v2');
+    if (!stored) { localStorage.setItem(migKey,'1'); return; }
+    let arr; try { arr = JSON.parse(stored); } catch(e) { localStorage.setItem(migKey,'1'); return; }
+    // Per-company overrides (zone corrections + category)
+    const overrides = {
+      18:{category:'event'}, 28:{zone:'Saint-Nazaire',category:'com'}, 35:{category:'com'},
+      62:{zone:'Vendée',category:'instit'}, 70:{zone:'Vendée',category:'sport'},
+      71:{zone:'Vendée',category:'sport'}, 75:{zone:'Rennes',category:'media'},
+      112:{zone:'Rennes',category:'live'}, 113:{zone:'Rennes',category:'live'},
+      114:{zone:'Rennes',category:'live'}, 115:{zone:'National',category:'live'},
+      119:{zone:'National',category:'live'}, 120:{zone:'Rennes',category:'live'},
+      116:{zone:'Nantes',category:'live'}, 117:{zone:'Nantes',category:'live'},
+      108:{zone:'Nantes',category:'live'}, 109:{zone:'Nantes',category:'live'},
+      110:{zone:'Nantes',category:'live'}, 111:{zone:'Nantes',category:'live'},
+      107:{zone:'Nantes',category:'live'}, 69:{zone:'Nantes',category:'sport'},
+      72:{zone:'Nantes',category:'sport'}, 73:{zone:'Nantes',category:'media'},
+      74:{zone:'Nantes',category:'media'}, 76:{zone:'Nantes',category:'media'},
+    };
+    arr.forEach(c => {
+      if (!c.category) {
+        const z = c.zone || '';
+        if (z.startsWith('Agences Comm — ')) {
+          const city = z.replace('Agences Comm — ','');
+          c.zone = city === 'Grand Ouest' ? 'Nantes' : city;
+          c.category = 'com';
+        } else if (z === 'Agences Evenementielles') { c.zone = 'Nantes'; c.category = 'event'; }
+        else if (z === 'Web & Digital')              { c.zone = 'Nantes'; c.category = 'com'; }
+        else if (z === 'Institutionnels')             { c.zone = 'Nantes'; c.category = 'instit'; }
+        else if (z === 'Immobilier')                  { c.zone = 'Nantes'; c.category = 'immo'; }
+        else if (z === 'Sport & Culture')             { c.zone = 'Nantes'; c.category = 'sport'; }
+        else if (z === 'Medias')                      { c.zone = 'Nantes'; c.category = 'media'; }
+        else if (z === 'Captation Live Concert')      { c.zone = 'Nantes'; c.category = 'live'; }
+        else                                           { c.category = 'prod'; }
+      }
+      if (overrides[c.id]) Object.assign(c, overrides[c.id]);
+    });
+    localStorage.setItem('jrv_crm_v2', JSON.stringify(arr));
+    localStorage.setItem(migKey,'1');
+    _sbCompanies = null; // reset cache
+  }
+
+  function setCRMZoneFilter(v) { crmZoneFilter = v; crmPage = 1; refreshCRMList(); }
+
+  // ---- EXTRA CONTACTS ----
+  function renderExtraContactsHTML(c) {
+    if (!c.contacts_extra || c.contacts_extra.length === 0) return '';
+    return c.contacts_extra.map((ec, i) => `
+      <div class="crm-extra-contact-row">
+        <div class="crm-field"><label>Contact ${i+2}</label>
+          <input class="crm-input" value="${escAttr(ec.name||'')}" placeholder="Prénom Nom" onblur="updateExtraContact(${c.id},${i},'name',this.value)"></div>
+        <div class="crm-field"><label>Poste</label>
+          <input class="crm-input" value="${escAttr(ec.poste||'')}" placeholder="Ex: Directeur de prod" onblur="updateExtraContact(${c.id},${i},'poste',this.value)"></div>
+        <button class="crm-btn-rm-contact" onclick="removeExtraContact(${c.id},${i})" title="Supprimer ce contact">×</button>
+      </div>`).join('');
+  }
+  function addExtraContact(id) {
+    const arr = getCRMCompanies();
+    const c = arr.find(x => x.id === id); if (!c) return;
+    if (!c.contacts_extra) c.contacts_extra = [];
+    c.contacts_extra.push({name:'', poste:''});
+    saveCRMCompanies(arr, c);
+    const el = document.getElementById('extra-contacts-' + id);
+    if (el) el.innerHTML = renderExtraContactsHTML(c);
+  }
+  function removeExtraContact(id, index) {
+    const arr = getCRMCompanies();
+    const c = arr.find(x => x.id === id); if (!c) return;
+    if (!c.contacts_extra) return;
+    c.contacts_extra.splice(index, 1);
+    saveCRMCompanies(arr, c); showSaved();
+    const el = document.getElementById('extra-contacts-' + id);
+    if (el) el.innerHTML = renderExtraContactsHTML(c);
+  }
+  function updateExtraContact(id, index, field, value) {
+    const arr = getCRMCompanies();
+    const c = arr.find(x => x.id === id); if (!c) return;
+    if (!c.contacts_extra || !c.contacts_extra[index]) return;
+    c.contacts_extra[index][field] = value;
+    saveCRMCompanies(arr, c); showSaved();
   }
 
   // ---- CRM HELPERS ----
@@ -977,8 +1126,8 @@
     const c = arr.find(x => x.id === id); if (!c) return;
     c.statut = status; saveCRMCompanies(arr, c); showSaved();
     const s = STATUS_CONFIG[status] || STATUS_CONFIG['a-contacter'];
-    const badge = document.querySelector(`.crm-row[data-id="${id}"] .crm-badge`);
-    if (badge) { badge.textContent = s.label; badge.style.background = s.bg; badge.style.color = s.color; }
+    const badge = document.querySelector(`.crm-row[data-id="${id}"] .crm-badge-select`);
+    if (badge) { badge.style.background = s.bg; badge.style.color = s.color; badge.style.borderColor = s.color+'40'; badge.value = status; }
     updateCRMStatsBar();
   }
 
@@ -1097,11 +1246,12 @@
       const mf = crmFilter === 'all' ||
         (crmFilter === 'priorite' && c.p) ||
         (crmFilter === 'a-contacter' && c.statut === 'a-contacter') ||
-        (crmFilter === 'en-cours' && ['message-envoye','pas-de-reponse'].includes(c.statut)) ||
+        (crmFilter === 'en-cours' && ['contact-envoye','message-envoye','pas-de-reponse','en-veille'].includes(c.statut)) ||
         (crmFilter === 'positif' && ['interesse','rdv-pris','converti'].includes(c.statut)) ||
         (crmFilter === 'contactees' && c.statut !== 'a-contacter');
       const mt = crmTypeFilter === 'all' || getCompanyType(c) === crmTypeFilter;
-      return ms && mf && mt;
+      const mz = crmZoneFilter === 'all' || (c.zone || '') === crmZoneFilter;
+      return ms && mf && mt && mz;
     });
     if (filtered.length === 0) return '<div style="padding:20px;color:var(--muted);text-align:center;font-size:13px;">Aucune boite trouvee</div>';
     const totalPages = Math.max(1, Math.ceil(filtered.length / CRM_PAGE_SIZE));
@@ -1129,13 +1279,20 @@
     const canaux = ['LinkedIn','Email','Telephone','Physique','Instagram'];
     const canalOpts = canaux.map(x => `<option value="${x}"${c.canal===x?' selected':''}>${x}</option>`).join('');
     const statutOpts = Object.entries(STATUS_CONFIG).map(([k,v]) => `<option value="${k}"${c.statut===k?' selected':''}>${v.label}</option>`).join('');
+    const nameEl = c.linkedin
+      ? `<a href="${escAttr(c.linkedin)}" target="_blank" onclick="event.stopPropagation()" style="color:inherit;text-decoration:none;border-bottom:1px dotted rgba(74,158,255,0.5)" title="Ouvrir LinkedIn">${escHtml(c.name)}</a>`
+      : escHtml(c.name);
     return `<div class="crm-row" data-id="${c.id}">
       <div class="crm-row-header" onclick="toggleExpand(${c.id})">
         <span class="crm-priority">${c.p ? '★' : ''}</span>
         <button class="crm-copy-btn" onclick="event.stopPropagation();copyCrmName(this,'${escHtml(c.name).replace(/'/g,"\\'")}')">⧉</button>
-        <span class="crm-name">${escHtml(c.name)}</span>
-        <span class="crm-contact-display" style="${c.contact?'':'opacity:0'}">${escHtml(c.contact)}</span>
-        <span class="crm-badge" style="background:${s.bg};color:${s.color}">${s.label}</span>
+        <div style="flex:1;min-width:0;overflow:hidden">
+          <div class="crm-name">${nameEl}${c.linkedin ? ' <span style="font-size:9px;color:var(--blue);opacity:0.7">in</span>' : ''}</div>
+          ${c.contact ? `<div style="font-size:10px;color:var(--accent2);margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escHtml(c.contact)}${c.poste ? ' · <span style="color:var(--muted)">' + escHtml(c.poste) + '</span>' : ''}</div>` : ''}
+        </div>
+        <select class="crm-badge crm-badge-select" style="background:${s.bg};color:${s.color};border-color:${s.color}40" onclick="event.stopPropagation()" onchange="event.stopPropagation();updateCompanyStatus(${c.id},this.value)">
+          ${Object.entries(STATUS_CONFIG).map(([k,v]) => `<option value="${k}"${c.statut===k?' selected':''} style="background:var(--card2);color:var(--text)">${v.label}</option>`).join('')}
+        </select>
         <span class="crm-has-notes" style="opacity:${hasNotes?1:0}">●</span>
         <button class="crm-msg-check${c.msg?' sent':''}" title="Message envoyé" onclick="event.stopPropagation();toggleMsg(${c.id})">✓</button>
         <button class="crm-delete-btn" onclick="event.stopPropagation();deleteCompany(${c.id})" title="Supprimer ce lead">×</button>
@@ -1155,15 +1312,23 @@
             <select class="crm-select crm-status-select" onchange="updateCompanyStatus(${c.id},this.value)">${statutOpts}</select></div>
           <div class="crm-field"><label>Relance le</label>
             <input class="crm-input crm-relance-input" type="date" value="${escAttr(c.relance||'')}" onchange="updateCompany(${c.id},'relance',this.value)"></div>
-          <div class="crm-field" style="grid-column:span 2"><label>Site web</label>
+          <div class="crm-field"><label>Date réponse</label>
+            <input class="crm-input" type="date" value="${escAttr(c.date_reponse||'')}" onchange="updateCompany(${c.id},'date_reponse',this.value)"></div>
+          <div class="crm-field"><label>Site web</label>
             <input class="crm-input" value="${escAttr(c.site)}" onblur="updateCompany(${c.id},'site',this.value)"></div>
+          <div class="crm-field"><label>LinkedIn URL</label>
+            <input class="crm-input" value="${escAttr(c.linkedin||'')}" placeholder="https://linkedin.com/in/..." onblur="updateCompany(${c.id},'linkedin',this.value)"></div>
         </div>
+        <div class="crm-extra-contacts" id="extra-contacts-${c.id}">${renderExtraContactsHTML(c)}</div>
+        <button class="crm-btn-add-contact" onclick="addExtraContact(${c.id})">+ Ajouter un contact</button>
         <div class="crm-field" style="margin-bottom:9px"><label>Notes / Dernier echange</label>
           <textarea class="crm-notes-field" placeholder="Notes, contexte, suite a donner..." onblur="updateCompany(${c.id},'notes',this.value)">${escHtml(c.notes||'')}</textarea></div>
         <div class="crm-actions">
           <button class="agent-copy-btn" onclick="runCopywriterAgent(${c.id})" title="Générer un message LinkedIn avec l'IA">✍️ Message IA</button>
+          <button class="crm-action-btn" onclick="quickStatus(${c.id},'contact-envoye')">Contact envoyé</button>
           <button class="crm-action-btn" onclick="quickStatus(${c.id},'message-envoye')">Message envoyé</button>
           <button class="crm-action-btn" onclick="quickStatus(${c.id},'pas-de-reponse')">Pas de réponse</button>
+          <button class="crm-action-btn" onclick="quickStatus(${c.id},'en-veille')" style="color:#ffc107">En veille</button>
           <button class="crm-action-btn" onclick="quickStatus(${c.id},'interesse')">Intéressé</button>
           <button class="crm-action-btn rdv" onclick="quickStatus(${c.id},'rdv-pris')">RDV pris ✓</button>
           <button class="crm-action-btn" onclick="quickStatus(${c.id},'refuse')">Refus</button>
@@ -1425,7 +1590,7 @@
     }).join('');
 
     const aContacter = arr.filter(c => c.statut === 'a-contacter').length;
-    const enCours = arr.filter(c => ['message-envoye','pas-de-reponse'].includes(c.statut)).length;
+    const enCours = arr.filter(c => ['contact-envoye','message-envoye','pas-de-reponse','en-veille'].includes(c.statut)).length;
 
     return `
       <div class="agent-sourcing-bar">
@@ -1456,6 +1621,13 @@
         <div class="crm-stat"><div class="n" id="cst-convertis" style="color:var(--purple)">${convertis}</div><div class="l">Convertis</div></div>
       </div>
       <div class="crm-cat-strip">${catChips}</div>
+      <div class="crm-zone-filter-row">
+        <span class="crm-zone-filter-label">Ville</span>
+        <select class="crm-zone-select" onchange="setCRMZoneFilter(this.value)">
+          <option value="all"${crmZoneFilter==='all'?' selected':''}>Toutes les villes</option>
+          ${[...new Set(arr.map(c => c.zone || 'Autre').filter(z => z && !z.includes('—') && !['Agences Evenementielles','Web & Digital','Institutionnels','Immobilier','Sport & Culture','Medias','Captation Live Concert'].includes(z)).sort())].map(z => `<option value="${escAttr(z)}"${crmZoneFilter===z?' selected':''}>${escHtml(z)}</option>`).join('')}
+        </select>
+      </div>
       <div class="crm-filters">
         <button class="crm-filter-btn ${crmFilter==='all'?'active':''}" data-filter="all" onclick="setCRMFilter('all')">Toutes (${arr.length})</button>
         <button class="crm-filter-btn ${crmFilter==='priorite'?'active':''}" data-filter="priorite" onclick="setCRMFilter('priorite')">Priorites ★ (${priorites})</button>
@@ -2085,68 +2257,183 @@ https://www.rondeaujeremy.fr/
   // ---- AGENT HUB & CHAT ----
 
   function renderAgentsCentre() {
-    const cards = Object.entries(AGENT_DEFS).map(([id, def]) => `
-      <div class="agent-hub-card" onclick="openAgentChat('${id}')" style="border-color:${def.color}22">
-        <div class="ahc-glow" style="background:radial-gradient(circle at top left,${def.colorBg},transparent 65%)"></div>
-        <span class="ahc-emoji">${def.emoji}</span>
-        <div class="ahc-name">${def.name}</div>
-        <div class="ahc-spec">${def.specialty}</div>
-        <div class="ahc-btn" style="border-color:${def.color};color:${def.color}">Démarrer →</div>
-      </div>`).join('');
-    return `<div class="agent-hub">
-      <div class="agent-hub-label">Sélectionne ton agent</div>
-      <div class="agent-cards-grid">${cards}</div>
-      <div style="text-align:center;font-size:11px;color:var(--muted);padding:8px 0">
-        🎙️ Voix activée — parle à tes agents ou écris, ils comprennent les deux
-      </div>
-    </div>`;
+    return renderAnalyse();
   }
 
-  function openAgentChat(agentId) {
-    chatCurrentAgent = agentId;
-    const def = AGENT_DEFS[agentId];
-    if (!def) return;
-    // Update topbar title
-    const ti = document.getElementById('note-title-input');
-    if (ti) ti.value = def.emoji + ' ' + def.name;
-    // Welcome message on first open
-    if (!chatHistories[agentId]) {
-      chatHistories[agentId] = [{
-        role: 'agent',
-        content: `Bonjour ! Je suis ton ${def.name}.\n${def.specialty}.\n\nEssaie par exemple : ${def.hint}`,
-        time: new Date()
-      }];
-    }
-    const content = document.getElementById('content');
-    if (content) content.innerHTML = buildChatPageHTML(agentId);
-    chatScrollBottom();
-    setTimeout(function() { const inp = document.getElementById('chat-text-input'); if (inp) inp.focus(); }, 80);
-  }
+  function renderAnalyse() {
+    const arr = getCRMCompanies();
+    const now = new Date();
+    const today = now.toISOString().split('T')[0];
+    const contacted = arr.filter(c => c.statut !== 'a-contacter').length;
+    const enCours = arr.filter(c => ['contact-envoye','message-envoye','pas-de-reponse','en-veille'].includes(c.statut)).length;
+    const reponses = arr.filter(c => ['interesse','rdv-pris','converti'].includes(c.statut)).length;
+    const rdvPris = arr.filter(c => c.statut === 'rdv-pris').length;
+    const refuse = arr.filter(c => c.statut === 'refuse').length;
+    const convertis = arr.filter(c => c.statut === 'converti').length;
+    const aContacter = arr.filter(c => c.statut === 'a-contacter').length;
+    const tauxReponse = contacted > 0 ? Math.round(reponses / contacted * 100) : 0;
+    const tauxConv = reponses > 0 ? Math.round(convertis / reponses * 100) : 0;
 
-  function buildChatPageHTML(agentId) {
-    const def = AGENT_DEFS[agentId];
-    const msgs = (chatHistories[agentId] || []).map(buildMsgHTML).join('');
-    return `<div class="chat-page">
-      <div class="chat-header">
-        <button class="chat-back" onclick="showNote('agents', document.querySelector('[data-fixed=\\'agents\\']'))">← Hub</button>
-        <div class="agent-avatar" style="background:${def.colorBg};border-color:${def.color}55;font-size:17px;width:34px;height:34px">${def.emoji}</div>
-        <div class="chat-agent-id">
-          <div class="chat-agent-name">${def.name}</div>
-          <div class="chat-agent-spec">${def.specialty}</div>
-        </div>
-        <div class="chat-status">
-          <div class="chat-sdot" id="chat-sdot"></div>
-          <span id="chat-stext">Prêt</span>
-        </div>
+    // Temps de réponse moyen
+    const reponseTimes = arr.filter(c => c.date && c.date_reponse && c.date_reponse > c.date)
+      .map(c => Math.round((new Date(c.date_reponse) - new Date(c.date)) / 86400000));
+    const avgReponse = reponseTimes.length > 0 ? Math.round(reponseTimes.reduce((a,b) => a+b, 0) / reponseTimes.length) : null;
+    const maxReponse = reponseTimes.length > 0 ? Math.max(...reponseTimes) : null;
+    const minReponse = reponseTimes.length > 0 ? Math.min(...reponseTimes) : null;
+
+    const relances = arr.filter(c => c.relance && c.relance <= today).sort((a,b) => a.relance < b.relance ? -1 : 1);
+
+    const zones = {};
+    arr.forEach(c => {
+      const z = c.zone || 'Autre';
+      if (!zones[z]) zones[z] = { total:0, contacts:0, positifs:0 };
+      zones[z].total++;
+      if (c.statut !== 'a-contacter') zones[z].contacts++;
+      if (['interesse','rdv-pris','converti'].includes(c.statut)) zones[z].positifs++;
+    });
+
+    const cats = {};
+    arr.forEach(c => {
+      const cat = c.category || 'prod';
+      if (!cats[cat]) cats[cat] = { total:0, contacts:0 };
+      cats[cat].total++;
+      if (c.statut !== 'a-contacter') cats[cat].contacts++;
+    });
+
+    const funnel = [
+      { label:'Boites cibles', n:arr.length, color:'var(--text2)' },
+      { label:'Contactées', n:contacted, color:'var(--blue)' },
+      { label:'En cours', n:enCours, color:'var(--accent)' },
+      { label:'Reponses+', n:reponses, color:'var(--accent2)' },
+      { label:'Converties', n:convertis, color:'var(--purple)' },
+    ];
+
+    return `
+    <div style="font-size:18px;font-weight:800;margin-bottom:16px">Analyse CRM</div>
+
+    <div class="anal-kpi-grid">
+      ${[
+        [arr.length,'Boites cibles','var(--text)'],
+        [contacted+'/'+arr.length,'Contactées','var(--blue)'],
+        [tauxReponse+'%','Taux réponse+','var(--accent2)'],
+        [convertis,'Convertis','var(--purple)'],
+      ].map(([n,l,c]) => `<div class="stat-card"><div class="big" style="color:${c}">${n}</div><div class="small">${l}</div></div>`).join('')}
+    </div>
+    <div class="block" style="margin-bottom:13px">
+      <h3>Temps de réponse</h3>
+      ${reponseTimes.length === 0
+        ? `<div style="font-size:12px;color:var(--muted)">Pas encore de données — remplis le champ "Date réponse" dans les fiches pour alimenter cette stat.</div>`
+        : `<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:9px">
+            <div class="anal-stat-card"><div style="font-size:22px;font-weight:800;color:var(--accent)">${avgReponse}j</div><div style="font-size:10px;color:var(--muted);margin-top:2px">Délai moyen</div></div>
+            <div class="anal-stat-card"><div style="font-size:22px;font-weight:800;color:var(--accent2)">${minReponse}j</div><div style="font-size:10px;color:var(--muted);margin-top:2px">Réponse la + rapide</div></div>
+            <div class="anal-stat-card"><div style="font-size:22px;font-weight:800;color:var(--muted)">${maxReponse}j</div><div style="font-size:10px;color:var(--muted);margin-top:2px">Délai max</div></div>
+           </div>
+           <div style="font-size:11px;color:var(--muted);margin-top:8px">Calculé sur ${reponseTimes.length} boîte(s) avec date d'envoi + date réponse renseignées.</div>`
+      }
+    </div>
+
+    <div class="block" style="margin-bottom:13px">
+      <h3>Pipeline de prospection</h3>
+      <div style="margin-bottom:4px">
+        ${funnel.map(f => {
+          const pct = arr.length > 0 ? Math.round(f.n / arr.length * 100) : 0;
+          return `<div class="anal-funnel-row">
+            <div class="anal-funnel-label">${f.label}</div>
+            <div class="anal-funnel-bar"><div class="anal-funnel-fill" style="background:${f.color};width:${pct}%"></div></div>
+            <div style="font-size:13px;font-weight:700;color:${f.color};text-align:right">${f.n}</div>
+            <div style="font-size:10px;color:var(--muted);text-align:right">${pct}%</div>
+          </div>`;
+        }).join('')}
       </div>
-      <div class="chat-messages" id="chat-messages">${msgs}</div>
-      <div class="chat-input-bar">
-        <button class="mic-btn" id="chat-mic-btn" onclick="toggleMic()" title="Parler">🎤</button>
-        <textarea class="chat-text-input" id="chat-text-input" rows="1"
-          placeholder="Écris ou parle à ${def.name}..."
-          onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();chatSend();}"
-          oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,100)+'px'"></textarea>
-        <button class="chat-send-btn" id="chat-send-btn" onclick="chatSend()" title="Envoyer">↑</button>
+      <div style="display:flex;flex-wrap:wrap;gap:16px;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)">
+        <div style="font-size:12px;color:var(--muted)">Taux réponse+ : <span style="color:var(--accent2);font-weight:700">${tauxReponse}%</span></div>
+        <div style="font-size:12px;color:var(--muted)">Taux conversion : <span style="color:var(--purple);font-weight:700">${tauxConv}%</span></div>
+        <div style="font-size:12px;color:var(--muted)">RDV pris : <span style="color:var(--green2);font-weight:700">${rdvPris}</span></div>
+        <div style="font-size:12px;color:var(--muted)">Refus : <span style="color:var(--danger);font-weight:700">${refuse}</span></div>
+        <div style="font-size:12px;color:var(--muted)">A contacter : <span style="color:var(--accent);font-weight:700">${aContacter}</span></div>
+      </div>
+    </div>
+
+    ${relances.length > 0 ? `
+    <div class="block" style="margin-bottom:13px;border-color:rgba(229,57,53,0.4)">
+      <h3 style="color:var(--danger)">Relances urgentes (${relances.length})</h3>
+      ${relances.slice(0,8).map(c => {
+        const s = STATUS_CONFIG[c.statut] || STATUS_CONFIG['a-contacter'];
+        const overdue = c.relance < today;
+        return `<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)">
+          <div style="flex:1;min-width:0">
+            <div style="font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escHtml(c.name)}</div>
+            <div style="font-size:11px;color:${overdue?'var(--danger)':'var(--muted)'};margin-top:1px">${c.relance}${overdue?' — EN RETARD':''}</div>
+          </div>
+          <span style="font-size:10px;padding:2px 7px;border-radius:20px;background:${s.bg};color:${s.color};white-space:nowrap">${s.label}</span>
+          <button onclick="showNote('crm',document.querySelector('[data-fixed=crm]'))" style="font-size:11px;padding:3px 9px;border:1px solid var(--border);background:transparent;color:var(--text2);border-radius:4px;cursor:pointer;flex-shrink:0">→ CRM</button>
+        </div>`;
+      }).join('')}
+    </div>` : `
+    <div class="block" style="margin-bottom:13px;border-color:rgba(76,175,80,0.3)">
+      <div style="display:flex;align-items:center;gap:10px;padding:4px 0;color:var(--accent2);font-size:13px">
+        <span style="font-size:18px">✓</span> Aucune relance urgente — tu es a jour !
+      </div>
+    </div>`}
+
+    <div class="block" style="margin-bottom:13px">
+      <h3>Répartition des statuts</h3>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+        ${Object.entries(STATUS_CONFIG).map(([key, s]) => {
+          const n = arr.filter(c => c.statut === key).length;
+          const pct = arr.length > 0 ? Math.round(n / arr.length * 100) : 0;
+          return `<div class="anal-stat-card" style="border-color:${s.color}22;background:${s.bg}">
+            <div style="font-size:10px;color:${s.color};font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:5px">${s.label}</div>
+            <div style="font-size:22px;font-weight:800;color:${s.color}">${n}</div>
+            <div style="font-size:10px;color:var(--muted);margin-top:2px">${pct}%</div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>
+
+    <div class="block" style="margin-bottom:13px">
+      <h3>Performance par zone</h3>
+      <div style="overflow-x:auto">
+        <table class="anal-zone-tbl">
+          <thead><tr>
+            <th>Zone</th>
+            <th style="text-align:right">Total</th>
+            <th style="text-align:right">Contactées</th>
+            <th style="text-align:right">Réponses+</th>
+            <th style="text-align:right">Taux</th>
+          </tr></thead>
+          <tbody>
+            ${Object.entries(zones).sort((a,b) => b[1].total-a[1].total).slice(0,14).map(([zone, z]) => {
+              const taux = z.contacts > 0 ? Math.round(z.positifs / z.contacts * 100) : 0;
+              const tauxColor = taux >= 20 ? 'var(--accent2)' : taux > 0 ? 'var(--accent)' : 'var(--muted)';
+              return `<tr>
+                <td style="font-weight:500">${escHtml(zone)}</td>
+                <td style="text-align:right">${z.total}</td>
+                <td style="text-align:right;color:var(--blue)">${z.contacts}</td>
+                <td style="text-align:right;color:var(--accent2)">${z.positifs}</td>
+                <td style="text-align:right;font-weight:700;color:${tauxColor}">${taux}%</td>
+              </tr>`;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="block" style="margin-bottom:13px">
+      <h3>Par catégorie</h3>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
+        ${Object.entries(cats).sort((a,b) => b[1].total-a[1].total).map(([cat, c]) => {
+          const cfg = CAT_CONFIG[cat] || CAT_CONFIG['prod'];
+          const pct = c.total > 0 ? Math.round(c.contacts / c.total * 100) : 0;
+          return `<div class="anal-cat-card">
+            <div style="font-size:11px;font-weight:700;color:${cfg.color};margin-bottom:5px">${escHtml(cfg.label)}</div>
+            <div style="font-size:20px;font-weight:800">${c.total}</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:2px">${c.contacts} contactées — ${pct}%</div>
+            <div style="background:var(--card2);border-radius:2px;height:3px;margin-top:8px">
+              <div style="background:${cfg.color};height:100%;border-radius:2px;width:${pct}%"></div>
+            </div>
+          </div>`;
+        }).join('')}
       </div>
     </div>`;
   }
@@ -2233,28 +2520,28 @@ https://www.rondeaujeremy.fr/
       const hist = chatHistories[agentId].filter(m => m.role === 'user' || m.role === 'agent').slice(-10);
       const apiMessages = hist.map(m => ({ role: m.role === 'user' ? 'user' : 'assistant', content: m.content }));
 
-      // Inject CRM context for all agents
+      // Inject full CRM context for omnibus agent
       let extraContext = '';
       const crmArr = getCRMCompanies();
       const crmNames = crmArr.map(c => c.name).filter(Boolean);
-      if (agentId === 'sourcing') {
-        extraContext = `DONNÉES CRM ACTUELLES — ${crmNames.length} entreprises déjà présentes :\n${crmNames.join(', ')}\n\nRÈGLE ABSOLUE : Il est STRICTEMENT INTERDIT de proposer ou suggérer une entreprise dont le nom figure dans cette liste. Vérifie chaque suggestion contre cette liste avant de répondre.`;
-      } else if (agentId === 'stratege') {
-        const now = new Date();
-        extraContext = JSON.stringify({
-          total: crmArr.length,
-          aContacter: crmArr.filter(c=>c.statut==='a-contacter').length,
-          messageEnvoye: crmArr.filter(c=>c.statut==='message-envoye').length,
-          pasReponse: crmArr.filter(c=>c.statut==='pas-de-reponse').length,
-          interesse: crmArr.filter(c=>c.statut==='interesse').length,
-          rdvPris: crmArr.filter(c=>c.statut==='rdv-pris').length,
-          converti: crmArr.filter(c=>c.statut==='converti').length,
-          relancesUrgentes: crmArr.filter(c=>c.relance&&new Date(c.relance)<=now).length,
-          dernieres10: crmArr.slice(-10).map(c=>({id:c.id,name:c.name,statut:c.statut,zone:c.zone,date:c.date}))
-        });
-      } else if (agentId === 'copywriter') {
-        extraContext = `Entreprises déjà dans le CRM de Jeremy (${crmNames.length} au total) : ${crmNames.join(', ')}`;
-      }
+      const nowCtx = new Date();
+      const todayCtx = nowCtx.toISOString().split('T')[0];
+      const relancesUrgentes = crmArr.filter(c => c.relance && c.relance <= todayCtx).map(c => ({id:c.id,name:c.name,statut:c.statut,relance:c.relance,contact:c.contact||''}));
+      extraContext = `CRM JRV — ${crmNames.length} entreprises (ANTI-DOUBLON OBLIGATOIRE pour tout sourcing) :\n${crmNames.join(', ')}\n\nStats actuelles : ${JSON.stringify({
+        total: crmArr.length,
+        aContacter: crmArr.filter(c=>c.statut==='a-contacter').length,
+        contactEnvoye: crmArr.filter(c=>c.statut==='contact-envoye').length,
+        messageEnvoye: crmArr.filter(c=>c.statut==='message-envoye').length,
+        pasReponse: crmArr.filter(c=>c.statut==='pas-de-reponse').length,
+        enVeille: crmArr.filter(c=>c.statut==='en-veille').length,
+        interesse: crmArr.filter(c=>c.statut==='interesse').length,
+        rdvPris: crmArr.filter(c=>c.statut==='rdv-pris').length,
+        refuse: crmArr.filter(c=>c.statut==='refuse').length,
+        converti: crmArr.filter(c=>c.statut==='converti').length,
+        relancesUrgentes: relancesUrgentes,
+        priorites: crmArr.filter(c=>c.p).slice(0,15).map(c=>({id:c.id,name:c.name,statut:c.statut,zone:c.zone})),
+        derniers: crmArr.slice(-12).map(c=>({id:c.id,name:c.name,statut:c.statut,zone:c.zone,date:c.date}))
+      })}`;
 
       const token = localStorage.getItem('jrv_auth_token') || '';
       const res = await fetch('/api/agent', {
@@ -2284,7 +2571,7 @@ https://www.rondeaujeremy.fr/
 
       // Sourcing: detect JSON array → offer inject (with confidence)
       let agentMsg;
-      if (agentId === 'sourcing' && !modifyAction) {
+      if ((agentId === 'sourcing' || agentId === 'omnibus') && !modifyAction) {
         let companies = null, flagged = [];
         try {
           const clean = result.replace(/```json\n?/g,'').replace(/```\n?/g,'').trim();
@@ -2316,6 +2603,8 @@ https://www.rondeaujeremy.fr/
       chatHistories[agentId].push(agentMsg);
       if (msgs) { msgs.innerHTML += buildMsgHTML(agentMsg); chatScrollBottom(); }
       chatSetStatus('Prêt', false);
+      saveCurrentConv();
+      if (!bubbleChatOpen) showBubbleBadge();
 
     } catch(e) {
       document.getElementById('chat-typing')?.remove();
@@ -2338,7 +2627,7 @@ https://www.rondeaujeremy.fr/
 
   async function applyCrmModify(action, btn) {
     btn.disabled = true; btn.textContent = 'Application...';
-    const allowedFields = ['statut','notes','contact','poste','relance','date','site','priority','p'];
+    const allowedFields = ['statut','notes','contact','poste','relance','date','site','linkedin','priority','p'];
     if (!allowedFields.includes(action.field)) { btn.textContent = '✗ Champ non autorisé'; return; }
     const arr = getCRMCompanies();
     const c = arr.find(x => x.id === action.id);
@@ -2428,36 +2717,49 @@ https://www.rondeaujeremy.fr/
       }
       return;
     }
+    // Capture text already in the input so we can append to it
+    const input = document.getElementById('chat-text-input');
+    micBaseText = input ? input.value : '';
+
     const rec = new SR();
     rec.lang = 'fr-FR';
-    rec.continuous = false;
+    rec.continuous = true;
     rec.interimResults = true;
     const micBtn = document.getElementById('chat-mic-btn');
-    const input = document.getElementById('chat-text-input');
 
     rec.onstart = function() {
       chatMicListening = true;
       if (micBtn) { micBtn.classList.add('listening'); micBtn.textContent = '⏹'; }
     };
     rec.onresult = function(e) {
-      const transcript = Array.from(e.results).map(r=>r[0].transcript).join('');
-      if (input) { input.value = transcript; input.style.height='auto'; input.style.height=Math.min(input.scrollHeight,100)+'px'; }
-    };
-    rec.onerror = function(e) { console.warn('Speech error:', e.error); stopMic(); };
-    rec.onend = function() {
-      chatMicListening = false;
-      if (micBtn) { micBtn.classList.remove('listening'); micBtn.textContent = '🎤'; }
-      chatSpeechRec = null;
+      const sessionText = Array.from(e.results).map(r => r[0].transcript).join('');
+      const sep = micBaseText && sessionText ? ' ' : '';
       const inp = document.getElementById('chat-text-input');
-      if (inp && inp.value.trim()) setTimeout(chatSend, 350);
+      if (inp) { inp.value = micBaseText + sep + sessionText; inp.style.height='auto'; inp.style.height=Math.min(inp.scrollHeight,100)+'px'; }
+    };
+    rec.onerror = function(e) {
+      if (e.error === 'no-speech') return; // silence — keep going
+      console.warn('Speech error:', e.error);
+      if (e.error !== 'aborted') stopMic();
+    };
+    rec.onend = function() {
+      if (chatMicListening) {
+        // Browser cut the session (silence timeout) — capture current text and restart seamlessly
+        const inp = document.getElementById('chat-text-input');
+        micBaseText = inp ? inp.value : micBaseText;
+        chatSpeechRec = null;
+        setTimeout(function() { if (chatMicListening) startMic(); }, 150);
+      } else {
+        chatSpeechRec = null;
+      }
     };
     rec.start();
     chatSpeechRec = rec;
   }
 
   function stopMic() {
+    chatMicListening = false; // set BEFORE stop so onend doesn't restart
     if (chatSpeechRec) { try { chatSpeechRec.stop(); } catch(e) {} chatSpeechRec = null; }
-    chatMicListening = false;
     const micBtn = document.getElementById('chat-mic-btn');
     if (micBtn) { micBtn.classList.remove('listening'); micBtn.textContent = '🎤'; }
   }
@@ -2502,12 +2804,13 @@ https://www.rondeaujeremy.fr/
   // ---- AUTH ----
 
   function checkAuth() {
+    // Bypass local dev (Python HTTP server)
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') return true;
     const token = localStorage.getItem('jrv_auth_token');
     if (!token) return false;
     try {
       const parts = token.split('.');
       if (parts.length !== 3) throw new Error('invalid');
-      // Décode le payload (base64url) pour vérifier l'expiration côté client
       const b64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
       const payload = JSON.parse(atob(b64.padEnd(b64.length + (4 - b64.length % 4) % 4, '=')));
       if (payload.exp < Math.floor(Date.now() / 1000)) {
@@ -2630,7 +2933,7 @@ https://www.rondeaujeremy.fr/
     showAgentStatus('sourcing', 'Agent en train de sourcer...', 'info');
 
     try {
-      const result = await callAgent('sourcing', prompt);
+      const result = await callAgent('omnibus', prompt);
       let companies;
       try {
         const jsonStr = result.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
@@ -2706,7 +3009,7 @@ https://www.rondeaujeremy.fr/
       c.site ? 'Site : ' + c.site : '', c.notes ? 'Notes : ' + c.notes : ''].filter(Boolean).join('\n');
 
     try {
-      const result = await callAgent('copywriter', 'Génère un message LinkedIn de prospection personnalisé.', context);
+      const result = await callAgent('omnibus', 'Génère un message LinkedIn de prospection personnalisé pour cette boîte.', context);
       if (panelBody) panelBody.innerHTML = '<div class="agent-msg-output">' + escHtml(result) + '</div>';
       panel.dataset.message = result;
       if (panelSave) { panelSave.style.display = ''; panelSave.onclick = function() { saveAgentMessage(companyId, result); }; }
@@ -2770,7 +3073,7 @@ https://www.rondeaujeremy.fr/
     };
 
     try {
-      const result = await callAgent('tracker', 'Analyse mes statistiques de prospection.', JSON.stringify(stats));
+      const result = await callAgent('omnibus', 'Analyse mes statistiques de prospection et donne-moi des insights actionnables au format JSON : {"insights":["..."],"urgences":["..."],"conseil":"..."}', JSON.stringify(stats));
       let parsed;
       try {
         parsed = JSON.parse(result.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim());
@@ -2800,8 +3103,170 @@ https://www.rondeaujeremy.fr/
     btn.disabled = false;
   }
 
+  // ---- CONVERSATION HISTORY ----
+  const WELCOME_MSG = 'Bonjour Jeremy ! Je suis ton assistant tout-en-un.\n\nJe peux faire tout ce dont tu as besoin :\n• Sourcer de nouvelles boîtes ("Trouve 10 agences événementielles à Lyon")\n• Rédiger tes messages LinkedIn ("Message pour Animoz Films")\n• Modifier le CRM ("NTU Medias → RDV pris")\n• Analyser ta prospection ("Quel est mon taux de conversion ?")\n• Gérer tes relances ("Qui dois-je relancer cette semaine ?")\n• Répondre à n\'importe quelle question\n\nQu\'est-ce que je fais pour toi ?';
+
+  function loadConvs() {
+    try { convList = JSON.parse(localStorage.getItem('jrv_chat_convs') || '[]'); } catch(e) { convList = []; }
+  }
+  function saveConvs() { localStorage.setItem('jrv_chat_convs', JSON.stringify(convList)); }
+
+  function saveCurrentConv() {
+    if (!currentConvId) return;
+    const conv = convList.find(c => c.id === currentConvId);
+    if (!conv) return;
+    conv.messages = (chatHistories['omnibus'] || []).map(m => ({
+      role: m.role, content: m.content,
+      time: m.time instanceof Date ? m.time.toISOString() : (m.time || new Date().toISOString())
+    }));
+    conv.updatedAt = new Date().toISOString();
+    saveConvs();
+  }
+
+  function _loadConvIntoChat(conv) {
+    chatHistories['omnibus'] = (conv.messages || []).map(m => ({
+      role: m.role, content: m.content, time: new Date(m.time || Date.now())
+    }));
+    const msgs = document.getElementById('chat-messages');
+    if (msgs) msgs.innerHTML = chatHistories['omnibus'].map(buildMsgHTML).join('');
+    chatScrollBottom();
+    updateConvTitle();
+  }
+
+  function initConvs() {
+    loadConvs();
+    if (convList.length === 0) {
+      const id = 'conv_' + Date.now();
+      const now = new Date().toISOString();
+      convList.push({ id, name: 'Ma première conversation', messages: [{ role:'agent', content: WELCOME_MSG, time: now }], createdAt: now, updatedAt: now });
+      saveConvs();
+    }
+    currentConvId = convList[0].id;
+    _loadConvIntoChat(convList[0]);
+  }
+
+  function createNewConv() {
+    saveCurrentConv();
+    const id = 'conv_' + Date.now();
+    const now = new Date().toISOString();
+    const welcomeMsg = { role:'agent', content:'Nouvelle conversation. Je t\'écoute !', time: now };
+    convList.unshift({ id, name: 'Nouvelle conversation', messages: [welcomeMsg], createdAt: now, updatedAt: now });
+    saveConvs();
+    currentConvId = id;
+    chatHistories['omnibus'] = [{ role: welcomeMsg.role, content: welcomeMsg.content, time: new Date(now) }];
+    const msgs = document.getElementById('chat-messages');
+    if (msgs) msgs.innerHTML = buildMsgHTML(chatHistories['omnibus'][0]);
+    chatScrollBottom();
+    updateConvTitle();
+    if (convPanelOpen) toggleConvPanel();
+  }
+
+  function switchConv(id) {
+    if (id === currentConvId) { if (convPanelOpen) toggleConvPanel(); return; }
+    saveCurrentConv();
+    const conv = convList.find(c => c.id === id);
+    if (!conv) return;
+    currentConvId = id;
+    _loadConvIntoChat(conv);
+    if (convPanelOpen) toggleConvPanel();
+  }
+
+  function deleteConv(id) {
+    convList = convList.filter(c => c.id !== id);
+    saveConvs();
+    if (id === currentConvId) {
+      if (convList.length > 0) { currentConvId = convList[0].id; _loadConvIntoChat(convList[0]); }
+      else { createNewConv(); return; }
+    }
+    if (convPanelOpen) renderConvList();
+  }
+
+  function renameConvPrompt(id) {
+    const conv = convList.find(c => c.id === id);
+    if (!conv) return;
+    const newName = prompt('Renommer la conversation :', conv.name);
+    if (newName && newName.trim()) {
+      conv.name = newName.trim();
+      saveConvs();
+      updateConvTitle();
+      if (convPanelOpen) renderConvList();
+    }
+  }
+
+  function updateConvTitle() {
+    const conv = convList.find(c => c.id === currentConvId);
+    const el = document.getElementById('bubble-conv-title');
+    if (el) el.textContent = conv ? conv.name : 'Conversation';
+  }
+
+  function toggleConvPanel() {
+    convPanelOpen = !convPanelOpen;
+    const panel = document.getElementById('conv-list-panel');
+    if (panel) { panel.style.display = convPanelOpen ? 'flex' : 'none'; if (convPanelOpen) renderConvList(); }
+    const btn = document.getElementById('bubble-hist-btn');
+    if (btn) btn.classList.toggle('active', convPanelOpen);
+  }
+
+  function renderConvList() {
+    const el = document.getElementById('conv-list-items');
+    if (!el) return;
+    if (convList.length === 0) { el.innerHTML = '<div style="color:var(--muted);font-size:12px;text-align:center;padding:24px">Aucune conversation</div>'; return; }
+    el.innerHTML = convList.map(c => {
+      const isCurrent = c.id === currentConvId;
+      const lastMsg = c.messages && c.messages.length > 1 ? c.messages[c.messages.length - 1] : null;
+      const preview = lastMsg ? String(lastMsg.content).replace(/\n/g,' ').slice(0, 60) : '';
+      const d = new Date(c.updatedAt);
+      const dateStr = d.toLocaleDateString('fr-FR', { day:'numeric', month:'short' });
+      return `<div class="conv-item${isCurrent?' active':''}" onclick="switchConv('${c.id}')">
+        <div class="conv-item-body">
+          <div class="conv-item-name">${escHtml(c.name)}</div>
+          ${preview ? `<div class="conv-item-preview">${escHtml(preview)}</div>` : ''}
+        </div>
+        <div class="conv-item-meta">
+          <div class="conv-item-date">${dateStr}</div>
+          <div class="conv-item-acts">
+            <button onclick="event.stopPropagation();renameConvPrompt('${c.id}')" title="Renommer">✎</button>
+            <button onclick="event.stopPropagation();deleteConv('${c.id}')" title="Supprimer" style="color:var(--danger)">✕</button>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  // ---- BUBBLE CHAT ----
+  function toggleChatBubble() {
+    bubbleChatOpen = !bubbleChatOpen;
+    const panel = document.getElementById('chat-bubble-panel');
+    const btn = document.getElementById('chat-bubble-btn');
+    if (panel) panel.classList.toggle('open', bubbleChatOpen);
+    if (btn) btn.classList.toggle('open', bubbleChatOpen);
+    if (bubbleChatOpen) {
+      chatCurrentAgent = 'omnibus';
+      if (!currentConvId) {
+        initConvs();
+      } else {
+        const msgs = document.getElementById('chat-messages');
+        if (msgs && chatHistories['omnibus']) msgs.innerHTML = chatHistories['omnibus'].map(buildMsgHTML).join('');
+        chatScrollBottom();
+      }
+      hideBubbleBadge();
+      setTimeout(function() { const inp = document.getElementById('chat-text-input'); if (inp) inp.focus(); }, 120);
+    }
+  }
+
+  function showBubbleBadge() {
+    if (bubbleChatOpen) return;
+    const badge = document.getElementById('chat-bubble-badge');
+    if (badge) { badge.style.display = 'flex'; }
+  }
+
+  function hideBubbleBadge() {
+    const badge = document.getElementById('chat-bubble-badge');
+    if (badge) badge.style.display = 'none';
+  }
+
   document.addEventListener('keydown', e => {
-    if (e.key === 'Escape') { closeAddCompany(); closeAgentPanel(); }
+    if (e.key === 'Escape') { closeAddCompany(); closeAgentPanel(); if (bubbleChatOpen) toggleChatBubble(); }
   });
 </script>
 
@@ -2821,6 +3286,45 @@ https://www.rondeaujeremy.fr/
   <div class="agent-panel-footer">
     <button class="agent-panel-btn" id="agent-copy-copybtn" onclick="copyAgentMessage()" disabled>Copier</button>
     <button class="agent-panel-btn primary" id="agent-copy-save" style="display:none">Sauver dans Notes</button>
+  </div>
+</div>
+
+<!-- FLOATING CHAT BUBBLE -->
+<button id="chat-bubble-btn" onclick="toggleChatBubble()" title="Assistant JRV">
+  <span>✦</span>
+  <span id="chat-bubble-badge">1</span>
+</button>
+<div id="chat-bubble-panel">
+  <div id="bubble-header">
+    <div style="width:30px;height:30px;border-radius:50%;background:var(--card2);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0">✦</div>
+    <div style="flex:1;min-width:0">
+      <div class="bh-name">Assistant JRV</div>
+      <span id="bubble-conv-title">Conversation</span>
+    </div>
+    <div class="chat-status" style="margin-right:4px">
+      <div class="chat-sdot" id="chat-sdot"></div>
+      <span id="chat-stext" style="font-size:10px">Prêt</span>
+    </div>
+    <button id="bubble-hist-btn" onclick="toggleConvPanel()" title="Historique des conversations">☰</button>
+    <button id="bubble-close" onclick="toggleChatBubble()">×</button>
+  </div>
+  <!-- Conversation history overlay -->
+  <div id="conv-list-panel">
+    <div class="clp-header">
+      <span class="clp-title">Conversations</span>
+      <button class="clp-new" onclick="createNewConv()">+ Nouvelle</button>
+      <button class="clp-close" onclick="toggleConvPanel()">×</button>
+    </div>
+    <div id="conv-list-items"></div>
+  </div>
+  <div class="chat-messages" id="chat-messages"></div>
+  <div class="chat-input-bar">
+    <button class="mic-btn" id="chat-mic-btn" onclick="toggleMic()" title="Parler">🎤</button>
+    <textarea class="chat-text-input" id="chat-text-input" rows="1"
+      placeholder="Écris ou parle à ton assistant..."
+      onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();chatSend();}"
+      oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,100)+'px'"></textarea>
+    <button class="chat-send-btn" id="chat-send-btn" onclick="chatSend()" title="Envoyer">↑</button>
   </div>
 </div>
 
