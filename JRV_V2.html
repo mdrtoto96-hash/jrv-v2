@@ -2594,7 +2594,7 @@ https://www.rondeaujeremy.fr/
       extra += `<div class="crm-modify-card">
         <div class="crm-modify-title">🔧 Modification CRM</div>
         <div class="crm-modify-summary">ID #${ma.id} — <b>${escHtml(ma.field)}</b> → <b>${escHtml(String(ma.value))}</b></div>
-        <button class="crm-modify-btn" id="mod-${ma.id}-${ma.field}" onclick="applyCrmModify(${JSON.stringify(ma)},this)">Appliquer →</button>
+        <button class="crm-modify-btn" id="mod-${ma.id}-${ma.field}" data-action="${escAttr(JSON.stringify(ma))}" onclick="applyCrmModify(JSON.parse(this.dataset.action),this)">Appliquer →</button>
       </div>`;
     }
     const escapedContent = escHtml(msg.content).replace(/\n/g,'<br>');
