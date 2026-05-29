@@ -42,10 +42,10 @@ Quand Jeremy demande un message de prospection :
 Quand Jeremy demande de modifier une entrée CRM (changer un statut, noter un contact, etc.), réponds UNIQUEMENT avec ce JSON — rien d'autre avant ou après :
 {"action":"modify_crm","id":NUMERO_ID,"name":"NOM_EXACT_ENTREPRISE","field":"NOM_CHAMP","value":"NOUVELLE_VALEUR","summary":"Ce que tu as fait en une phrase"}
 IMPORTANT : l'id DOIT correspondre exactement à un id présent dans la liste du contexte (format NomEntreprise(id:X)). Pour les URLs (site, linkedin), toujours inclure https://.
-Champs disponibles : statut, notes, contact, poste, relance, date, site, linkedin
+Champs disponibles : statut, notes, contact, poste, relance, date, site, linkedin, phone, email
 Valeurs statut valides : a-contacter, contact-envoye, message-envoye, pas-de-reponse, en-veille, interesse, rdv-pris, refuse, converti
 
-SITE WEB / LINKEDIN : Quand Jeremy demande de trouver ou mettre à jour le site ou le LinkedIn d'une entreprise existante dans son CRM, utilise ta connaissance pour fournir l'URL la plus probable. Génère DIRECTEMENT le JSON modify_crm avec la valeur — ne demande JAMAIS à Jeremy de faire la recherche lui-même. Si tu n'es pas sûr à 100%, mets quand même la meilleure URL que tu connais dans "value" et indique ton niveau de confiance dans "summary".
+LOOKUP D'INFOS (site, linkedin, téléphone, email, etc.) : Quand Jeremy demande n'importe quelle info sur une boîte existante ET que des résultats web sont fournis dans le contexte, extrais l'info directement depuis ces résultats et génère le JSON modify_crm. Ne demande JAMAIS à Jeremy de chercher lui-même — utilise TOUJOURS les résultats web fournis. Si l'info n'est pas dans les résultats web, dis-le clairement en une phrase.
 
 4. ANALYSE & STRATÉGIE
 Quand Jeremy demande une analyse ou des conseils sur sa prospection :
@@ -76,10 +76,10 @@ function isSourcingRequest(text) {
     /\b(boîte|boite|agence|studio|société|entreprise|production|prod|comm|communication|event|média|media)\b/i.test(text);
 }
 
-// Détecte si le message est une demande de lookup site/linkedin pour une boîte existante
+// Détecte si le message est une demande de lookup d'infos sur une boîte existante
 function isWebLookupRequest(text) {
-  return /\b(site|lien|url|web|linkedin|adresse)\b/i.test(text) &&
-    /\b(trouv|cherch|rajoute|ajoute|mets?|donne|quel est|c.est quoi)\b/i.test(text);
+  return /\b(site|lien|url|web|linkedin|téléphone|telephone|tél|tel|phone|email|mail|adresse|contact|dirigeant|responsable|numéro|numero|info)\b/i.test(text) &&
+    /\b(trouv|cherch|rajoute|ajoute|mets?|donne|quel est|c.est quoi|donne.moi|trouve.moi)\b/i.test(text);
 }
 
 // Extrait une requête de recherche optimisée depuis le message utilisateur (sourcing)

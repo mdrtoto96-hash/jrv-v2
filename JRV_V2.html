@@ -2748,7 +2748,7 @@ https://www.rondeaujeremy.fr/
 
   async function applyCrmModify(action, btn) {
     btn.disabled = true; btn.textContent = 'Application...';
-    const allowedFields = ['statut','notes','contact','poste','relance','date','site','linkedin','priority','p'];
+    const allowedFields = ['statut','notes','contact','poste','relance','date','site','linkedin','phone','email','priority','p'];
     if (!allowedFields.includes(action.field)) { btn.textContent = '✗ Champ non autorisé'; return; }
     // Normalise les URLs (ajoute https:// si manquant)
     if ((action.field === 'site' || action.field === 'linkedin') && action.value && !action.value.startsWith('http')) {
